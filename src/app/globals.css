@@ -100,7 +100,14 @@ body {
 .bg-gray-800 {
   background-color: #ffffff;
 }
-.text-white {
+
+.stock-symbol{
+ 
+  font-weight: 800;
+}
+
+
+.stock-price {
   color: #000000; 
 }
 .text-green-500 {
@@ -130,7 +137,7 @@ body {
 .ticker-content {
   display: flex;
   width: max-content; /* Ensures the content spans as wide as needed */
-  animation: scroll 20s linear infinite; /* Adjust speed as needed */
+  animation: scroll 35s linear infinite; /* Adjust speed as needed */
 }
 
 .ticker-item {
@@ -140,4 +147,26 @@ body {
 
 .space-x-8 {
   gap: 2rem; /* Adjust space between stocks */
+}
+
+.divider{
+  margin-top: 14px;
+  border-top: 1px solid #9B9B9B;
+  width: 800;
+
+}
+
+.financials{
+  display: flex;
+  margin-top: 58;
+  flex-direction: column;
+  justify-content: center; 
+  align-items: left; 
+  padding-left: 320;
+}
+
+.financial-metrics{
+  margin-top: 21;
+  margin-left: 20;
+
 }
