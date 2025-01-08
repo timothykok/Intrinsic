@@ -3,8 +3,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function NetIncome() {
+export default function FreeCashFlowEquity() {
   const [netIncomeData, setNetIncomeData] = useState([]);
+  const [depreceationAmortization, setDepreceationAmortization] = useState([]);
+  const [capitalExpenditure, setCapitalExpenditure] = useState([]);
+  const [changeInWorkingCapital, setChangeInWorkingCapital] = useState([]);
+  const [netBorrowing, setNetBorrowing] = useState([]);
   const [indicators, setIndicators] = useState([]);
 
   useEffect(() => {
@@ -18,7 +22,7 @@ export default function NetIncome() {
         // Extract the last 5 years of data
         const data = response.data.slice(0, 5); // Get the most recent 5 years
         const sortedData = data.sort(
-          (a, b) => new Date(a.date) - new Date(b.date) // Sort by date ascending
+          (a, b) => new Date(b.date) - new Date(a.date) // Sort by date descending
         );
 
         // Extract Net Income and Calendar Year
@@ -39,11 +43,41 @@ export default function NetIncome() {
       }
     };
 
+    const fetchCashFlow = async () => {
+        try{
+            //fetch data 
+            const response = await axious.get(
+                "https://financialmodelingprep.com/api/v3/cash-flow-statement/AAPL?period=annual&apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko"
+            );
+
+
+            const data = response.data.slice(0, 5);
+            const sortedData = data.sort(
+                (a, b) => new Date(b.date) - new Date(a.date) // Sort by date descending
+              );
+
+            //extract depreceationAmortization, capEx, changeInWorkingCapital and calendar year
+
+            const depreceationAmortizationValues = sortedData.map((item) => ({
+                year: item.calendarYear
+                
+            }))
+        }
+        catch (error){
+            console.error("Error fetching cashflow")
+
+        }
+    }
+
     fetchNetIncome();
   }, []);
 
 
-  // doesnt have to return net income 
+  
+
+
+
+
 
   return (
     <div>

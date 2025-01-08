@@ -1,16 +1,24 @@
 import Image from "next/image";
 import Search from "./search/page";
-import StockTicker from "./ticker/page";
-import Financials from "./financials/page";
-import NetIncome from "./financials/free_cash_flow_equity/page";
+import Ticker from "./ui/Ticker.js";
+import FreeCashFlowEquity from "./ui/FreeCashFlowEquity.js";
 
 export default function Home() {
   return (
     <>  
-     <StockTicker/>
-     <Search />
-     <Financials/>
-     <NetIncome/>
+     <Ticker/>
+  
+
+
+     <div className="title-wrapper">
+        <h1 className="title"> Intrinsic. </h1>
+
+        <input className="search-bar" type="text" placeholder="Enter Stock" />
+      </div>
+
+
+  
+     <FreeCashFlowEquity/>
 
    
       

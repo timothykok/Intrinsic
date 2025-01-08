@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function StockTicker() {
+export default function Ticker() {
   const [stocks, setStocks] = useState([]);
 
   useEffect(() => {
