@@ -173,5 +173,55 @@ body {
 
 .fcfe-values{
   margin-top: 14;
-  margin-left: 350px;;
+  margin-left: 35px;;
+}
+
+.fcfe-container {
+  max-width: 800px;
+  margin: 0 auto;
+  margin-top:10;
+  padding:10;
+  font-family: Arial, sans-serif;
+}
+
+.fcfe-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.fcfe-label {
+  flex: 1;
+  font-weight: bold;
+  color: #333;
+}
+
+.fcfe-value {
+  flex: 1;
+  text-align: right;
+  font-weight: normal;
+  color: #555;
+}
+
+.price-qty {
+  display: flex;
+  justify-content: flex-end; 
+  gap: 8px; 
+  align-items: center;
+ç
+}
+
+.currency {
+  min-width: 50px;
+  font-weight: light;
+  margin-right: 38px;
+  text-align: left;
+  right: 90;
+  position:relative;
+}
+
+.numeric-value {
+  font-weight: normal;
+  text-align: right;
 }

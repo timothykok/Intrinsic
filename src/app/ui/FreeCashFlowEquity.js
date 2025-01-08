@@ -1,131 +1,210 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+let currency = "USD";
+
 export default function FreeCashFlowEquity() {
+  const [FreeCashFlowEquityData, setFreeCashFlowEquityData] = useState([]);
   const [netIncomeData, setNetIncomeData] = useState([]);
-  const [depreceationAmortizationData, setDepreceationAmortizationData] = useState([]);
+  const [depreceationAmortizationData, setDepreceationAmortizationData] =
+    useState([]);
   const [capitalExpenditureData, setCapitalExpenditureData] = useState([]);
-  const [changeInWorkingCapitalData, setChangeInWorkingCapitalData] = useState([]);
-  const [netBorrowingData, setNetBorrowingData] = useState([]);
-  const [indicatorsData, setIndicatorsData] = useState([]);
+  const [changeInWorkingCapitalData, setChangeInWorkingCapitalData] = useState(
+    []
+  );
+  const [netBorrowingData, setNetBorrowingData] = useState(null);
 
   useEffect(() => {
     const fetchNetIncome = async () => {
       try {
-        // Fetch data from the API
         const response = await axios.get(
           "https://financialmodelingprep.com/api/v3/income-statement/AAPL?period=annual&apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko"
         );
- 
-        // Extract the last 1 year of data (you can expand this later to 5 years)
         const data = response.data.slice(0, 1); // Get the most recent year
-                
-        // Access netIncome from the first item in the array
         const netIncomeValues = data.map((item) => ({
-        year: item.calendarYear,
-        netIncome: item.netIncome,
+          year: item.calendarYear,
+          netIncome: item.netIncome,
         }));
         setNetIncomeData(netIncomeValues);
-
-        
-       
       } catch (error) {
         console.error("Error fetching Net Income data:", error);
       }
     };
 
     const fetchCashFlow = async () => {
-        try{
-            //fetch data 
-            const response = await axios.get(
-                "https://financialmodelingprep.com/api/v3/cash-flow-statement/AAPL?period=annual&apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko"
-            );
+      try {
+        const response = await axios.get(
+          "https://financialmodelingprep.com/api/v3/cash-flow-statement/AAPL?period=annual&apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko"
+        );
+        const data = response.data.slice(0, 1);
 
+        const depreceationAmortizationValues = data.map((item) => ({
+          year: item.calendarYear,
+          depreceationAmortization: item.depreciationAndAmortization,
+        }));
 
-            const data = response.data.slice(0, 5);
-            const sortedData = data.sort(
-                (a, b) => new Date(b.date) - new Date(a.date) // Sort by date descending
-              );
+        const capitalExpenditureValues = data.map((item) => ({
+          year: item.calendarYear,
+          capitalExpenditure: item.capitalExpenditure,
+        }));
 
-            //extract depreceationAmortization, capEx, changeInWorkingCapital and calendar year
+        const changeInWorkingCapitalValues = data.map((item) => ({
+          year: item.calendarYear,
+          changeInWorkingCapital: item.changeInWorkingCapital,
+        }));
 
-            const depreceationAmortizationValues = sortedData.map((item) => ({
-                year: item.calendarYear,
-                depreceationAmortization: item.depreciationAndAmortization
-            
-            }));
+        setDepreceationAmortizationData(depreceationAmortizationValues);
+        setCapitalExpenditureData(capitalExpenditureValues);
+        setChangeInWorkingCapitalData(changeInWorkingCapitalValues);
+      } catch (error) {
+        console.error("Error fetching cash flow data:", error);
+      }
+    };
 
-            const capitalExpenditureValues = sortedData.map((item) => ({
-                year: item.calendarYear,
-                capitalExpenditure: item.capitalExpenditure
+    const fetchNetBorrowing = async () => {
+      try {
+        const response = await axios.get(
+          "https://www.alphavantage.co/query?function=CASH_FLOW&symbol=IBM&apikey=496Z5WWYIJYB3MFM"
+        );
+        const data = response.data.annualReports;
 
-            }));
+        const mostRecentYear = data[0];
 
-            const changeInWorkingCapitalValues = sortedData.map((item) => ({
-                year: item.changeInWorkingCapital,
-                changeInWorkingCapital: item.changeInWorkingCapital
-            
-            }));
+        const shortTermDebt = parseFloat(
+          mostRecentYear.proceedsFromRepaymentsOfShortTermDebt || 0
+        );
+        const longTermDebt = parseFloat(
+          mostRecentYear.proceedsFromIssuanceOfLongTermDebtAndCapitalSecuritiesNet ||
+            0
+        );
 
-            setDepreceationAmortizationData(depreceationAmortizationValues)
-            setCapitalExpenditureData(capitalExpenditureValues)
-            setChangeInWorkingCapitalData(changeInWorkingCapitalValues)
+        const netBorrowingValue = shortTermDebt + longTermDebt;
 
-        }
-       
-
-
-        catch (error){
-            console.error("Error fetching cashflow")
-
-        }
-
-
-    }
-
-    const fetch 
+        setNetBorrowingData(netBorrowingValue);
+      } catch (error) {
+        console.error("Error fetching Net Borrowing data:", error);
+      }
+    };
 
     fetchNetIncome();
     fetchCashFlow();
+    fetchNetBorrowing();
   }, []);
 
+  useEffect(() => {
+    // Calculate Free Cash Flow to Equity when all data is available
+    if (
+      netIncomeData.length > 0 &&
+      depreceationAmortizationData.length > 0 &&
+      capitalExpenditureData.length > 0 &&
+      netBorrowingData !== null
+    ) {
+      const FreeCashFlowEquityValue =
+        netIncomeData[0].netIncome +
+        depreceationAmortizationData[0].depreceationAmortization +
+        capitalExpenditureData[0].capitalExpenditure +
+        netBorrowingData;
 
-  
-
-
-
-
-
- 
+      setFreeCashFlowEquityData(FreeCashFlowEquityValue);
+    }
+  }, [
+    netIncomeData,
+    depreceationAmortizationData,
+    capitalExpenditureData,
+    netBorrowingData,
+  ]);
   return (
-    <div className="fcfe-values">
-      <p>
-        Net Income: $
-        {netIncomeData.length > 0
-          ? netIncomeData[0].netIncome.toLocaleString()
-          : "Loading..."}
-      </p>
-      <p>
-        Depreciation & Amortization: $
-        {depreceationAmortizationData.length > 0
-          ? depreceationAmortizationData[0].depreceationAmortization.toLocaleString()
-          : "Loading..."}
-      </p>
-      <p>
-        Capital Expenditure: $
-        {capitalExpenditureData.length > 0
-          ? capitalExpenditureData[0].capitalExpenditure.toLocaleString()
-          : "Loading..."}
-      </p>
+    <div className="fcfe-container">
+    <div className="fcfe-row">
+      <span className="fcfe-label">Free Cash Flow to Equity:</span>
+      <span className="fcfe-value">
+        <div className="price-qty">
+          <span className="currency">{currency}</span>
+          <span className="numeric-value">
+            $ {FreeCashFlowEquityData !== null
+              ? FreeCashFlowEquityData.toLocaleString()
+              : "Calculating..."}
+          </span>
+        </div>
+      </span>
+    </div>
 
-      <p>
-        Change In Working Capital: $
-        {changeInWorkingCapitalData.length > 0
-          ? changeInWorkingCapitalData[0].changeInWorkingCapital.toLocaleString()
-          : "Loading..."}
-      </p>
+      <div className="fcfe-row">
+        <span className="fcfe-label">Net Income:</span>
+        <span className="fcfe-value">
+          <div className="price-qty">
+            <span className="currency">{currency}</span>
+            <span className="numeric-value">
+              ${" "}
+              {netIncomeData.length > 0
+                ? netIncomeData[0].netIncome.toLocaleString()
+                : "Loading..."}
+            </span>
+          </div>
+        </span>
+      </div>
+
+      <div className="fcfe-row">
+        <span className="fcfe-label">Depreciation & Amortization:</span>
+        <span className="fcfe-value">
+          <div className="price-qty">
+            <span className="currency">{currency}</span>
+            <span className="numeric-value">
+              ${" "}
+              {depreceationAmortizationData.length > 0
+                ? depreceationAmortizationData[0].depreceationAmortization.toLocaleString()
+                : "Loading..."}
+            </span>
+          </div>
+        </span>
+      </div>
+
+      <div className="fcfe-row">
+        <span className="fcfe-label">Capital Expenditure:</span>
+        <span className="fcfe-value">
+          <div className="price-qty">
+            <span className="currency">{currency}</span>
+            <span className="numeric-value">
+              ${" "}
+              {capitalExpenditureData.length > 0
+                ? capitalExpenditureData[0].capitalExpenditure.toLocaleString()
+                : "Loading..."}
+            </span>
+          </div>
+        </span>
+      </div>
+
+      <div className="fcfe-row">
+        <span className="fcfe-label">Change In Working Capital:</span>
+        <span className="fcfe-value">
+          <div className="price-qty">
+            <span className="currency">{currency}</span>
+            <span className="numeric-value">
+              ${" "}
+              {changeInWorkingCapitalData.length > 0
+                ? changeInWorkingCapitalData[0].changeInWorkingCapital.toLocaleString()
+                : "Loading..."}
+            </span>
+          </div>
+        </span>
+      </div>
+
+      <div className="fcfe-row">
+        <span className="fcfe-label">Net Borrowing:</span>
+        <span className="fcfe-value">
+          <div className="price-qty">
+            <span className="currency">{currency}</span>
+            <span className="numeric-value">
+              ${" "}
+              {netBorrowingData !== null
+                ? netBorrowingData.toLocaleString()
+                : "Loading..."}
+            </span>
+          </div>
+        </span>
+      </div>
     </div>
   );
 }
