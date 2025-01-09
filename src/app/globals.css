@@ -16,6 +16,8 @@
 } */
 
 
+
+
 .nav{
   display: flex;
   gap: 30px;
@@ -63,6 +65,9 @@
 body {
   color: var(--foreground);
   background: var(--background);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased; /* Smooths the font on macOS */
+  -moz-osx-font-smoothing: grayscale; /* Smooths the font on Windows */
  
 }
 
@@ -74,12 +79,12 @@ body {
 }
 
  
-.title{
-  font-size: 162;
-  font-weight: 1000;
+.title {
+  font-size: 162px; 
+  font-weight: 1000; 
   color: #000;
-  text-shadow: #000;
-
+  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); 
+  font-family: "Inter", sans-serif;
 }
 
 .sub-title{
@@ -181,7 +186,18 @@ body {
   margin: 0 auto;
   margin-top:10;
   padding:10;
-  font-family: Arial, sans-serif;
+
+ 
+}
+
+
+.fece-values{
+
+  padding:20px;
+  display:flex;
+  flex-direction: row;
+  justify-content: left;
+
 }
 
 .fcfe-row {
@@ -193,7 +209,7 @@ body {
 
 .fcfe-label {
   flex: 1;
-  font-weight: bold;
+
   color: #333;
 }
 
@@ -202,26 +218,44 @@ body {
   text-align: right;
   font-weight: normal;
   color: #555;
+  
 }
 
 .price-qty {
   display: flex;
-  justify-content: flex-end; 
-  gap: 8px; 
-  align-items: center;
-ç
+  justify-content: flex-start; 
+  gap: 2px; 
+  align-items: right;
+  
+
 }
 
 .currency {
-  min-width: 50px;
-  font-weight: light;
-  margin-right: 38px;
+  max-width:40px;
   text-align: left;
-  right: 90;
-  position:relative;
+  width: 50px; 
+  margin-left: 162px;
 }
 
 .numeric-value {
   font-weight: normal;
   text-align: right;
+}
+
+.price-qty-inner {
+  display: flex;
+  justify-content: flex-start; 
+  
+}
+
+.currency-inner {
+  max-width:40px;
+  text-align: left;
+  width: 50px; 
+  margin-left: 145px;
+}
+
+.number-inner {
+  text-align: right; 
+  flex: 1; /* Allow the numeric value to take up remaining space */
 }

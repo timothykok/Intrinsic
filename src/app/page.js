@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Search from "./search/page";
 import Ticker from "./ui/Ticker.js";
-import FreeCashFlowEquity from "./ui/FreeCashFlowEquity.js";
+import Financials from "./ui/Financials.js";
 
 export default function Home() {
   return (
@@ -18,7 +18,7 @@ export default function Home() {
 
 
   
-     <FreeCashFlowEquity/>
+     <Financials/>
 
    
       
