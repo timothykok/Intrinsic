@@ -89,35 +89,41 @@ export default function Financials() {
       }
     };
 
-
     //finished API limits + inaccurate data for some searches - looking for alternatives
     const fetchFiveYearGrowthRate = async () => {
       try {
         const response = await axios.get(
           "https://www.alphavantage.co/query?function=EARNINGS&symbol=IBM&apikey=496Z5WWYIJYB3MFM"
         );
-    
+
         const data = response.data.annualEarnings;
         console.log("Annual Earnings Data:", data);
-    
+
         // Check if the data contains at least 5 years of EPS data
         if (data.length >= 5) {
           const mostRecentEPS = parseFloat(data[0].reportedEPS); // Most recent year
           const fiveYearsAgoEPS = parseFloat(data[4].reportedEPS); // 5 years ago
-    
+
           console.log("Most Recent EPS:", mostRecentEPS);
           console.log("5 Years Ago EPS:", fiveYearsAgoEPS);
-    
+
           // Ensure the EPS values are valid
-          if (!isNaN(mostRecentEPS) && !isNaN(fiveYearsAgoEPS) && fiveYearsAgoEPS > 0) {
+          if (
+            !isNaN(mostRecentEPS) &&
+            !isNaN(fiveYearsAgoEPS) &&
+            fiveYearsAgoEPS > 0
+          ) {
             // Calculate CAGR
             const growthRate =
               Math.pow(mostRecentEPS / fiveYearsAgoEPS, 1 / 5) - 1;
             console.log("5-Year EPS Growth Rate:", growthRate * 100);
-    
+
             setFiveYearGrowthRate((growthRate * 100).toFixed(2)); // Store as percentage
           } else {
-            console.error("Invalid EPS values:", { mostRecentEPS, fiveYearsAgoEPS });
+            console.error("Invalid EPS values:", {
+              mostRecentEPS,
+              fiveYearsAgoEPS,
+            });
             setFiveYearGrowthRate("Invalid data");
           }
         } else {
@@ -269,14 +275,56 @@ export default function Financials() {
         </div>
       </div>
 
-      
-        <span className="fcfe-label">5-Year EPS Growth Rate:</span>
-        <span className="fcfe-value">
-          {fiveYearGrowthRate !== "Invalid data" &&
-          fiveYearGrowthRate !== "Insufficient data"
-            ? `${fiveYearGrowthRate}%`
-            : fiveYearGrowthRate}
-        </span>
+  
+
+        <div className="fcfe-container">
+          {/* 5-Year EPS Growth Rate */}
+          <div className="fcfe-row">
+            <span className="fcfe-label">5-Year EPS Growth Rate</span>
+            <span className="fcfe-value">
+              <div className="price-qty-inner">
+                <div className="number-inner">
+                  <p>
+                    {fiveYearGrowthRate !== "Invalid data" &&
+                    fiveYearGrowthRate !== "Insufficient data"
+                      ? `${fiveYearGrowthRate}%`
+                      : fiveYearGrowthRate}
+                  </p>
+                </div>
+              </div>
+            </span>
+          </div>
+
+          {/* 10-Year EPS Growth Rate */}
+          <div className="fcfe-row">
+            <span className="fcfe-label">10-Year EPS Growth Rate</span>
+            <span className="fcfe-value">
+              <div className="price-qty-inner">
+                <div className="number-inner">
+                  <p>
+                    {/* Replace with your calculated value for the 10-year EPS growth rate */}
+                    {"Loading or Calculated 10-Year Growth Rate"}
+                  </p>
+                </div>
+              </div>
+            </span>
+          </div>
+
+          {/* 20-Year EPS Growth Rate */}
+          <div className="fcfe-row">
+            <span className="fcfe-label">20-Year EPS Growth Rate</span>
+            <span className="fcfe-value">
+              <div className="price-qty-inner">
+                <div className="number-inner">
+                  <p>
+                    {/* Replace with your calculated value for the 20-year EPS growth rate */}
+                    {"Loading or Calculated 20-Year Growth Rate"}
+                  </p>
+                </div>
+              </div>
+            </span>
+          </div>
+        </div>
    
     </>
   );
