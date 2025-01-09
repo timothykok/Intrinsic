@@ -2,6 +2,8 @@ import Image from "next/image";
 import Search from "./search/page";
 import Ticker from "./ui/Ticker.js";
 import Financials from "./ui/Financials.js";
+import Calculation from "./ui/Calculation";
+import ShareValue from "./ui/ShareValue";
 
 export default function Home() {
   return (
@@ -19,6 +21,10 @@ export default function Home() {
 
   
      <Financials/>
+     <Calculation/>
+     <ShareValue/>
+     
+     
 
    
       

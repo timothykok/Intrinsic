@@ -166,10 +166,14 @@ export default function Financials() {
 
   return (
     <>
-      <div className="fcfe-container">
-        <div className="fcfe-row">
-          <span className="fcfe-label">Free Cash Flow to Equity</span>
-          <span className="fcfe-value">
+    <div className ="financials">
+
+      <p> Financials </p>
+
+    <div className="inner-container">
+        <div className="row">
+          <span className="label">Free Cash Flow to Equity</span>
+          <span className="value">
             <div className="price-qty">
               <span className="currency">{currency}</span>
               <span className="number-inner">
@@ -182,10 +186,10 @@ export default function Financials() {
           </span>
         </div>
 
-        <div className="fcfe-values">
-          <div className="fcfe-row">
-            <span className="fcfe-label">Net Income</span>
-            <span className="fcfe-value">
+        <div className="sub-values">
+          <div className="row">
+            <span className="label">Net Income</span>
+            <span className="value">
               <div className="price-qty-inner">
                 <div className="currency-inner">
                   <p>{currency}</p>
@@ -201,9 +205,9 @@ export default function Financials() {
             </span>
           </div>
 
-          <div className="fcfe-row">
-            <span className="fcfe-label">Depreciation & Amortization</span>
-            <span className="fcfe-value">
+          <div className="row">
+            <span className="label">Depreciation & Amortization</span>
+            <span className="value">
               <div className="price-qty-inner">
                 <div className="currency-inner">
                   <p>{currency}</p>
@@ -219,9 +223,9 @@ export default function Financials() {
             </span>
           </div>
 
-          <div className="fcfe-row">
-            <span className="fcfe-label">Capital Expenditure</span>
-            <span className="fcfe-value">
+          <div className="row">
+            <span className="label">Capital Expenditure</span>
+            <span className="value">
               <div className="price-qty-inner">
                 <div className="currency-inner">
                   <p>{currency}</p>
@@ -237,9 +241,9 @@ export default function Financials() {
             </span>
           </div>
 
-          <div className="fcfe-row">
-            <span className="fcfe-label">Change In Working Capital</span>
-            <span className="fcfe-value">
+          <div className="row">
+            <span className="label">Change In Working Capital</span>
+            <span className="value">
               <div className="price-qty-inner">
                 <div className="currency-inner">
                   <p>{currency}</p>
@@ -255,9 +259,9 @@ export default function Financials() {
             </span>
           </div>
 
-          <div className="fcfe-row">
-            <span className="fcfe-label">Net Borrowing</span>
-            <span className="fcfe-value">
+          <div className="row">
+            <span className="label">Net Borrowing</span>
+            <span className="value">
               <div className="price-qty-inner">
                 <div className="currency-inner">
                   <p>{currency}</p>
@@ -273,16 +277,16 @@ export default function Financials() {
             </span>
           </div>
         </div>
-      </div>
 
-  
 
-        <div className="fcfe-container">
           {/* 5-Year EPS Growth Rate */}
-          <div className="fcfe-row">
-            <span className="fcfe-label">5-Year EPS Growth Rate</span>
-            <span className="fcfe-value">
+          <div className="row">
+            <span className="label">Cash Flow Growth Rate (Year 1-5)</span>
+            <span className="value">
               <div className="price-qty-inner">
+              <div className="percentage-inner">
+              <p> PCT </p>
+                </div>
                 <div className="number-inner">
                   <p>
                     {fiveYearGrowthRate !== "Invalid data" &&
@@ -296,14 +300,17 @@ export default function Financials() {
           </div>
 
           {/* 10-Year EPS Growth Rate */}
-          <div className="fcfe-row">
-            <span className="fcfe-label">10-Year EPS Growth Rate</span>
-            <span className="fcfe-value">
+          <div className="row">
+            <span className="label">Cash Flow Growth Rate (Year 6-10)</span>
+            <span className="value">
               <div className="price-qty-inner">
+              <div className="percentage-inner">
+              <p> PCT </p>
+                </div>
                 <div className="number-inner">
                   <p>
                     {/* Replace with your calculated value for the 10-year EPS growth rate */}
-                    {"Loading or Calculated 10-Year Growth Rate"}
+                    {"Loading"}
                   </p>
                 </div>
               </div>
@@ -311,20 +318,49 @@ export default function Financials() {
           </div>
 
           {/* 20-Year EPS Growth Rate */}
-          <div className="fcfe-row">
-            <span className="fcfe-label">20-Year EPS Growth Rate</span>
-            <span className="fcfe-value">
+          <div className="row">
+            <span className="label">Cash Flow Growth Rate (Year 15-20)</span>
+            <span className="value">
               <div className="price-qty-inner">
+              <div className="percentage-inner">
+              <p> PCT </p>
+                </div>
                 <div className="number-inner">
                   <p>
                     {/* Replace with your calculated value for the 20-year EPS growth rate */}
-                    {"Loading or Calculated 20-Year Growth Rate"}
+                    {"Loading"}
                   </p>
                 </div>
               </div>
             </span>
           </div>
-        </div>
+
+          <div className="row">
+            <span className="label">Cost of Equity </span>
+            <span className="value">
+              <div className="price-qty-inner">
+              <div className="percentage-inner">
+                  <p> PCT </p>
+                </div>
+                <div className="number-inner">
+                  <p>
+                    {"Loading"}
+                  </p>
+                </div>
+              </div>
+            </span>
+          </div>
+      </div>
+
+  
+
+  
+
+    </div>
+     
+
+       
+  
    
     </>
   );
