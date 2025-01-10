@@ -329,18 +329,18 @@ body {
 .financial-table th {
   /* border: 1px solid #ddd;  */
   /* padding: 40px; */
-  min-width: 160px;
-}
-
-.financial-table td{
-  padding:24px;
-}
-
-.financial-table th {
-  /* background-color: #f4f4f4;  */
+  min-width: 185px;
+  font-size: 14px;
   font-weight:300;
 
 }
+
+.financial-table td{
+  padding:12px;
+  font-size: 14px;
+}
+
+
 
 .financial-table tr:nth-child(even) {
   /* background-color: #f9f9f9;  */
