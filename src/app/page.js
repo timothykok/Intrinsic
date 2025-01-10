@@ -4,6 +4,7 @@ import Ticker from "./ui/Ticker.js";
 import Financials from "./ui/Financials.js";
 import Calculation from "./ui/Calculation";
 import ShareValue from "./ui/ShareValue";
+import Projection from "./ui/Projection";
 
 export default function Home() {
   return (
@@ -23,6 +24,7 @@ export default function Home() {
      <Financials/>
      <Calculation/>
      <ShareValue/>
+     <Projection/>
      
      
 

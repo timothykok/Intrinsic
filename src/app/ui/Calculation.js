@@ -33,6 +33,7 @@ export default function Calculation() {
     <>
       <div className="calculation">
         <p> Calculation </p>
+        <hr className="divider"></hr>
 
         <div className="inner-container">
           <div className="row">

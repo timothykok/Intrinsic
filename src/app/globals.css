@@ -31,7 +31,7 @@
 
   text-decoration: none;
   color: rgb(80, 80, 80);
-  font-weight: thin;
+  font-weight: 300;
   font-size: 16px;
 
 
@@ -66,6 +66,7 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 300; /* Light weight */
   -webkit-font-smoothing: antialiased; /* Smooths the font on macOS */
   -moz-osx-font-smoothing: grayscale; /* Smooths the font on Windows */
  
@@ -83,15 +84,15 @@ body {
   font-size: 162px; 
   font-weight: 1000; 
   color: #000;
-  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); 
+  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5); 
   font-family: "Inter", sans-serif;
 }
 
-.sub-title{
+/* .sub-title{
   font-style: italic;
   color:#000;
   font-weight: 600;
-}
+} */
 
 .search-bar{
   margin-top: 36px;
@@ -155,9 +156,19 @@ body {
 }
 
 .divider{
-  margin-top: 14px;
+  margin-top: 12px;
   border-top: 1px solid #9B9B9B;
-  width: 800;
+  margin-bottom:12px;
+  width: 100%;
+
+}
+
+.fcfe-divider{
+  
+
+  border-top: 1px solid #9B9B9B;
+  margin-bottom:12px;
+  width: 100%;
 
 }
 
@@ -182,9 +193,8 @@ body {
 .inner-container {
   max-width: 800px;
   margin: 0 auto;
-  margin-top:10;
-  padding:20;
-
+  padding-left:20;
+  
  
 }
 
@@ -208,14 +218,14 @@ body {
 
 .label {
   flex: 1;
-  /* margin-bottom: 10px; */
+  margin-bottom: -10px;
   color: #333;
 }
 
 .value {
   flex: 1;
   text-align: right;
-  font-weight: normal;
+  font-weight: 300;
   color: #555;
   
 }
@@ -279,4 +289,68 @@ body {
   margin: 0 auto;
   margin-top:10px;
   padding:10;
+}
+
+.intrinsic-result{
+  display: flex;
+  margin-top:55px;
+  justify-content: space-between;
+  align-items: center;
+  align-content: center;
+}
+
+.valuation-percentage{
+  font-weight: 800;
+  color:#65bd72;
+}
+
+.projection-wrapper{
+  max-width: 800px;
+  margin: 0 auto;
+  margin-top:24px;
+  padding:10;
+}
+
+.financial-table-title{
+  text-align: left;
+}
+
+.financial-table {
+  margin-top: 44px;
+  width: 450px;
+  border-collapse: collapse; /* Remove space between cells */
+  max-width: 800px;
+  margin: 0 auto;
+  margin-top:10px;
+  /* padding:10; */
+  text-align: center;
+}
+
+.financial-table th {
+  /* border: 1px solid #ddd;  */
+  /* padding: 40px; */
+  min-width: 160px;
+}
+
+.financial-table td{
+  padding:24px;
+}
+
+.financial-table th {
+  /* background-color: #f4f4f4;  */
+  font-weight:300;
+
+}
+
+.financial-table tr:nth-child(even) {
+  /* background-color: #f9f9f9;  */
+}
+
+.financial-table tr:hover {
+  background-color: #f1f1f1; /* Highlight row on hover */
+}
+
+.financial-table th:first-child,
+.financial-table td:first-child {
+  text-align: left; /* Left-align the first column */
 }

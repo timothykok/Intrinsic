@@ -169,7 +169,7 @@ export default function Financials() {
     <div className ="financials">
 
       <p> Financials </p>
-
+      <hr className="divider"></hr>
     <div className="inner-container">
         <div className="row">
           <span className="label">Free Cash Flow to Equity</span>
@@ -182,9 +182,14 @@ export default function Financials() {
                   ? FreeCashFlowEquityData.toLocaleString()
                   : "Calculating..."}
               </span>
+
+
             </div>
           </span>
+          
         </div>
+
+        <hr className="fcfe-divider"></hr>
 
         <div className="sub-values">
           <div className="row">

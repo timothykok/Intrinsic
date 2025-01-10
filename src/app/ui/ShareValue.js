@@ -33,6 +33,7 @@ export default function ShareValue() {
     <>
       <div className="share-value">
         <p> Share Value </p>
+        <hr className="divider"></hr>
 
         <div className="inner-container">
           <div className="row">
@@ -79,6 +80,10 @@ export default function ShareValue() {
                 </span>
               </div>
             </span>
+          </div>
+
+          <div className="intrinsic-result">
+           <p>Estimated DCF Value of one  AAPL stock is 122.37 USD. Compared to the current market price of 259.02 USD, the stock is <span className="valuation-percentage">undervalued by 12%. </span></p> 
           </div>
         </div>
 
