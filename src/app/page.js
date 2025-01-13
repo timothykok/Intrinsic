@@ -6,6 +6,7 @@ import Financials from "./ui/Financials.js";
 import Calculation from "./ui/Calculation";
 import ShareValue from "./ui/ShareValue";
 import Projection from "./ui/Projection";
+import TestProxy from "./ui/TestProxy";
 import { useState } from "react";
 
 export default function Home() {
@@ -32,7 +33,9 @@ export default function Home() {
      <Financials Ticker= {ticker}/>
      <Calculation Ticker ={ticker}/>
      <ShareValue Ticker = {ticker}/>
-     {/* <Projection Ticker = {ticker}/> */}
+     <Projection Ticker = {ticker}/>
+
+     {/* <TestProxy /> */}
      
      
 
