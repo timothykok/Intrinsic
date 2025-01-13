@@ -5,7 +5,7 @@ import axios from "axios";
 
 let currency = "USD";
 
-export default function Financials() {
+export default function Financials({ Ticker }){
   const [FreeCashFlowEquityData, setFreeCashFlowEquityData] = useState([]);
   const [netIncomeData, setNetIncomeData] = useState([]);
   const [depreceationAmortizationData, setDepreceationAmortizationData] =
@@ -16,12 +16,18 @@ export default function Financials() {
   );
   const [netBorrowingData, setNetBorrowingData] = useState(null);
   const [fiveYearGrowthRate, setFiveYearGrowthRate] = useState([]);
+  const [tenYearGrowthRate, setTenYearGrowthRate] = useState([]);
+  const [twentyYearGrowthRate, setTwentyYearGrowthRate] = useState([]);
+  const [betaData, setBetaData] = useState(null);
+  const [riskFreeRate, setRiskFreeRate] = useState(null);
+  const [marketRiskPremium, setMarketRiskPremium] = useState([null]);
+  const [costOfEquity, setCostOfEquity] = useState(null);
 
   useEffect(() => {
     const fetchNetIncome = async () => {
       try {
         const response = await axios.get(
-          "https://financialmodelingprep.com/api/v3/income-statement/AAPL?period=annual&apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko"
+          `https://financialmodelingprep.com/api/v3/income-statement/${Ticker}?period=annual&apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko`
         );
         const data = response.data.slice(0, 1); // Get the most recent year
         const netIncomeValues = data.map((item) => ({
@@ -37,7 +43,7 @@ export default function Financials() {
     const fetchCashFlow = async () => {
       try {
         const response = await axios.get(
-          "https://financialmodelingprep.com/api/v3/cash-flow-statement/AAPL?period=annual&apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko"
+          `https://financialmodelingprep.com/api/v3/cash-flow-statement/${Ticker}?period=annual&apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko`
         );
         const data = response.data.slice(0, 1);
 
@@ -67,7 +73,7 @@ export default function Financials() {
     const fetchNetBorrowing = async () => {
       try {
         const response = await axios.get(
-          "https://www.alphavantage.co/query?function=CASH_FLOW&symbol=AAPL&apikey=496Z5WWYIJYB3MFM"
+          `https://www.alphavantage.co/query?function=CASH_FLOW&symbol=${Ticker}&apikey=496Z5WWYIJYB3MFM`
         );
         const data = response.data.annualReports;
 
@@ -85,7 +91,18 @@ export default function Financials() {
 
         setNetBorrowingData(netBorrowingValue);
       } catch (error) {
-        console.error("Error fetching Net Borrowing data:", error);
+        console.error(error);
+
+        // Specific parts of the error object
+        if (error.response) {
+          console.error("Response data:", error.response.data);
+          console.error("Status code:", error.response.status);
+          console.error("Headers:", error.response.headers);
+        } else if (error.request) {
+          console.error("No response received:", error.request);
+        } else {
+          console.error("Error message:", error.message);
+        }
       }
     };
 
@@ -93,7 +110,7 @@ export default function Financials() {
     const fetchFiveYearGrowthRate = async () => {
       try {
         const response = await axios.get(
-          "https://www.alphavantage.co/query?function=EARNINGS&symbol=IBM&apikey=496Z5WWYIJYB3MFM"
+          `https://www.alphavantage.co/query?function=EARNINGS&symbol=${Ticker}&apikey=496Z5WWYIJYB3MFM`
         );
 
         const data = response.data.annualEarnings;
@@ -135,14 +152,154 @@ export default function Financials() {
       }
     };
 
-    fetchNetIncome();
-    fetchCashFlow();
-    fetchNetBorrowing();
-    fetchFiveYearGrowthRate();
-  }, []);
 
+    // Logic for 10 Year Growth Rate
+    if (fiveYearGrowthRate > 15){
+      setTenYearGrowthRate(15);
+    }
+    else {
+      setTenYearGrowthRate(fiveYearGrowthRate);
+    }
+
+    // Logic for 20 Year Growth Rate
+
+    const fetchTwentyYearGrowthRate = async () => {
+      try {
+        const response = await axios.get(
+          "/api/fred/series/observations?series_id=NGDPSAXDCUSQ&api_key=c65a4c196c937ace2b33dda01eb55fb6&file_type=json"
+        );
+    
+        const data = response.data.observations;
+    
+        // Filter observations for July dates
+        const julyObservations = data.filter(obs => obs.date.includes("-07-01"));
+    
+        // Ensure we have at least two July observations
+        if (julyObservations.length < 2) {
+          console.error("Insufficient data for YoY growth calculation.");
+          return;
+        }
+    
+        // Get the latest and previous July values
+        const latestJuly = julyObservations[julyObservations.length - 1];
+        const previousJuly = julyObservations[julyObservations.length - 2];
+    
+        const latestValue = parseFloat(latestJuly.value);
+        const previousValue = parseFloat(previousJuly.value);
+    
+        // Calculate YoY growth rate
+        const growthRate = ((latestValue - previousValue) / previousValue) * 100;
+    
+        console.log(
+          `YoY Growth Rate (${previousJuly.date} to ${latestJuly.date}): ${growthRate.toFixed(
+            2
+          )}%`
+        );
+    
+        // Use the YoY growth rate as a projection
+        const projectedRate = Math.min(Math.max(growthRate, 3), 5); // Clamp to 3-5% range
+        console.log(`Projected Nominal Growth Rate: ${projectedRate}%`);
+
+        setTwentyYearGrowthRate(projectedRate)
+
+
+      } catch (error) {
+        console.error("Error fetching YoY Growth Rate:", error);
+      }
+    };
+
+    const fetchBeta = async () =>
+    {
+      try {
+        const response = await axios.get(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${Ticker}&apikey=496Z5WWYIJYB3MFM`)
+        const beta = response.data.Beta;
+        setBetaData(beta);
+        console.log("beta: " + beta);
+
+      }
+
+      catch (error) {
+          console.log("Error fetching Beta")
+      }
+
+
+    }
+
+    const fetchRiskFreeRate = async () => {
+      try{
+        const response = await axios.get("https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=c65a4c196c937ace2b33dda01eb55fb6&file_type=json");
+
+        const data = response.data.observations;
+
+        // Get the most recent observation (last item in the array)
+        const latestObservation = data[data.length - 1];
+        const riskFreeRate = parseFloat(latestObservation.value) / 100; // Convert to a decimal for calculating Cost of Equity later
+
+        setRiskFreeRate(riskFreeRate)
+        console.log("risk free rate= " + riskFreeRate)
+      }
+
+      catch(error){
+        console.log("Error fetching risk free rate")
+      }
+    }
+
+
+    //In the mean time, use 5-6% historical rate 
+    const fetchMarketRiskPremium = async () => {
+      try{
+        // const response = await axios.get("https://financialmodelingprep.com/api/v4/market_risk_premium?apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko")
+
+        let marketRiskPremium = 0.055;
+        setMarketRiskPremium(marketRiskPremium);
+      }
+      catch(error){
+        console.log("Error fetching Market Risk Premium")
+      }
+    }
+
+
+  
+     
+
+    
+
+    // Fetch data when the component mounts - for the ones that don't depend on ticker, refactor them to just render on mount, this would take less api calls.
+  
+
+    // fetchNetIncome();
+    // fetchCashFlow();
+    // fetchNetBorrowing();
+    fetchFiveYearGrowthRate();
+    fetchTwentyYearGrowthRate();
+    fetchBeta();
+    fetchRiskFreeRate();
+    fetchMarketRiskPremium();
+  }, [Ticker]);
+
+ // Calculate Cost of Equity when all data is available. If all the required data comes from a single API call, you don’t need this separation.
   useEffect(() => {
-    // Calculate Free Cash Flow to Equity when all data is available. If all the required data comes from a single API call, you don’t need this separation.
+   
+    // if (betaData !== null && riskFreeRate !== null && marketRiskPremium !== null) {
+    //   let calculatedCostOfEquity = riskFreeRate + betaData * marketRiskPremium;
+    //   setCostOfEquity(calculatedCostOfEquity);
+
+
+    // } 
+   
+   
+  }, [
+    betaData,
+    riskFreeRate,
+    marketRiskPremium,
+  ]);
+
+
+
+
+ // Calculate Free Cash Flow to Equity when all data is available. If all the required data comes from a single API call, you don’t need this separation.
+  useEffect(() => {
+   
     if (
       netIncomeData.length > 0 &&
       depreceationAmortizationData.length > 0 &&
@@ -156,6 +313,7 @@ export default function Financials() {
         netBorrowingData;
 
       setFreeCashFlowEquityData(FreeCashFlowEquityValue);
+     
     }
   }, [
     netIncomeData,
@@ -164,8 +322,21 @@ export default function Financials() {
     netBorrowingData,
   ]);
 
+
+
+
+
   return (
     <>
+
+<div>
+  <p> This is ticker: {Ticker} </p>
+  <p> This is beta: {betaData}</p>
+  <p> This is risk free rate: {riskFreeRate}</p>
+  <p> This is market risk premium{marketRiskPremium}</p>
+  <p> This is Cost of Equity {costOfEquity}</p>
+</div>
+
     <div className ="financials">
 
       <p> Financials </p>
@@ -314,8 +485,7 @@ export default function Financials() {
                 </div>
                 <div className="number-inner">
                   <p>
-                    {/* Replace with your calculated value for the 10-year EPS growth rate */}
-                    {"Loading"}
+                   {tenYearGrowthRate}
                   </p>
                 </div>
               </div>
@@ -332,8 +502,7 @@ export default function Financials() {
                 </div>
                 <div className="number-inner">
                   <p>
-                    {/* Replace with your calculated value for the 20-year EPS growth rate */}
-                    {"Loading"}
+                   {twentyYearGrowthRate}
                   </p>
                 </div>
               </div>

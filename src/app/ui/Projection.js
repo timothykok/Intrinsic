@@ -5,7 +5,7 @@ import axios from "axios";
 
 let currency = "USD";
 
-export default function Projection() {
+export default function Projection({ Ticker }) {
   const data = {
     Metric: ["Revenue", "Profit", "Expenses"],
     2024: [100000, 20000, 80000],
@@ -38,8 +38,17 @@ export default function Projection() {
           </tr>
           <tr>
             <th>Free Cash Flow (Projected)</th>
-            <td>Alice</td>
             <td>25</td>
+            <td>25</td>
+            <td>25</td>
+            <td>25</td>
+            <td>25</td>
+            <td>25</td>
+            <td>25</td>
+            <td>25</td>
+            <td>25</td>
+            <td>25</td>
+
           </tr>
           <tr>
             <th>Discount Factor</th>
