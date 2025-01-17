@@ -43,7 +43,7 @@ export default function Home() {
             currency: stockData.currency,
             change: stockData.changes,
             percentage: (stockData.changes / stockData.price) * 100,
-            timestamp: "Latest data available",
+            timestamp: "At close at 11:59 UTC +11",
             logoSrc: stockData.image,
           });
         } else {

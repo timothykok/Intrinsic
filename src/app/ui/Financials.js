@@ -204,7 +204,7 @@ export default function Financials({ Ticker }) {
 
     // Logic for 20 Year Growth Rate
 
-    setTwentyYearGrowthRate(0.055);
+    setTwentyYearGrowthRate(5.5 + "%");
 
     const fetchTwentyYearGrowthRate = async () => {
       try {
@@ -273,23 +273,37 @@ export default function Financials({ Ticker }) {
       }
     };
 
-    // gotta get from FRED or Yahoo
     const fetchRiskFreeRate = async () => {
       try {
+        // Fetch the Treasury yield data
         const response = await axios.get(
-          `https://financialmodelingprep.com/api/v4/market_risk_premium?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v4/treasury?apikey=${fmpApiKey}`
         );
-
-        const data = response.data.observations;
-
-        // Get the most recent observation (last item in the array)
-        const latestObservation = data[data.length - 1];
-        const riskFreeRate = parseFloat(latestObservation.value) / 100; // Convert to a decimal for calculating Cost of Equity later
-
-        setRiskFreeRate(riskFreeRate);
-        console.log("risk free rate= " + riskFreeRate);
+    
+        const data = response.data;
+    
+        // Ensure the data is valid and not empty
+        if (data && data.length > 0) {
+          // Sort the data by date to ensure the latest data comes first
+          const sortedData = data.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+          // Access the most recent record
+          const mostRecentRecord = sortedData[0];
+    
+          if (mostRecentRecord && mostRecentRecord.year10) {
+            // Extract the 10-year Treasury yield
+            const tenYearYield = parseFloat(mostRecentRecord.year10) / 100; // Convert percentage to decimal
+    
+            console.log(`10-Year Treasury Yield (Risk-Free Rate): ${tenYearYield}`);
+            setRiskFreeRate(tenYearYield)
+          } else {
+            console.error("10-Year Treasury yield not found in the most recent data.");
+          }
+        } else {
+          console.error("No data found in the API response.");
+        }
       } catch (error) {
-        console.log("Error fetching risk free rate");
+        console.error("Error fetching Treasury yield data:", error.message);
       }
     };
 
@@ -327,8 +341,8 @@ export default function Financials({ Ticker }) {
     // fetchTwentyYearGrowthRate();
 
     fetchBeta();
-    // fetchRiskFreeRate();
-    // fetchMarketRiskPremium();
+    fetchRiskFreeRate();
+    fetchMarketRiskPremium();
   }, [Ticker]);
 
   // Calculate Cost of Equity when all data is available. If all the required data comes from a single API call, you don’t need this separation.
@@ -520,7 +534,7 @@ export default function Financials({ Ticker }) {
                   <p>
                     {fiveYearGrowthRate !== "Invalid data" &&
                     fiveYearGrowthRate !== "Insufficient data"
-                      ? `${fiveYearGrowthRate}%`
+                      ? `${fiveYearGrowthRate} %`
                       : fiveYearGrowthRate}
                   </p>
                 </div>
@@ -539,7 +553,7 @@ export default function Financials({ Ticker }) {
                   <span className="financial-percentage-inner">PCT</span>
                 </div>
                 <div className="number-inner">
-                  <p>{tenYearGrowthRate}</p>
+                  <p>{tenYearGrowthRate} %</p>
                 </div>
               </div>
             </span>
@@ -556,7 +570,7 @@ export default function Financials({ Ticker }) {
                   <span className="financial-percentage-inner">PCT</span>
                 </div>
                 <div className="number-inner">
-                  <p>{twentyYearGrowthRate}</p>
+                  <p>{twentyYearGrowthRate} %</p>
                 </div>
               </div>
             </span>
@@ -582,7 +596,7 @@ export default function Financials({ Ticker }) {
                 <span className="coe-percentage">PCT</span>
                 <span className="number-inner">
                   {costOfEquity !== null
-                    ? `${(costOfEquity * 100).toFixed(2)}%`
+                    ? `${costOfEquity.toFixed(2)}`
                     : "Calculating..."}
                 </span>
               </div>
@@ -624,7 +638,7 @@ export default function Financials({ Ticker }) {
                     <div className="number-inner">
                       <p>
                         {riskFreeRate !== null && !isNaN(riskFreeRate)
-                          ? `${(riskFreeRate * 100).toFixed(2)}%`
+                          ? `${(riskFreeRate * 100).toFixed(2)} %`
                           : "Loading..."}
                       </p>
                     </div>
@@ -643,7 +657,7 @@ export default function Financials({ Ticker }) {
                     <div className="number-inner">
                       <p>
                         {marketRiskPremium !== null && !isNaN(marketRiskPremium)
-                          ? `${(marketRiskPremium * 100).toFixed(2)}%`
+                          ? `${marketRiskPremium} %`
                           : "Loading..."}
                       </p>
                     </div>

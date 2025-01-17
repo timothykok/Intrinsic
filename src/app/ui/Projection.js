@@ -50,16 +50,35 @@ export default function Projection({ Ticker }) {
               <td>25</td>
               <td>25</td>
               <td>25</td>
+              <td>25</td>
             </tr>
             <tr>
               <th>Discount Factor</th>
-              <td>Bob</td>
-              <td>30</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
             </tr>
             <tr>
               <th>Discount Value</th>
-              <td>Bob</td>
-              <td>30</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
             </tr>
           </tbody>
         </table>
