@@ -48,8 +48,8 @@ export default function Ticker() {
       <div className="ticker-content flex animate-scroll space-x-8">
         {stocks.map((stock, index) => (
           <div key={index} className="ticker-item flex items-center space-x-2">
-            <span className="stock-symbol">{stock.symbol}</span>
-            <span className="stock-price">${stock.price.toFixed(2)}</span>
+            <span className="ticker-stock-symbol">{stock.symbol}</span>
+            <span className="ticker-stock-price ">${stock.price.toFixed(2)}</span>
             <span
               className={
                 stock.change.includes("+") ? "text-green-500" : "text-red-500"
