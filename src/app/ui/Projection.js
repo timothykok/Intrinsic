@@ -17,49 +17,51 @@ export default function Projection({ Ticker }) {
     <>
       <div className="projection-wrapper">
         <div className="financial-table-title">
-          {" "}
-          <p className="financial-table-title"> Year On Year </p>
-          <hr className="divider"></hr>{" "}
+          <p className="financial-table-title">Year On Year</p>
+          <hr className="divider" />
         </div>
         <table className="financial-table">
-          <tr>
-            <th>Year</th>
-            <td>2025</td>
-            <td>2026</td>
-            <td>2027</td>
-            <td>2028</td>
-            <td>2029</td>
-            <td>2030</td>
-            <td>2031</td>
-            <td>2032</td>
-            <td>2033</td>
-            <td>2034</td>
-            <td>2035</td>
-          </tr>
-          <tr>
-            <th>Free Cash Flow (Projected)</th>
-            <td>25</td>
-            <td>25</td>
-            <td>25</td>
-            <td>25</td>
-            <td>25</td>
-            <td>25</td>
-            <td>25</td>
-            <td>25</td>
-            <td>25</td>
-            <td>25</td>
-
-          </tr>
-          <tr>
-            <th>Discount Factor</th>
-            <td>Bob</td>
-            <td>30</td>
-          </tr>
-          <tr>
-            <th>Discount Value</th>
-            <td>Bob</td>
-            <td>30</td>
-          </tr>
+          <thead>
+            <tr>
+              <th>Year</th>
+              <td>2025</td>
+              <td>2026</td>
+              <td>2027</td>
+              <td>2028</td>
+              <td>2029</td>
+              <td>2030</td>
+              <td>2031</td>
+              <td>2032</td>
+              <td>2033</td>
+              <td>2034</td>
+              <td>2035</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Free Cash Flow (Projected)</th>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+              <td>25</td>
+            </tr>
+            <tr>
+              <th>Discount Factor</th>
+              <td>Bob</td>
+              <td>30</td>
+            </tr>
+            <tr>
+              <th>Discount Value</th>
+              <td>Bob</td>
+              <td>30</td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </>

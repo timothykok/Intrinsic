@@ -9,6 +9,9 @@ export default function ShareValue({ Ticker }) {
   const [FreeCashFlowEquityData, setFreeCashFlowEquityData] = useState([]);
   const [netIncomeData, setNetIncomeData] = useState([]);
 
+
+  
+
   useEffect(() => {
     const fetchNetIncome = async () => {
       try {

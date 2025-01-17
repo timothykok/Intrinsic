@@ -266,7 +266,7 @@ body {
 .row {
   display: flex;
   justify-content: space-between;
-  /* align-items: center; */
+  align-items: center;
   margin-bottom: 24px;
   align-content: center;
 }
@@ -420,6 +420,7 @@ body {
   margin: 0 auto;
   margin-top:24px;
   padding:10;
+  margin-bottom:64px;
 }
 
 .financial-table-title{
@@ -502,6 +503,7 @@ body {
   flex: 1;
   margin-right: 15px;
   margin-top:4px;
+  width:200px
 
 }
 
