@@ -1,3 +1,5 @@
+//Calculation.js
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -5,29 +7,58 @@ import axios from "axios";
 
 let currency = "USD";
 
-export default function Calculation({ Ticker }) {
+export default function Calculation({
+  Ticker,
+  initialFCFE,
+  growthRate,
+  discountRate,
+}) {
   const [FreeCashFlowEquityData, setFreeCashFlowEquityData] = useState([]);
-  const [netIncomeData, setNetIncomeData] = useState([]);
+  const [outstandingShares, setOutstandingShares] = useState([]);
+  const [presentValue, setPresentValue] = useState(null);
+  const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
 
   useEffect(() => {
-    const fetchNetIncome = async () => {
+    const fetchOutstandingShares = async () => {
       try {
         const response = await axios.get(
-          `https://financialmodelingprep.com/api/v3/income-statement/${Ticker}?period=annual&apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko`
+          `https://financialmodelingprep.com/api/v4/shares_float?symbol=${Ticker}&apikey=${fmpApiKey}`
         );
-        const data = response.data.slice(0, 1); // Get the most recent year
-        const netIncomeValues = data.map((item) => ({
-          year: item.calendarYear,
-          netIncome: item.netIncome,
-        }));
-        setNetIncomeData(netIncomeValues);
+
+        if (response.data && response.data.length > 0) {
+          const data = response.data[0].outstandingShares; // Access outstandingShares
+          console.log("Outstanding Shares:", data);
+          setOutstandingShares(data); // Update state
+        } else {
+          console.error("No data found for outstanding shares.");
+        }
       } catch (error) {
-        console.error("Error fetching Net Income data:", error);
+        console.error("Error fetching Outstanding Shares:", error);
       }
     };
 
-    fetchNetIncome();
-  }, []);
+    fetchOutstandingShares();
+  }, [Ticker]);
+
+  useEffect(() => {
+    if (initialFCFE !== null && growthRate !== null && discountRate !== null) {
+      let pv = 0;
+      for (let t = 1; t <= 20; t++) {
+        const projectedFCFE = initialFCFE * Math.pow(1 + growthRate, t);
+        const discountedFCFE = projectedFCFE / Math.pow(1 + discountRate, t);
+        pv += discountedFCFE;
+      }
+      setPresentValue(pv);
+
+      console.log("initial fcfe: " + initialFCFE);
+      console.log("growthRate: " + growthRate);
+      console.log("discountRate" + discountRate);
+
+      
+
+      console.log("present value: " + pv)
+    }
+  }, [initialFCFE, growthRate, discountRate, Ticker]);
 
   return (
     <>
@@ -37,20 +68,21 @@ export default function Calculation({ Ticker }) {
 
         <div className="inner-container">
           <div className="row">
-            <span className="label">Present Value of 20 Year Free Cash Flow To Equity</span>
+            <span className="label">
+              Present Value of 20 Year Free Cash Flow To Equity
+            </span>
             <span className="value">
               <div className="price-qty">
                 <span className="currency">{currency}</span>
                 <span className="number-inner">
                   ${" "}
-                  {FreeCashFlowEquityData !== null
-                    ? FreeCashFlowEquityData.toLocaleString()
+                  {presentValue !== null
+                    ? presentValue.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>
             </span>
           </div>
-
 
           <div className="row">
             <span className="label">Outstanding Shares</span>
@@ -58,19 +90,15 @@ export default function Calculation({ Ticker }) {
               <div className="price-qty">
                 <span className="currency">QTY</span>
                 <span className="number-inner">
-                  ${" "}
-                  {FreeCashFlowEquityData !== null
-                    ? FreeCashFlowEquityData.toLocaleString()
+                  {outstandingShares !== null
+                    ? outstandingShares.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>
             </span>
           </div>
         </div>
-        </div>
-
-      
-      
+      </div>
     </>
   );
 }

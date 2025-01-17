@@ -1,3 +1,5 @@
+//home - page.js
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,6 +14,9 @@ export default function Home() {
   const [input, setInput] = useState(""); // Raw input from the user
   const [ticker, setTicker] = useState(""); // Debounced ticker value
   const [stockInfo, setStockInfo] = useState(null);
+  const [initialFCFE, setInitialFCFE] = useState(null);
+  const [growthRate, setGrowthRate] = useState(null);
+  const [discountRate, setDiscountRate] = useState(null);
 
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
 
@@ -34,6 +39,8 @@ export default function Home() {
           `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
         );
         const data = await response.json();
+
+        const logo_response = await fetch(`https://api.api-ninjas.com/v1/logo`);
 
         if (data && data.length > 0) {
           const stockData = data[0];
@@ -83,8 +90,18 @@ export default function Home() {
             percentage={stockInfo.percentage}
             timestamp={stockInfo.timestamp}
           />
-          <Financials Ticker={ticker} />
-          <Calculation Ticker={ticker} />
+          <Financials
+            Ticker={ticker}
+            setInitialFCFE={setInitialFCFE}
+            setGrowthRate={setGrowthRate}
+            setDiscountRate={setDiscountRate}
+          />
+          <Calculation
+            Ticker={ticker}
+            DiscountRate={discountRate}
+            InitialFCFE={initialFCFE}
+            GrowthRate={growthRate}
+          />
           <ShareValue Ticker={ticker} />
           <Projection Ticker={ticker} />
         </>

@@ -283,9 +283,17 @@ body {
 .coe-price-qty-inner{
 
   display: flex;
- 
+  
   justify-content: right; 
-  margin-left:6px;
+  
+}
+
+.coe-value{
+  flex:1;
+
+  text-align: right;
+  font-weight: 300;
+  color: #555;
 }
 
 .fcfe-price-qty-inner{
@@ -393,6 +401,10 @@ body {
   margin-top:10;
   padding:10;
 
+}
+
+.coe-sub-values{
+  margin-left: 35px;;
 }
 
 .share-value{

@@ -1,3 +1,5 @@
+//Financials.js
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -5,7 +7,12 @@ import axios from "axios";
 
 let currency = "USD";
 
-export default function Financials({ Ticker }) {
+export default function Financials({
+  Ticker,
+  setInitialFCFE,
+  setGrowthRate,
+  setDiscountRate,
+}) {
   const [FreeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
   const [netIncomeData, setNetIncomeData] = useState(null);
   const [depreceationAmortizationData, setDepreceationAmortizationData] =
@@ -15,8 +22,8 @@ export default function Financials({ Ticker }) {
     []
   );
   const [netBorrowingData, setNetBorrowingData] = useState([]);
-  const [fiveYearGrowthRate, setFiveYearGrowthRate] = useState([]);
-  const [tenYearGrowthRate, setTenYearGrowthRate] = useState([]);
+  const [fiveYearGrowthRate, setFiveYearGrowthRate] = useState(null);
+  const [tenYearGrowthRate, setTenYearGrowthRate] = useState(null);
   const [twentyYearGrowthRate, setTwentyYearGrowthRate] = useState([]);
   const [betaData, setBetaData] = useState(null);
   const [riskFreeRate, setRiskFreeRate] = useState(null);
@@ -61,32 +68,29 @@ export default function Financials({ Ticker }) {
         const response = await axios.get(
           `https://financialmodelingprep.com/api/v3/cash-flow-statement/${Ticker}?period=annual&apikey=${fmpApiKey}`
         );
-
+    
         const data = response.data;
-
+    
         if (Array.isArray(data) && data.length > 0) {
-          // Access the first record (most recent year)
-          const mostRecentYear = data[0];
-
-          // Extract values with default fallbacks
-          const depreceationAmortization =
-            mostRecentYear?.depreciationAndAmortization || 0;
+          const mostRecentYear = data[0]; // Access the most recent year's data
+    
+          // Extract values
+          const depreceationAmortization = mostRecentYear?.depreciationAndAmortization || 0;
           const capitalExpenditure = mostRecentYear?.capitalExpenditure || 0;
-          const changeInWorkingCapital =
-            mostRecentYear?.changeInWorkingCapital || 0;
-
-          // Update state
+          const changeInWorkingCapital = mostRecentYear?.changeInWorkingCapital || 0;
+          const freeCashFlow = mostRecentYear?.freeCashFlow || 0;
+    
+          // Set values to state or props
           setDepreceationAmortizationData(depreceationAmortization);
           setCapitalExpenditureData(capitalExpenditure);
           setChangeInWorkingCapitalData(changeInWorkingCapital);
-
-          // Log values for debugging
-          console.log(
-            "Depreciation and Amortization:",
-            depreceationAmortization
-          );
-          console.log("Capital Expenditure:", capitalExpenditure);
-          console.log("Change in Working Capital:", changeInWorkingCapital);
+    
+          console.log("Free Cash Flow:", freeCashFlow);
+          setInitialFCFE(freeCashFlow); // Set initial Free Cash Flow to Equity
+    
+          // Set default growth rate and discount rate
+          setGrowthRate(0.05); // Example: 5% growth rate
+          setDiscountRate(0.1); // Example: 10% discount rate
         } else {
           console.error("Invalid data format or empty response");
         }
@@ -195,16 +199,10 @@ export default function Financials({ Ticker }) {
         console.error("Error fetching EPS data:", error);
       }
     };
-    // Logic for 10 Year Growth Rate
-    if (fiveYearGrowthRate > 15) {
-      setTenYearGrowthRate(15);
-    } else {
-      setTenYearGrowthRate(fiveYearGrowthRate);
-    }
 
     // Logic for 20 Year Growth Rate
 
-    setTwentyYearGrowthRate(5.5 + "%");
+    setTwentyYearGrowthRate(5.5);
 
     const fetchTwentyYearGrowthRate = async () => {
       try {
@@ -239,12 +237,12 @@ export default function Financials({ Ticker }) {
         console.log(
           `YoY Growth Rate (${previousJuly.date} to ${
             latestJuly.date
-          }): ${growthRate.toFixed(2)}%`
+          }): ${growthRate.toFixed(2)} %`
         );
 
         // Use the YoY growth rate as a projection
         const projectedRate = Math.min(Math.max(growthRate, 3), 5); // Clamp to 3-5% range
-        console.log(`Projected Nominal Growth Rate: ${projectedRate}%`);
+        console.log(`Projected Nominal Growth Rate: ${projectedRate} %`);
 
         setTwentyYearGrowthRate(projectedRate);
       } catch (error) {
@@ -279,25 +277,31 @@ export default function Financials({ Ticker }) {
         const response = await axios.get(
           `https://financialmodelingprep.com/api/v4/treasury?apikey=${fmpApiKey}`
         );
-    
+
         const data = response.data;
-    
+
         // Ensure the data is valid and not empty
         if (data && data.length > 0) {
           // Sort the data by date to ensure the latest data comes first
-          const sortedData = data.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
+          const sortedData = data.sort(
+            (a, b) => new Date(b.date) - new Date(a.date)
+          );
+
           // Access the most recent record
           const mostRecentRecord = sortedData[0];
-    
+
           if (mostRecentRecord && mostRecentRecord.year10) {
             // Extract the 10-year Treasury yield
             const tenYearYield = parseFloat(mostRecentRecord.year10) / 100; // Convert percentage to decimal
-    
-            console.log(`10-Year Treasury Yield (Risk-Free Rate): ${tenYearYield}`);
-            setRiskFreeRate(tenYearYield)
+
+            console.log(
+              `10-Year Treasury Yield (Risk-Free Rate): ${tenYearYield}`
+            );
+            setRiskFreeRate(tenYearYield);
           } else {
-            console.error("10-Year Treasury yield not found in the most recent data.");
+            console.error(
+              "10-Year Treasury yield not found in the most recent data."
+            );
           }
         } else {
           console.error("No data found in the API response.");
@@ -344,6 +348,13 @@ export default function Financials({ Ticker }) {
     fetchRiskFreeRate();
     fetchMarketRiskPremium();
   }, [Ticker]);
+
+  // Logic for 10 Year Growth Rate
+  useEffect(() => {
+    if (fiveYearGrowthRate !== null) {
+      setTenYearGrowthRate(fiveYearGrowthRate > 15 ? 15 : fiveYearGrowthRate);
+    }
+  }, [fiveYearGrowthRate]);
 
   // Calculate Cost of Equity when all data is available. If all the required data comes from a single API call, you don’t need this separation.
   useEffect(() => {
@@ -596,7 +607,7 @@ export default function Financials({ Ticker }) {
                 <span className="coe-percentage">PCT</span>
                 <span className="number-inner">
                   {costOfEquity !== null
-                    ? `${costOfEquity.toFixed(2)}`
+                    ? `${costOfEquity.toFixed(2)} %`
                     : "Calculating..."}
                 </span>
               </div>
@@ -605,14 +616,14 @@ export default function Financials({ Ticker }) {
 
           {/* <hr className="coe-divider" /> */}
           {!isCostOfEquityCollapsed && (
-            <div className="sub-values">
+            <div className="coe-sub-values">
               {/* Beta */}
               <div className="row">
                 <span className="coe-label">Beta</span>
-                <span className="value">
+                <span className="coe-value">
                   <div className="coe-price-qty-inner">
                     <div className="currency-inner">
-                      <span className="fcfe-title-currency-inner">PCT</span>
+                      <span className="fcfe-title-currency-inner">VAL</span>
                     </div>
                     <div className="number-inner">
                       <p>
@@ -628,12 +639,10 @@ export default function Financials({ Ticker }) {
               {/* Risk-Free Rate */}
               <div className="row">
                 <span className="coe-label">Risk Free Rate</span>
-                <span className="value">
+                <span className="coe-value">
                   <div className="coe-price-qty-inner">
                     <div className="currency-inner">
-                      <span className="fcfe-title-currency-inner">
-                        {currency}
-                      </span>
+                      <span className="fcfe-title-currency-inner">PCT</span>
                     </div>
                     <div className="number-inner">
                       <p>
@@ -649,7 +658,7 @@ export default function Financials({ Ticker }) {
               {/* Market Risk Premium */}
               <div className="row">
                 <span className="coe-label">Market Risk Premium</span>
-                <span className="value">
+                <span className="coe-value">
                   <div className="coe-price-qty-inner">
                     <div className="currency-inner">
                       <span className="fcfe-title-currency-inner">PCT</span>
