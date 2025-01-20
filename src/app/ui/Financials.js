@@ -142,114 +142,133 @@ export default function Financials({
       }
     };
 
+
     const fetchFiveYearGrowthRate = async () => {
       try {
+        // Fetch financial ratios from FMP API
         const response = await axios.get(
-          `https://financialmodelingprep.com/api/v3/historical/earning_calendar/${Ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v3/ratios/${Ticker}?apikey=${fmpApiKey}`
         );
-
+    
         const data = response.data;
-
-        // Filter out null EPS and sort by fiscalDateEnding
-        const filteredData = data
-          .filter((item) => item.eps !== null)
-          .sort(
-            (a, b) =>
-              new Date(b.fiscalDateEnding) - new Date(a.fiscalDateEnding)
-          );
-
-        if (filteredData.length >= 5) {
-          // Start with the most recent available EPS
-          const mostRecentEPS = parseFloat(filteredData[0].eps);
-
-          // Find the earliest EPS that is still within the last 5 years
-          let fiveYearsAgoEPS = null;
-          for (let i = 1; i < filteredData.length; i++) {
-            if (filteredData[i]) {
-              fiveYearsAgoEPS = parseFloat(filteredData[i].eps);
-              if (!isNaN(fiveYearsAgoEPS)) {
-                break; // Found the earliest valid EPS
-              }
-            }
-          }
-
-          console.log("Filtered Data:", filteredData);
-          console.log("Most Recent EPS:", mostRecentEPS);
-          console.log("Five Years Ago EPS:", fiveYearsAgoEPS);
-
-          if (!isNaN(mostRecentEPS) && !isNaN(fiveYearsAgoEPS)) {
-            // Calculate CAGR
-            const cagr = Math.pow(mostRecentEPS / fiveYearsAgoEPS, 1 / 5) - 1;
-
-            // Project EPS for the next 5 years using the calculated CAGR
-            const projectedEPS = [];
-            for (let year = 1; year <= 5; year++) {
-              projectedEPS.push(mostRecentEPS * Math.pow(1 + cagr, year));
-            }
-
-            setFiveYearGrowthRate((cagr * 100).toFixed(2));
-            console.log("Projected EPS for next 5 years:", projectedEPS);
-          } else {
-            console.error("Invalid EPS data for calculation.");
-          }
-        } else {
-          console.error("Not enough valid EPS data for 5-year calculation.");
+    
+        if (!data || data.length < 5) {
+          console.error(`Insufficient data. Found only ${data.length} records.`);
+          setFiveYearGrowthRate("Insufficient data");
+          return;
         }
+    
+        // Extract the most recent and 5-year-old ROE and Dividend Payout Ratio
+        const mostRecentData = data[0];
+        const fiveYearsAgoData = data[4];
+    
+        const mostRecentROE = parseFloat(mostRecentData.returnOnEquity);
+        const fiveYearsAgoROE = parseFloat(fiveYearsAgoData.returnOnEquity);
+    
+        const mostRecentPayoutRatio = parseFloat(mostRecentData.payoutRatio);
+        const fiveYearsAgoPayoutRatio = parseFloat(fiveYearsAgoData.payoutRatio);
+    
+        if (
+          isNaN(mostRecentROE) ||
+          isNaN(fiveYearsAgoROE) ||
+          isNaN(mostRecentPayoutRatio) ||
+          isNaN(fiveYearsAgoPayoutRatio)
+        ) {
+          console.error("Invalid data for calculation.");
+          setFiveYearGrowthRate("Invalid data");
+          return;
+        }
+    
+        // Calculate Retention Ratios
+        const mostRecentRetentionRatio = 1 - mostRecentPayoutRatio;
+        const fiveYearsAgoRetentionRatio = 1 - fiveYearsAgoPayoutRatio;
+    
+        // Calculate Sustainable Growth Rates
+        const mostRecentSGR = mostRecentROE * mostRecentRetentionRatio;
+        const fiveYearsAgoSGR = fiveYearsAgoROE * fiveYearsAgoRetentionRatio;
+    
+        // Calculate Compound Annual Growth Rate (CAGR)
+        const cagr = Math.pow(mostRecentSGR / fiveYearsAgoSGR, 1 / 5) - 1;
+    
+        console.log(`Most Recent SGR: ${(mostRecentSGR * 100).toFixed(2)}%`);
+        console.log(`SGR 5 Years Ago: ${(fiveYearsAgoSGR * 100).toFixed(2)}%`);
+        console.log(`5-Year SGR Growth Rate (CAGR): ${(cagr * 100).toFixed(2)}%`);
+    
+        // Format CAGR to 2 decimal places
+        const formattedCAGR = (cagr * 100).toFixed(2);
+    
+        setFiveYearGrowthRate(formattedCAGR);
       } catch (error) {
-        console.error("Error fetching EPS data:", error);
+        console.error("Error fetching data:", error);
+        setFiveYearGrowthRate("Error");
       }
     };
 
-    // Logic for 20 Year Growth Rate
 
-    setTwentyYearGrowthRate(5.5);
+    
+    
+    // Logic for 20 Year Growth Rate
 
     const fetchTwentyYearGrowthRate = async () => {
       try {
+        // Fetch financial ratios from FMP API
         const response = await axios.get(
-          "/api/fred/series/observations?series_id=NGDPSAXDCUSQ&api_key=c65a4c196c937ace2b33dda01eb55fb6&file_type=json"
+          `https://financialmodelingprep.com/api/v3/ratios/${Ticker}?apikey=${fmpApiKey}`
         );
-
-        const data = response.data.observations;
-
-        // Filter observations for July dates
-        const julyObservations = data.filter((obs) =>
-          obs.date.includes("-07-01")
-        );
-
-        // Ensure we have at least two July observations
-        if (julyObservations.length < 2) {
-          console.error("Insufficient data for YoY growth calculation.");
+    
+        const data = response.data;
+    
+        if (!data || data.length < 20) {
+          console.error(`Insufficient data. Found only ${data.length} records.`);
+          setTwentyYearGrowthRate("Insufficient data");
           return;
         }
-
-        // Get the latest and previous July values
-        const latestJuly = julyObservations[julyObservations.length - 1];
-        const previousJuly = julyObservations[julyObservations.length - 2];
-
-        const latestValue = parseFloat(latestJuly.value);
-        const previousValue = parseFloat(previousJuly.value);
-
-        // Calculate YoY growth rate
-        const growthRate =
-          ((latestValue - previousValue) / previousValue) * 100;
-
-        console.log(
-          `YoY Growth Rate (${previousJuly.date} to ${
-            latestJuly.date
-          }): ${growthRate.toFixed(2)} %`
-        );
-
-        // Use the YoY growth rate as a projection
-        const projectedRate = Math.min(Math.max(growthRate, 3), 5); // Clamp to 3-5% range
-        console.log(`Projected Nominal Growth Rate: ${projectedRate} %`);
-
-        setTwentyYearGrowthRate(projectedRate);
+    
+        // Extract the most recent and 20-year-old ROE and Dividend Payout Ratio
+        const mostRecentData = data[0];
+        const twentyYearsAgoData = data[19];
+    
+        const mostRecentROE = parseFloat(mostRecentData.returnOnEquity);
+        const twentyYearsAgoROE = parseFloat(twentyYearsAgoData.returnOnEquity);
+    
+        const mostRecentPayoutRatio = parseFloat(mostRecentData.payoutRatio);
+        const twentyYearsAgoPayoutRatio = parseFloat(twentyYearsAgoData.payoutRatio);
+    
+        if (
+          isNaN(mostRecentROE) ||
+          isNaN(twentyYearsAgoROE) ||
+          isNaN(mostRecentPayoutRatio) ||
+          isNaN(twentyYearsAgoPayoutRatio)
+        ) {
+          console.error("Invalid data for calculation.");
+          setTwentyYearGrowthRate("Invalid data");
+          return;
+        }
+    
+        // Calculate Retention Ratios
+        const mostRecentRetentionRatio = 1 - mostRecentPayoutRatio;
+        const twentyYearsAgoRetentionRatio = 1 - twentyYearsAgoPayoutRatio;
+    
+        // Calculate Sustainable Growth Rates
+        const mostRecentSGR = mostRecentROE * mostRecentRetentionRatio;
+        const twentyYearsAgoSGR = twentyYearsAgoROE * twentyYearsAgoRetentionRatio;
+    
+        // Calculate Compound Annual Growth Rate (CAGR)
+        const cagr = Math.pow(mostRecentSGR / twentyYearsAgoSGR, 1 / 20) - 1;
+    
+        console.log(`Most Recent SGR: ${(mostRecentSGR * 100).toFixed(2)}%`);
+        console.log(`SGR 20 Years Ago: ${(twentyYearsAgoSGR * 100).toFixed(2)}%`);
+        console.log(`20-Year SGR Growth Rate (CAGR): ${(cagr * 100).toFixed(2)}%`);
+    
+        // Format CAGR to 2 decimal places
+        const formattedCAGR = (cagr * 100).toFixed(2);
+    
+        setTwentyYearGrowthRate(formattedCAGR);
       } catch (error) {
-        console.error("Error fetching YoY Growth Rate:", error);
+        console.error("Error fetching data:", error);
+        setTwentyYearGrowthRate("Error");
       }
     };
-
     const fetchBeta = async () => {
       try {
         const response = await axios.get(
@@ -292,12 +311,14 @@ export default function Financials({
 
           if (mostRecentRecord && mostRecentRecord.year10) {
             // Extract the 10-year Treasury yield
-            const tenYearYield = parseFloat(mostRecentRecord.year10) / 100; // Convert percentage to decimal
+            let tenYearYield = parseFloat(mostRecentRecord.year10) / 100; // Convert percentage to decimal
+
+            let formattedYield = tenYearYield * 100
 
             console.log(
-              `10-Year Treasury Yield (Risk-Free Rate): ${tenYearYield}`
+              `10-Year Treasury Yield (Risk-Free Rate): ${formattedYield}`
             );
-            setRiskFreeRate(tenYearYield);
+            setRiskFreeRate(formattedYield);
           } else {
             console.error(
               "10-Year Treasury yield not found in the most recent data."
@@ -342,7 +363,7 @@ export default function Financials({
     fetchCashFlow();
     fetchNetBorrowing();
     fetchFiveYearGrowthRate();
-    // fetchTwentyYearGrowthRate();
+    fetchTwentyYearGrowthRate();
 
     fetchBeta();
     fetchRiskFreeRate();
@@ -363,6 +384,11 @@ export default function Financials({
       riskFreeRate !== null &&
       marketRiskPremium !== null
     ) {
+      console.log("cal - risk free= " + riskFreeRate)
+      console.log("cal - beta= " + betaData)
+      console.log("cal - marketRisk= " + marketRiskPremium)
+
+
       let calculatedCostOfEquity = riskFreeRate + betaData * marketRiskPremium;
       setCostOfEquity(calculatedCostOfEquity);
     }
@@ -417,6 +443,7 @@ export default function Financials({
               <div className="fcfe-price-qty">
                 <span className="fcfe-title-currency">{currency}</span>
                 <span className="number-inner">
+        
                   {FreeCashFlowEquityData !== null
                     ? FreeCashFlowEquityData.toLocaleString()
                     : "Calculating..."}
@@ -439,7 +466,7 @@ export default function Financials({
                     </div>
                     <div className="number-inner">
                       <p>
-                        {" "}
+                 
                         {netIncomeData !== null
                           ? `${netIncomeData.toLocaleString()}`
                           : "Calculating..."}
@@ -460,6 +487,7 @@ export default function Financials({
                     </div>
                     <div className="number-inner">
                       <p>
+                
                         {depreceationAmortizationData !== null
                           ? `${depreceationAmortizationData.toLocaleString()}`
                           : "Calculating..."}
@@ -480,6 +508,7 @@ export default function Financials({
                     </div>
                     <div className="number-inner">
                       <p>
+                    
                         {capitalExpenditureData !== null
                           ? `${capitalExpenditureData.toLocaleString()}`
                           : "Calculating..."}
@@ -500,6 +529,7 @@ export default function Financials({
                     </div>
                     <div className="number-inner">
                       <p>
+                   
                         {changeInWorkingCapitalData !== null
                           ? `${changeInWorkingCapitalData.toLocaleString()}`
                           : "Calculating..."}
@@ -520,6 +550,7 @@ export default function Financials({
                     </div>
                     <div className="number-inner">
                       <p>
+                   
                         {netBorrowingData !== null
                           ? `${netBorrowingData.toLocaleString()}`
                           : "Calculating..."}
@@ -543,6 +574,7 @@ export default function Financials({
                 </div>
                 <div className="number-inner">
                   <p>
+                    
                     {fiveYearGrowthRate !== "Invalid data" &&
                     fiveYearGrowthRate !== "Insufficient data"
                       ? `${fiveYearGrowthRate} %`

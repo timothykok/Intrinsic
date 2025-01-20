@@ -81,6 +81,7 @@ body {
 
  
 .title {
+  margin-top:64px;
   font-size: 162px; 
   font-weight: 1000; 
   color: #000;
@@ -243,6 +244,7 @@ body {
 
 .fcfe-title-currency{
   margin-left: 380.5px;
+  margin-right:8px;
 }
 
 .fcfe-title-currency-inner{
@@ -326,10 +328,10 @@ body {
 
 .fcfe-price-qty {
   display: flex;
-  justify-content: flex-start; 
+  justify-content: right; 
  
-  align-items: right;
-  /* margin-right: 2px */
+
+ 
   
 
 }
@@ -486,14 +488,9 @@ body {
   display: flex;
   align-items: left;
   justify-content: left;
-
   margin:auto;
- 
- 
   margin-top: 128px;
-
-  
-  width: 800px;
+  width: 790px;
 }
 
 /* Logo */
@@ -569,3 +566,6 @@ body {
   margin-top: 24px;
   gap: 28px;
 }
+
+
+

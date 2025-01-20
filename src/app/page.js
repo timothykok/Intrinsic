@@ -20,14 +20,12 @@ export default function Home() {
 
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
 
-  // Debounce the ticker input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setTicker(input.toUpperCase()); // Update the ticker after delay
-    }, 500); // 500ms delay
-
-    return () => clearTimeout(timer); // Clear timeout if input changes
-  }, [input]);
+  // Handle search on Enter key press
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      setTicker(input.toUpperCase());
+    }
+  };
 
   // Fetch stock info when the ticker changes
   useEffect(() => {
@@ -67,6 +65,7 @@ export default function Home() {
 
   return (
     <>
+      <Ticker />
       <div className="title-wrapper">
         <h1 className="title">Intrinsic.</h1>
         <input
@@ -74,7 +73,8 @@ export default function Home() {
           type="text"
           placeholder="Enter Stock Ticker (e.g., GOOG)"
           value={input}
-          onChange={(e) => setInput(e.target.value)} // Update raw input
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
       </div>
 
@@ -98,9 +98,9 @@ export default function Home() {
           />
           <Calculation
             Ticker={ticker}
-            DiscountRate={discountRate}
-            InitialFCFE={initialFCFE}
-            GrowthRate={growthRate}
+            discountRate={discountRate}
+            initialFCFE={initialFCFE}
+            growthRate={growthRate}
           />
           <ShareValue Ticker={ticker} />
           <Projection Ticker={ticker} />

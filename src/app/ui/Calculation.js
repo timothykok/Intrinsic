@@ -1,11 +1,7 @@
-//Calculation.js
-
 "use client";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-let currency = "USD";
 
 export default function Calculation({
   Ticker,
@@ -13,11 +9,12 @@ export default function Calculation({
   growthRate,
   discountRate,
 }) {
-  const [FreeCashFlowEquityData, setFreeCashFlowEquityData] = useState([]);
   const [outstandingShares, setOutstandingShares] = useState([]);
   const [presentValue, setPresentValue] = useState(null);
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
+  const currency = "USD"; // Hardcoded currency symbol
 
+  // Fetch outstanding shares
   useEffect(() => {
     const fetchOutstandingShares = async () => {
       try {
@@ -26,9 +23,9 @@ export default function Calculation({
         );
 
         if (response.data && response.data.length > 0) {
-          const data = response.data[0].outstandingShares; // Access outstandingShares
+          const data = response.data[0].outstandingShares;
           console.log("Outstanding Shares:", data);
-          setOutstandingShares(data); // Update state
+          setOutstandingShares(data);
         } else {
           console.error("No data found for outstanding shares.");
         }
@@ -40,6 +37,7 @@ export default function Calculation({
     fetchOutstandingShares();
   }, [Ticker]);
 
+  // Calculate Present Value of Free Cash Flow to Equity
   useEffect(() => {
     if (initialFCFE !== null && growthRate !== null && discountRate !== null) {
       let pv = 0;
@@ -47,58 +45,57 @@ export default function Calculation({
         const projectedFCFE = initialFCFE * Math.pow(1 + growthRate, t);
         const discountedFCFE = projectedFCFE / Math.pow(1 + discountRate, t);
         pv += discountedFCFE;
+       
       }
-      setPresentValue(pv);
-
-      console.log("initial fcfe: " + initialFCFE);
-      console.log("growthRate: " + growthRate);
-      console.log("discountRate" + discountRate);
 
       
+      
+      setPresentValue(parseFloat(pv.toFixed(2)));
 
-      console.log("present value: " + pv)
+      console.log("Initial FCFE:", initialFCFE);
+      console.log("Growth Rate:", growthRate);
+      console.log("Discount Rate:", discountRate);
+      console.log("Present Value:", pv);
     }
-  }, [initialFCFE, growthRate, discountRate, Ticker]);
+  }, [initialFCFE, growthRate, discountRate]);
 
   return (
-    <>
-      <div className="calculation">
-        <p> Calculation </p>
-        <hr className="divider"></hr>
+    <div className="calculation">
+      <p>Calculation</p>
+      <hr className="divider" />
 
-        <div className="inner-container">
-          <div className="row">
-            <span className="label">
-              Present Value of 20 Year Free Cash Flow To Equity
-            </span>
-            <span className="value">
-              <div className="price-qty">
-                <span className="currency">{currency}</span>
-                <span className="number-inner">
-                  ${" "}
-                  {presentValue !== null
-                    ? presentValue.toLocaleString()
-                    : "Calculating..."}
-                </span>
-              </div>
-            </span>
-          </div>
+      <div className="inner-container">
+        <div className="row">
+          <span className="label">
+            Present Value of 20 Year Free Cash Flow To Equity
+          </span>
+          <span className="value">
+            <div className="price-qty">
+              <span className="currency">{currency}</span>
+              <span className="number-inner">
+              
+                {presentValue !== null
+                  ? presentValue.toLocaleString()
+                  : "Calculating..."}
+              </span>
+            </div>
+          </span>
+        </div>
 
-          <div className="row">
-            <span className="label">Outstanding Shares</span>
-            <span className="value">
-              <div className="price-qty">
-                <span className="currency">QTY</span>
-                <span className="number-inner">
-                  {outstandingShares !== null
-                    ? outstandingShares.toLocaleString()
-                    : "Calculating..."}
-                </span>
-              </div>
-            </span>
-          </div>
+        <div className="row">
+          <span className="label">Outstanding Shares</span>
+          <span className="value">
+            <div className="price-qty">
+              <span className="currency">QTY</span>
+              <span className="number-inner">
+                {outstandingShares !== null
+                  ? outstandingShares.toLocaleString()
+                  : "Calculating..."}
+              </span>
+            </div>
+          </span>
         </div>
       </div>
-    </>
+    </div>
   );
 }
