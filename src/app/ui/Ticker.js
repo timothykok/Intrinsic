@@ -6,13 +6,15 @@ import axios from "axios";
 export default function Ticker() {
   const [stocks, setStocks] = useState([]);
 
+  const finnhubApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
+
   useEffect(() => {
     const fetchStocks = async () => {
       try {
         // API Call to Finnhub 
         const symbols = ["AAPL", "MSFT", "UBER", "AMZN", "META", "GOOG", "TSLA", "NVDA", "ADBE", "MA", "PYPL"];
         const stockPromises = symbols.map((symbol) =>
-          axios.get(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=cttmeepr01qqhvb0uq10cttmeepr01qqhvb0uq1g`)
+          axios.get(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${finnhubApiKey}`)
         );
 
         const stockResponses = await Promise.all(stockPromises);

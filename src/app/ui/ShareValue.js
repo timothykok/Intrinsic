@@ -9,6 +9,7 @@ export default function ShareValue({ Ticker }) {
   const [FreeCashFlowEquityData, setFreeCashFlowEquityData] = useState([]);
   const [netIncomeData, setNetIncomeData] = useState([]);
 
+  const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
 
   
 
@@ -16,7 +17,7 @@ export default function ShareValue({ Ticker }) {
     const fetchNetIncome = async () => {
       try {
         const response = await axios.get(
-          `https://financialmodelingprep.com/api/v3/income-statement/${Ticker}?period=annual&apikey=hg2NroPZx6bZbTWXJjqon6L5Pb53HCko`
+          `https://financialmodelingprep.com/api/v3/income-statement/${Ticker}?period=annual&apikey=${fmpApiKey}`
         );
         const data = response.data.slice(0, 1); // Get the most recent year
         const netIncomeValues = data.map((item) => ({
