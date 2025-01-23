@@ -37,27 +37,38 @@ export default function Calculation({
     fetchOutstandingShares();
   }, [Ticker]);
 
-  // Calculate Present Value of Free Cash Flow to Equity
   useEffect(() => {
-    if (initialFCFE !== null && growthRate !== null && discountRate !== null) {
-      let pv = 0;
-      for (let t = 1; t <= 20; t++) {
-        const projectedFCFE = initialFCFE * Math.pow(1 + growthRate, t);
-        const discountedFCFE = projectedFCFE / Math.pow(1 + discountRate, t);
-        pv += discountedFCFE;
-       
+    const fetchOutstandingShares = async () => {
+      try {
+        const response = await axios.get(
+          `https://financialmodelingprep.com/api/v4/shares_float?symbol=${Ticker}&apikey=${fmpApiKey}`
+        );
+  
+        if (response.data && response.data.length > 0) {
+          const data = response.data[0].outstandingShares;
+          console.log("Outstanding Shares:", data);
+          setOutstandingShares(data);
+        } else {
+          console.error("No data found for outstanding shares.");
+        }
+      } catch (error) {
+        if (error.response) {
+          // Server responded with a status other than 200
+          console.error("Error Status:", error.response.status);
+          console.error("Error Message:", error.response.data);
+        } else if (error.request) {
+          // No response from server
+          console.error("No response received from API:", error.request);
+        } else {
+          // Other errors
+          console.error("Error in setting up request:", error.message);
+        }
       }
+    };
+  
+    fetchOutstandingShares();
+  }, [Ticker, fmpApiKey]);
 
-      
-      
-      setPresentValue(parseFloat(pv.toFixed(2)));
-
-      console.log("Initial FCFE:", initialFCFE);
-      console.log("Growth Rate:", growthRate);
-      console.log("Discount Rate:", discountRate);
-      console.log("Present Value:", pv);
-    }
-  }, [initialFCFE, growthRate, discountRate]);
 
   return (
     <div className="calculation">
