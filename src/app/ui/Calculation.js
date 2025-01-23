@@ -71,7 +71,68 @@ export default function Calculation({
 
 
   return (
-    <div className="calculation">
+    <>
+          <div className="share-value">
+        <p> Share Value </p>
+        <hr className="divider"></hr>
+
+        <div className="inner-container">
+          <div className="row">
+            <span className="label">Intrinsic Value Per Share</span>
+            <span className="value">
+              <div className="price-qty">
+                <span className="currency">{currency}</span>
+                <span className="number-inner">
+                  ${" "}
+                  {FreeCashFlowEquityData !== null
+                    ? FreeCashFlowEquityData.toLocaleString()
+                    : "Calculating..."}
+                </span>
+              </div>
+            </span>
+          </div>
+
+
+          <div className="row">
+            <span className="label">Last Closing Price</span>
+            <span className="value">
+              <div className="price-qty">
+                <span className="currency">{currency}</span>
+                <span className="number-inner">
+                  ${" "}
+                  {FreeCashFlowEquityData !== null
+                    ? FreeCashFlowEquityData.toLocaleString()
+                    : "Calculating..."}
+                </span>
+              </div>
+            </span>
+          </div>
+
+          <div className="row">
+            <span className="label">Discount/Premium</span>
+            <span className="value">
+              <div className="price-qty">
+                <span className="currency">PCT</span>
+                <span className="number-inner">
+                  ${" "}
+                  {FreeCashFlowEquityData !== null
+                    ? FreeCashFlowEquityData.toLocaleString()
+                    : "Calculating..."}
+                </span>
+              </div>
+            </span>
+          </div>
+
+          <div className="intrinsic-result">
+           <p>Estimated DCF Value of one  AAPL stock is 122.37 USD. Compared to the current market price of 259.02 USD, the stock is <span className="valuation-percentage">undervalued by 12%. </span></p> 
+          </div>
+        </div>
+
+        
+        </div>
+
+
+        <div className="calculation">
       <p>Calculation</p>
       <hr className="divider" />
 
@@ -108,5 +169,9 @@ export default function Calculation({
         </div>
       </div>
     </div>
+      
+    
+    </>
+  
   );
 }

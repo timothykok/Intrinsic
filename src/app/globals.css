@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 /* :root {
   --background: #ffffff;
   --foreground: #000000;
@@ -15,41 +14,28 @@
   }
 } */
 
-
-
-
-.nav{
+.nav {
   display: flex;
   gap: 30px;
   justify-content: center;
   margin-right: 100px;
   background-color: white;
-
 }
 
 .nav a {
-
   text-decoration: none;
   color: rgb(80, 80, 80);
   font-weight: 300;
   font-size: 16px;
-
-
 }
 
 .nav a:hover {
   color: rgb(80, 80, 80);
   /* background-color:  rgba(204, 204, 204, 0.392); */
   border-radius: 80px;
-
-
 }
 
-
-
-.nav-container{
-  
-
+.nav-container {
   display: flex;
   justify-content: right;
   padding: 20px;
@@ -58,8 +44,6 @@
   background-color: rgb(255, 255, 255);
   text-align: center;
   align-items: center;
- 
-
 }
 
 body {
@@ -69,23 +53,21 @@ body {
   font-weight: 300; /* Light weight */
   -webkit-font-smoothing: antialiased; /* Smooths the font on macOS */
   -moz-osx-font-smoothing: grayscale; /* Smooths the font on Windows */
- 
 }
 
-.title-wrapper{
+.title-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: center; 
-  align-items: center; 
+  justify-content: center;
+  align-items: center;
 }
 
- 
 .title {
-  margin-top:64px;
-  font-size: 162px; 
-  font-weight: 1000; 
+  margin-top: 64px;
+  font-size: 162px;
+  font-weight: 1000;
   color: #000;
-  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5); 
+  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5);
   font-family: "Inter", sans-serif;
 }
 
@@ -95,9 +77,9 @@ body {
   font-weight: 600;
 } */
 
-.search-bar{
+.search-bar {
   margin-top: 36px;
-  border:#E5E5E5;
+  border: #e5e5e5;
   border-style: solid;
   border-radius: 8;
   padding: 8;
@@ -108,23 +90,21 @@ body {
   background-color: #ffffff;
 }
 
-.ticker-stock-symbol{
- 
+.ticker-stock-symbol {
   font-weight: 800;
 }
 
-
 .ticker-stock-price {
-  color: #000000; 
+  color: #000000;
 }
 .text-green-500 {
-  color: #10b981; 
+  color: #10b981;
 }
 .text-red-500 {
-  color: #ef4444; 
+  color: #ef4444;
 }
 .overflow-x-auto {
-  overflow-x: 50; 
+  overflow-x: 50;
 }
 
 @keyframes scroll {
@@ -156,72 +136,61 @@ body {
   gap: 2rem; /* Adjust space between stocks */
 }
 
-.divider{
+.divider {
   margin-top: 12px;
-  border-top: 1px solid #9B9B9B;
-  margin-bottom:12px;
+  border-top: 1px solid #9b9b9b;
+  margin-bottom: 12px;
   width: 100%;
-
 }
 
-.fcfe-divider{
-  
-
+.fcfe-divider {
   border-top: 1px solid #cdcdcd;
-  margin-bottom:12px;
+  margin-bottom: 12px;
   margin-top: -10px;
   width: 100%;
-
 }
 
-.coe-label{
+.coe-label {
   flex: 1;
   margin-bottom: -10px;
   color: #333;
   max-width: 250px;
 }
 
-.coe-divider{
+.coe-divider {
   border-top: 1px solid #cdcdcd;
-  margin-bottom:12px;
+  margin-bottom: 12px;
   margin-top: -10px;
   width: 100%;
 }
 
-
-.financials{
+.financials {
   max-width: 800px;
   margin: 0 auto;
-  margin-top:32px;
-  padding:10;
+  margin-top: 32px;
+  padding: 10;
 }
 
-.financial-metrics{
+.financial-metrics {
   margin-top: 21;
   margin-left: 20;
-
 }
 
-.sub-values{
-
-  margin-left: 35px;;
+.sub-values {
+  margin-left: 35px;
 }
 
 .inner-container {
   max-width: 800px;
   margin: 0 auto;
-  padding-left:0px;
-
-  
- 
+  padding-left: 0px;
 }
 
-.fcfe-title{
+.fcfe-title {
   margin-left: 0px;
-
 }
 
-.fcfe-row{
+.fcfe-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -229,38 +198,35 @@ body {
   align-content: center;
 }
 
-.coe-title{
+.coe-title {
   margin-left: 1px;
 }
 
-.fece-values{
-
-  padding:20px;
-  display:flex;
+.fece-values {
+  padding: 20px;
+  display: flex;
   flex-direction: row;
   justify-content: left;
-
 }
 
-.fcfe-title-currency{
+.fcfe-title-currency {
   margin-left: 380.5px;
-  margin-right:8px;
+  margin-right: 8px;
 }
 
-.fcfe-title-currency-inner{
-
+.fcfe-title-currency-inner {
 }
 
-.coe-title-currency{
+.coe-title-currency {
   margin-left: 451px;
 }
 
-.toggle{
+.toggle {
   margin-right: 8px;
   min-width: 4px;
 }
 
-.coe-toggle{
+.coe-toggle {
   margin-right: 8px;
   min-width: 4px;
 }
@@ -273,46 +239,43 @@ body {
   align-content: center;
 }
 
-.price-qty{
-  display:flex;
+.price-qty {
+  display: flex;
 }
 
-.coe-price-qty{
-  display:flex;
+.coe-price-qty {
+  display: flex;
   justify-content: right;
 }
 
-.coe-price-qty-inner{
-
+.coe-price-qty-inner {
   display: flex;
-  
-  justify-content: right; 
-  
+
+  justify-content: right;
 }
 
-.coe-value{
-  flex:1;
+.coe-value {
+  flex: 1;
 
   text-align: right;
   font-weight: 300;
   color: #555;
 }
 
-.fcfe-price-qty-inner{
-
+.fcfe-price-qty-inner {
   display: flex;
-  justify-content: flex-start; 
-  margin-left:6px;
+  justify-content: flex-start;
+  margin-left: 6px;
 }
 
 .label {
   flex: 1;
   margin-bottom: -10px;
   color: #333;
-  margin-left:15px;
+  margin-left: 15px;
 }
 
-.fcfe-label{
+.fcfe-label {
   flex: 1;
   margin-bottom: -10px;
   color: #333;
@@ -323,23 +286,17 @@ body {
   text-align: right;
   font-weight: 300;
   color: #555;
-  
 }
 
 .fcfe-price-qty {
   display: flex;
-  justify-content: right; 
- 
-
- 
-  
-
+  justify-content: right;
 }
 
 .currency {
-  max-width:40px;
+  max-width: 40px;
   text-align: left;
-  width: 50px; 
+  width: 50px;
   margin-left: 162px;
 }
 
@@ -350,94 +307,91 @@ body {
 
 .price-qty-inner {
   display: flex;
-  justify-content: left; 
-  margin-right:0;
-  
+  justify-content: left;
+  margin-right: 0;
 }
 
 .currency-inner {
-  max-width:40px;
+  max-width: 40px;
   text-align: left;
-  width: 50px; 
+  width: 50px;
   margin-left: 147px;
 }
 
 .number-inner {
-  text-align: right; 
+  text-align: right;
   flex: 1; /* Allow the numeric value to take up remaining space */
-  max-width:180px;
+  max-width: 180px;
 }
 
-.financial-percentage-inner{
+.financial-percentage-inner {
   display: flex;
-  justify-content: flex-start; 
-  margin-left:0px;
+  justify-content: flex-start;
+  margin-left: 0px;
 }
 
-.cash-flow-label{
+.cash-flow-label {
   flex: 1;
   margin-bottom: -10px;
   color: #333;
-  margin-left:15px;
+  margin-left: 15px;
 }
 
-.coe-percentage{
+.coe-percentage {
   display: flex;
-  justify-content: right; 
- 
+  justify-content: right;
+
   align-items: right;
-  margin-right: 10px
+  margin-right: 10px;
 }
 
-
-.percentage-inner{
-  max-width:40px;
+.percentage-inner {
+  max-width: 40px;
   text-align: left;
-  width: 50px; 
+  width: 50px;
   margin-left: 164px;
 }
 
-.calculation{
+.calculation {
   max-width: 800px;
   margin: 0 auto;
-  margin-top:10;
-  padding:10;
-
+  margin-top: 10;
+  padding: 10;
 }
 
-.coe-sub-values{
-  margin-left: 35px;;
+.coe-sub-values {
+  margin-left: 35px;
 }
 
-.share-value{
+.share-value {
   max-width: 800px;
   margin: 0 auto;
-  margin-top:10px;
-  padding:10;
+  margin-top: 10px;
+  padding: 10;
 }
 
-.intrinsic-result{
+.intrinsic-result {
   display: flex;
-  margin-top:55px;
+  margin-top: 55px;
   justify-content: space-between;
   align-items: center;
   align-content: center;
 }
 
-.valuation-percentage{
+.valuation-percentage {
   font-weight: 800;
-  color:#65bd72;
+  color: #65bd72;
 }
 
-.projection-wrapper{
+.projection-wrapper {
   max-width: 800px;
   margin: 0 auto;
-  margin-top:24px;
-  padding:10;
-  margin-bottom:64px;
+  margin-top: 24px;
+  padding: 10;
+  margin-bottom: 64px;
 }
 
-.financial-table-title{
+.financial-table-title {
   text-align: left;
 }
 
@@ -447,7 +401,7 @@ body {
   border-collapse: collapse; /* Remove space between cells */
   max-width: 800px;
   margin: 0 auto;
-  margin-top:10px;
+  margin-top: 10px;
   /* padding:10; */
   text-align: center;
 }
@@ -457,16 +411,13 @@ body {
   /* padding: 40px; */
   min-width: 185px;
   font-size: 14px;
-  font-weight:300;
-
+  font-weight: 300;
 }
 
-.financial-table td{
-  padding:12px;
+.financial-table td {
+  padding: 12px;
   font-size: 14px;
 }
-
-
 
 .financial-table tr:nth-child(even) {
   /* background-color: #f9f9f9;  */
@@ -481,14 +432,12 @@ body {
   text-align: left; /* Left-align the first column */
 }
 
-
-
 /* Container */
 .stock-container {
   display: flex;
   align-items: left;
   justify-content: left;
-  margin:auto;
+  margin: auto;
   margin-top: 128px;
   width: 790px;
 }
@@ -496,7 +445,6 @@ body {
 /* Logo */
 .stock-logo-container {
   margin-right: 15px;
-  
 }
 
 .stock-logo {
@@ -511,32 +459,27 @@ body {
 .stock-details-container {
   flex: 1;
   margin-right: 15px;
-  margin-top:4px;
-  width:200px
-
+  margin-top: 4px;
+  width: 200px;
 }
 
 .stock-company-name {
   font-size: 24px;
- 
-  
 }
 
 .stock-ticker {
   font-size: 18px;
   color: #555;
-  margin-top:4px;
+  margin-top: 4px;
 }
 
 /* Price Section */
 .stock-price-container {
   text-align: left;
- 
 }
 
 .stock-price {
   font-size: 32px;
-  
 }
 
 .stock-currency {
@@ -547,25 +490,20 @@ body {
 .stock-change {
   font-size: 14px;
   margin-top: 20px;
-  font-weight:400;
-  
+  font-weight: 400;
 }
 
 .stock-timestamp {
   font-size: 14px;
   color: #777;
 
-  font-weight:300;
-  
+  font-weight: 300;
 }
 
-.stock-details-and-price-container{
+.stock-details-and-price-container {
   margin-left: 28px;
   display: flex;
   flex-direction: row;
   margin-top: 24px;
   gap: 28px;
 }
-
-
-
