@@ -11,6 +11,8 @@ export default function Calculation({
 }) {
   const [outstandingShares, setOutstandingShares] = useState([]);
   const [presentValue, setPresentValue] = useState(null);
+  const [FreeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
+
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
   const currency = "USD"; // Hardcoded currency symbol
 
