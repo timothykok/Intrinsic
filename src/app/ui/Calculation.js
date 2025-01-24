@@ -5,16 +5,19 @@ import axios from "axios";
 
 export default function Calculation({
   Ticker,
-  initialFCFE,
-  growthRate,
-  discountRate,
+  FreeCashFlowEquityData,
+  tenYearGrowthRate,
+  costOfEquity,
+  longTermGrowthRate,
+  outstandingShares,
+  setOutstandingShares,
+  presentValue,
+  setPresentValue
 }) {
-  const [outstandingShares, setOutstandingShares] = useState([]);
-  const [presentValue, setPresentValue] = useState(null);
-  const [FreeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
+
+  const currency = "USD"; // Hardcoded currency symbol
 
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
-  const currency = "USD"; // Hardcoded currency symbol
 
   // Fetch outstanding shares
   useEffect(() => {
@@ -39,71 +42,62 @@ export default function Calculation({
     fetchOutstandingShares();
   }, [Ticker]);
 
+  // Calculate PV of FCFE
   useEffect(() => {
-    const fetchOutstandingShares = async () => {
-      try {
-        const response = await axios.get(
-          `https://financialmodelingprep.com/api/v4/shares_float?symbol=${Ticker}&apikey=${fmpApiKey}`
-        );
-  
-        if (response.data && response.data.length > 0) {
-          const data = response.data[0].outstandingShares;
-          console.log("Outstanding Shares:", data);
-          setOutstandingShares(data);
-        } else {
-          console.error("No data found for outstanding shares.");
-        }
-      } catch (error) {
-        if (error.response) {
-          // Server responded with a status other than 200
-          console.error("Error Status:", error.response.status);
-          console.error("Error Message:", error.response.data);
-        } else if (error.request) {
-          // No response from server
-          console.error("No response received from API:", error.request);
-        } else {
-          // Other errors
-          console.error("Error in setting up request:", error.message);
-        }
-      }
-    };
-  
-    fetchOutstandingShares();
-  }, [Ticker, fmpApiKey]);
+    if (
+      FreeCashFlowEquityData !== null &&
+      tenYearGrowthRate !== null &&
+      costOfEquity !== null &&
+      longTermGrowthRate !== null
+    ) {
+      let pv = 0;
 
+      // Calculate PV of FCFE from Year 1 to Year 10
+      for (let t = 1; t <= 10; t++) {
+        const projectedFCFE = FreeCashFlowEquityData * Math.pow(1 + tenYearGrowthRate, t);
+        const discountedFCFE = projectedFCFE / Math.pow(1 + costOfEquity, t);
+        pv += discountedFCFE;
+      }
+
+      // Calculate the perpetuity value starting from Year 11
+      const fcfeYear11 = FreeCashFlowEquityData * Math.pow(1 + tenYearGrowthRate, 11);
+      const perpetuityValue = fcfeYear11 / (costOfEquity - longTermGrowthRate);
+
+      // Discount the perpetuity value back to the present
+      const discountedPerpetuityValue =
+        perpetuityValue / Math.pow(1 + costOfEquity, 10);
+
+      // Add the discounted perpetuity value to the PV
+      pv += discountedPerpetuityValue;
+
+      // Set the final present value
+      setPresentValue(parseFloat(pv.toFixed(2)));
+
+      console.log("Initial FCFE - calc:", FreeCashFlowEquityData);
+      console.log("10 year Growth Rate - calc :", tenYearGrowthRate);
+      console.log("Cost Of Equity -calc :", costOfEquity);
+      console.log("Long-Term Growth Rate -calc :", longTermGrowthRate);
+      console.log("Present Value of FCFE to Perpetuity - calc:", pv);
+    }
+  }, [FreeCashFlowEquityData, tenYearGrowthRate, costOfEquity, longTermGrowthRate]);
 
   return (
     <>
-          <div className="share-value">
-        <p> Share Value </p>
-        <hr className="divider"></hr>
+      <div className="calculation">
+        <p>Calculation</p>
+        <hr className="divider" />
 
         <div className="inner-container">
           <div className="row">
-            <span className="label">Intrinsic Value Per Share</span>
-            <span className="value">
-              <div className="price-qty">
-                <span className="currency">{currency}</span>
-                <span className="number-inner">
-                  ${" "}
-                  {FreeCashFlowEquityData !== null
-                    ? FreeCashFlowEquityData.toLocaleString()
-                    : "Calculating..."}
-                </span>
-              </div>
+            <span className="label">
+              Present Value of Free Cash Flow to Equity to Perpetuity
             </span>
-          </div>
-
-
-          <div className="row">
-            <span className="label">Last Closing Price</span>
             <span className="value">
               <div className="price-qty">
                 <span className="currency">{currency}</span>
                 <span className="number-inner">
-                  ${" "}
-                  {FreeCashFlowEquityData !== null
-                    ? FreeCashFlowEquityData.toLocaleString()
+                  {presentValue !== null
+                    ? presentValue.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>
@@ -111,69 +105,20 @@ export default function Calculation({
           </div>
 
           <div className="row">
-            <span className="label">Discount/Premium</span>
+            <span className="label">Outstanding Shares</span>
             <span className="value">
               <div className="price-qty">
-                <span className="currency">PCT</span>
+                <span className="currency">QTY</span>
                 <span className="number-inner">
-                  ${" "}
-                  {FreeCashFlowEquityData !== null
-                    ? FreeCashFlowEquityData.toLocaleString()
+                  {outstandingShares !== null
+                    ? outstandingShares.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>
             </span>
           </div>
-
-          <div className="intrinsic-result">
-           <p>Estimated DCF Value of one  AAPL stock is 122.37 USD. Compared to the current market price of 259.02 USD, the stock is <span className="valuation-percentage">undervalued by 12%. </span></p> 
-          </div>
-        </div>
-
-        
-        </div>
-
-
-        <div className="calculation">
-      <p>Calculation</p>
-      <hr className="divider" />
-
-      <div className="inner-container">
-        <div className="row">
-          <span className="label">
-            Present Value of 20 Year Free Cash Flow To Equity
-          </span>
-          <span className="value">
-            <div className="price-qty">
-              <span className="currency">{currency}</span>
-              <span className="number-inner">
-              
-                {presentValue !== null
-                  ? presentValue.toLocaleString()
-                  : "Calculating..."}
-              </span>
-            </div>
-          </span>
-        </div>
-
-        <div className="row">
-          <span className="label">Outstanding Shares</span>
-          <span className="value">
-            <div className="price-qty">
-              <span className="currency">QTY</span>
-              <span className="number-inner">
-                {outstandingShares !== null
-                  ? outstandingShares.toLocaleString()
-                  : "Calculating..."}
-              </span>
-            </div>
-          </span>
         </div>
       </div>
-    </div>
-      
-    
     </>
-  
   );
 }

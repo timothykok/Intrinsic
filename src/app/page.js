@@ -13,10 +13,20 @@ import Projection from "./ui/Projection.js";
 export default function Home() {
   const [input, setInput] = useState(""); // Raw input from the user
   const [ticker, setTicker] = useState(""); // Debounced ticker value
+
+
+  //Financials
   const [stockInfo, setStockInfo] = useState(null);
-  const [initialFCFE, setInitialFCFE] = useState(null);
-  const [growthRate, setGrowthRate] = useState(null);
-  const [discountRate, setDiscountRate] = useState(null);
+  const [freeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
+  const [fiveYearGrowthRate, setFiveYearGrowthRate] = useState(null);
+  const [tenYearGrowthRate, setTenYearGrowthRate] = useState(null);
+  const [longTermGrowthRate, setLongTermGrowthRate] = useState(null);
+
+  //Calculation component
+  const [outstandingShares, setOutstandingShares] = useState([]);
+  const [presentValue, setPresentValue] = useState(null);
+
+  const [costOfEquity, setCostOfEquity] = useState(null);
 
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
 
@@ -38,7 +48,7 @@ export default function Home() {
         );
         const data = await response.json();
 
-        const logo_response = await fetch(`https://api.api-ninjas.com/v1/logo`);
+        // const logo_response = await fetch(`https://api.api-ninjas.com/v1/logo`);
 
         if (data && data.length > 0) {
           const stockData = data[0];
@@ -92,22 +102,38 @@ export default function Home() {
           />
           <Financials
             Ticker={ticker}
-            setInitialFCFE={setInitialFCFE}
-            setGrowthRate={setGrowthRate}
-            setDiscountRate={setDiscountRate}
+            setCostOfEquity={setCostOfEquity}
+            costOfEquity={costOfEquity}
+            setFreeCashFlowEquityData={setFreeCashFlowEquityData}
+            freeCashFlowEquityData={freeCashFlowEquityData}
+            fiveYearGrowthRate={fiveYearGrowthRate}
+            setFiveYearGrowthRate={setFiveYearGrowthRate}
+            setTenYearGrowthRate={setTenYearGrowthRate}
+            tenYearGrowthRate={tenYearGrowthRate}
+            setLongTermGrowthRate={setLongTermGrowthRate}
+            longTermGrowthRate={longTermGrowthRate}
           />
           <Calculation
             Ticker={ticker}
-            discountRate={discountRate}
-            initialFCFE={initialFCFE}
-            growthRate={growthRate}
+            costOfEquity={costOfEquity}
+            FreeCashFlowEquityData={freeCashFlowEquityData}
+            tenYearGrowthRate={tenYearGrowthRate}
+            longTermGrowthRate={longTermGrowthRate}
+            outstandingShares={outstandingShares}
+            setOutstandingShares={setOutstandingShares}
+            presentValue={presentValue}
+            setPresentValue={setPresentValue}
           />
-          <ShareValue Ticker={ticker} />
-          <Projection Ticker={ticker} />
+          <ShareValue
+            Ticker={ticker}
+          
+            price={stockInfo.price}
+            outStandingShares={outstandingShares}
+            presentValue={presentValue}
+          />
+          <Projection Ticker={ticker} freeCashFlowEquityData={freeCashFlowEquityData} fiveYearGrowthRate={fiveYearGrowthRate} tenYearGrowthRate={tenYearGrowthRate} longTermGrowthRate={longTermGrowthRate}/>
 
           {/* <NewFinancials Ticker ={ticker}/> */}
-
-          
         </>
       )}
     </>

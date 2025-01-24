@@ -1,17 +1,55 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 
 let currency = "USD";
 
-export default function Projection({ Ticker }) {
-  const data = {
-    Metric: ["Revenue", "Profit", "Expenses"],
-    2024: [100000, 20000, 80000],
-    2023: [95000, 18000, 77000],
-    2022: [90000, 17000, 73000],
-  };
+export default function Projection({ Ticker, freeCashFlowEquityData, fiveYearGrowthRate, tenYearGrowthRate, longTermGrowthRate }) {
+  const years = Array.from({ length: 12 }, (_, i) => 2024 + i); // Generate years from 2024 to 2035
+  const [projectedData, setProjectedData] = useState({
+    freeCashFlows: [],
+    discountFactors: [],
+    discountedValues: [],
+  });
+
+  useEffect(() => {
+    if (freeCashFlowEquityData !== null && fiveYearGrowthRate !== null && tenYearGrowthRate !== null && longTermGrowthRate !== null) {
+      const freeCashFlows = [];
+      const discountFactors = [];
+      const discountedValues = [];
+      let currentFCFE = freeCashFlowEquityData;
+      const discountRate = 1 + (tenYearGrowthRate / 100);
+
+      // Generate data for 2024 to 2035
+      years.forEach((year, index) => {
+        // Determine the growth rate: first 5 years, next 5 years, and long term
+        let growthRate;
+        if (index <= 4) {
+          growthRate = fiveYearGrowthRate / 100; // Use five-year growth rate
+        } else if (index <= 10) {
+          growthRate = tenYearGrowthRate / 100; // Use ten-year growth rate
+        } else {
+          growthRate = longTermGrowthRate / 100; // Use long-term growth rate
+        }
+
+        // Update Free Cash Flow
+        if (index > 0) {
+          currentFCFE *= 1 + growthRate;
+        }
+        freeCashFlows.push(currentFCFE);
+
+        // Calculate Discount Factor
+        const discountFactor = Math.pow(discountRate, index + 1);
+        discountFactors.push(discountFactor);
+
+        // Calculate Discounted Value
+        const discountedValue = currentFCFE / discountFactor;
+        discountedValues.push(discountedValue);
+      });
+
+      setProjectedData({ freeCashFlows, discountFactors, discountedValues });
+    }
+  }, [freeCashFlowEquityData, fiveYearGrowthRate, tenYearGrowthRate, longTermGrowthRate]);
 
   return (
     <>
@@ -24,61 +62,29 @@ export default function Projection({ Ticker }) {
           <thead>
             <tr>
               <th>Year</th>
-              <td>2025</td>
-              <td>2026</td>
-              <td>2027</td>
-              <td>2028</td>
-              <td>2029</td>
-              <td>2030</td>
-              <td>2031</td>
-              <td>2032</td>
-              <td>2033</td>
-              <td>2034</td>
-              <td>2035</td>
+              {years.map((year) => (
+                <td key={year}>{year}</td>
+              ))}
             </tr>
           </thead>
           <tbody>
             <tr>
-              <th>Free Cash Flow (Projected)</th>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
+              <th>Free Cash Flow (Projected) (Millions)</th>
+              {projectedData.freeCashFlows.map((fcf, index) => (
+                <td key={index}>{(fcf / 1_000_000).toFixed(2)}</td>
+              ))}
             </tr>
             <tr>
               <th>Discount Factor</th>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
+              {projectedData.discountFactors.map((factor, index) => (
+                <td key={index}>{factor.toFixed(2)}</td>
+              ))}
             </tr>
             <tr>
-              <th>Discount Value</th>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
-              <td>25</td>
+              <th>Discount Value (Millions)</th>
+              {projectedData.discountedValues.map((value, index) => (
+                <td key={index}>{(value / 1_000_000).toFixed(2)}</td>
+              ))}
             </tr>
           </tbody>
         </table>

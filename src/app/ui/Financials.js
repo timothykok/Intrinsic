@@ -9,11 +9,17 @@ let currency = "USD";
 
 export default function Financials({
   Ticker,
-  setInitialFCFE,
-  setGrowthRate,
-  setDiscountRate,
+  setFreeCashFlowEquityData,
+  freeCashFlowEquityData,
+  setFiveYearGrowthRate,
+  fiveYearGrowthRate,
+  setTenYearGrowthRate,
+  tenYearGrowthRate,
+  setCostOfEquity,
+  costOfEquity,
+  setLongTermGrowthRate,
+  longTermGrowthRate,
 }) {
-  const [FreeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
   const [netIncomeData, setNetIncomeData] = useState(null);
   const [depreceationAmortizationData, setDepreceationAmortizationData] =
     useState([]);
@@ -22,18 +28,14 @@ export default function Financials({
     []
   );
   const [netBorrowingData, setNetBorrowingData] = useState([]);
-  const [fiveYearGrowthRate, setFiveYearGrowthRate] = useState(null);
-  const [tenYearGrowthRate, setTenYearGrowthRate] = useState(null);
-  const [twentyYearGrowthRate, setTwentyYearGrowthRate] = useState([]);
   const [betaData, setBetaData] = useState(null);
   const [riskFreeRate, setRiskFreeRate] = useState(null);
   const [marketRiskPremium, setMarketRiskPremium] = useState([null]);
-  const [costOfEquity, setCostOfEquity] = useState(null);
+
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isCostOfEquityCollapsed, setIsCostOfEquityCollapsed] = useState(true);
 
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
-  const fredApiKey = process.env.NEXT_PUBLIC_FRED_API_KEY;
 
   const toggleCollapse = () => {
     setIsCollapsed((prevState) => !prevState);
@@ -68,29 +70,23 @@ export default function Financials({
         const response = await axios.get(
           `https://financialmodelingprep.com/api/v3/cash-flow-statement/${Ticker}?period=annual&apikey=${fmpApiKey}`
         );
-    
+
         const data = response.data;
-    
+
         if (Array.isArray(data) && data.length > 0) {
           const mostRecentYear = data[0]; // Access the most recent year's data
-    
+
           // Extract values
-          const depreceationAmortization = mostRecentYear?.depreciationAndAmortization || 0;
+          const depreceationAmortization =
+            mostRecentYear?.depreciationAndAmortization || 0;
           const capitalExpenditure = mostRecentYear?.capitalExpenditure || 0;
-          const changeInWorkingCapital = mostRecentYear?.changeInWorkingCapital || 0;
-          const freeCashFlow = mostRecentYear?.freeCashFlow || 0;
-    
+          const changeInWorkingCapital =
+            mostRecentYear?.changeInWorkingCapital || 0;
+
           // Set values to state or props
           setDepreceationAmortizationData(depreceationAmortization);
           setCapitalExpenditureData(capitalExpenditure);
           setChangeInWorkingCapitalData(changeInWorkingCapital);
-    
-          console.log("Free Cash Flow:", freeCashFlow);
-          setInitialFCFE(freeCashFlow); // Set initial Free Cash Flow to Equity
-    
-          // Set default growth rate and discount rate
-          setGrowthRate(0.05); // Example: 5% growth rate
-          setDiscountRate(0.1); // Example: 10% discount rate
         } else {
           console.error("Invalid data format or empty response");
         }
@@ -142,32 +138,35 @@ export default function Financials({
       }
     };
 
-
     const fetchFiveYearGrowthRate = async () => {
       try {
         // Fetch financial ratios from FMP API
         const response = await axios.get(
           `https://financialmodelingprep.com/api/v3/ratios/${Ticker}?apikey=${fmpApiKey}`
         );
-    
+
         const data = response.data;
-    
+
         if (!data || data.length < 5) {
-          console.error(`Insufficient data. Found only ${data.length} records.`);
+          console.error(
+            `Insufficient data. Found only ${data.length} records.`
+          );
           setFiveYearGrowthRate("Insufficient data");
           return;
         }
-    
+
         // Extract the most recent and 5-year-old ROE and Dividend Payout Ratio
         const mostRecentData = data[0];
         const fiveYearsAgoData = data[4];
-    
+
         const mostRecentROE = parseFloat(mostRecentData.returnOnEquity);
         const fiveYearsAgoROE = parseFloat(fiveYearsAgoData.returnOnEquity);
-    
+
         const mostRecentPayoutRatio = parseFloat(mostRecentData.payoutRatio);
-        const fiveYearsAgoPayoutRatio = parseFloat(fiveYearsAgoData.payoutRatio);
-    
+        const fiveYearsAgoPayoutRatio = parseFloat(
+          fiveYearsAgoData.payoutRatio
+        );
+
         if (
           isNaN(mostRecentROE) ||
           isNaN(fiveYearsAgoROE) ||
@@ -178,25 +177,27 @@ export default function Financials({
           setFiveYearGrowthRate("Invalid data");
           return;
         }
-    
+
         // Calculate Retention Ratios
         const mostRecentRetentionRatio = 1 - mostRecentPayoutRatio;
         const fiveYearsAgoRetentionRatio = 1 - fiveYearsAgoPayoutRatio;
-    
+
         // Calculate Sustainable Growth Rates
         const mostRecentSGR = mostRecentROE * mostRecentRetentionRatio;
         const fiveYearsAgoSGR = fiveYearsAgoROE * fiveYearsAgoRetentionRatio;
-    
+
         // Calculate Compound Annual Growth Rate (CAGR)
         const cagr = Math.pow(mostRecentSGR / fiveYearsAgoSGR, 1 / 5) - 1;
-    
+
         console.log(`Most Recent SGR: ${(mostRecentSGR * 100).toFixed(2)}%`);
         console.log(`SGR 5 Years Ago: ${(fiveYearsAgoSGR * 100).toFixed(2)}%`);
-        console.log(`5-Year SGR Growth Rate (CAGR): ${(cagr * 100).toFixed(2)}%`);
-    
+        console.log(
+          `5-Year SGR Growth Rate (CAGR): ${(cagr * 100).toFixed(2)}%`
+        );
+
         // Format CAGR to 2 decimal places
         const formattedCAGR = (cagr * 100).toFixed(2);
-    
+
         setFiveYearGrowthRate(formattedCAGR);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -204,71 +205,36 @@ export default function Financials({
       }
     };
 
-
-    
-    
+    // Todo: Change this to y11 to perpetuity
     // Logic for 20 Year Growth Rate
 
-    const fetchTwentyYearGrowthRate = async () => {
-      try {
-        // Fetch financial ratios from FMP API
-        const response = await axios.get(
-          `https://financialmodelingprep.com/api/v3/ratios/${Ticker}?apikey=${fmpApiKey}`
+    const fetchLongTermGrowthRate = () => {
+      if (
+        freeCashFlowEquityData !== null &&
+        fiveYearGrowthRate !== null &&
+        costOfEquity !== null
+      ) {
+        // Ensure valid input values
+        if (costOfEquity > fiveYearGrowthRate / 100) {
+          // Derive long-term growth rate as a fraction of the 5-year growth rate
+          const longTermGrowth = (fiveYearGrowthRate * 0.5); // Reduce the near-term growth rate to a steady-state level
+    
+          // Update the state
+          setLongTermGrowthRate(longTermGrowth);
+    
+          console.log("Derived Long-Term Growth Rate:", longTermGrowth);
+        } else {
+          console.error(
+            "Invalid rates: Cost of equity must exceed the 5-year growth rate."
+          );
+        }
+      } else {
+        console.error(
+          "Missing required values for long-term growth rate calculation."
         );
-    
-        const data = response.data;
-    
-        if (!data || data.length < 20) {
-          console.error(`Insufficient data. Found only ${data.length} records.`);
-          setTwentyYearGrowthRate("Insufficient data");
-          return;
-        }
-    
-        // Extract the most recent and 20-year-old ROE and Dividend Payout Ratio
-        const mostRecentData = data[0];
-        const twentyYearsAgoData = data[19];
-    
-        const mostRecentROE = parseFloat(mostRecentData.returnOnEquity);
-        const twentyYearsAgoROE = parseFloat(twentyYearsAgoData.returnOnEquity);
-    
-        const mostRecentPayoutRatio = parseFloat(mostRecentData.payoutRatio);
-        const twentyYearsAgoPayoutRatio = parseFloat(twentyYearsAgoData.payoutRatio);
-    
-        if (
-          isNaN(mostRecentROE) ||
-          isNaN(twentyYearsAgoROE) ||
-          isNaN(mostRecentPayoutRatio) ||
-          isNaN(twentyYearsAgoPayoutRatio)
-        ) {
-          console.error("Invalid data for calculation.");
-          setTwentyYearGrowthRate("Invalid data");
-          return;
-        }
-    
-        // Calculate Retention Ratios
-        const mostRecentRetentionRatio = 1 - mostRecentPayoutRatio;
-        const twentyYearsAgoRetentionRatio = 1 - twentyYearsAgoPayoutRatio;
-    
-        // Calculate Sustainable Growth Rates
-        const mostRecentSGR = mostRecentROE * mostRecentRetentionRatio;
-        const twentyYearsAgoSGR = twentyYearsAgoROE * twentyYearsAgoRetentionRatio;
-    
-        // Calculate Compound Annual Growth Rate (CAGR)
-        const cagr = Math.pow(mostRecentSGR / twentyYearsAgoSGR, 1 / 20) - 1;
-    
-        console.log(`Most Recent SGR: ${(mostRecentSGR * 100).toFixed(2)}%`);
-        console.log(`SGR 20 Years Ago: ${(twentyYearsAgoSGR * 100).toFixed(2)}%`);
-        console.log(`20-Year SGR Growth Rate (CAGR): ${(cagr * 100).toFixed(2)}%`);
-    
-        // Format CAGR to 2 decimal places
-        const formattedCAGR = (cagr * 100).toFixed(2);
-    
-        setTwentyYearGrowthRate(formattedCAGR);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setTwentyYearGrowthRate("Error");
       }
     };
+
     const fetchBeta = async () => {
       try {
         const response = await axios.get(
@@ -363,7 +329,7 @@ export default function Financials({
     fetchCashFlow();
     fetchNetBorrowing();
     fetchFiveYearGrowthRate();
-    fetchTwentyYearGrowthRate();
+    fetchLongTermGrowthRate();
 
     fetchBeta();
     fetchRiskFreeRate();
@@ -374,6 +340,7 @@ export default function Financials({
   useEffect(() => {
     if (fiveYearGrowthRate !== null) {
       setTenYearGrowthRate(fiveYearGrowthRate > 15 ? 15 : fiveYearGrowthRate);
+    
     }
   }, [fiveYearGrowthRate]);
 
@@ -384,15 +351,14 @@ export default function Financials({
       riskFreeRate !== null &&
       marketRiskPremium !== null
     ) {
-      console.log("cal - risk free= " + riskFreeRate)
-      console.log("cal - beta= " + betaData)
-      console.log("cal - marketRisk= " + marketRiskPremium)
-
+      console.log("cal - risk free= " + riskFreeRate);
+      console.log("cal - beta= " + betaData);
+      console.log("cal - marketRisk= " + marketRiskPremium);
 
       let calculatedCostOfEquity = riskFreeRate + betaData * marketRiskPremium;
       setCostOfEquity(calculatedCostOfEquity);
     }
-  }, [betaData, riskFreeRate, marketRiskPremium]);
+  }, [betaData, riskFreeRate, marketRiskPremium, Ticker]);
 
   // Calculate Free Cash Flow to Equity when all data is available. If all the required data comes from a single API call, you don’t need this separation.
   useEffect(() => {
@@ -443,9 +409,8 @@ export default function Financials({
               <div className="fcfe-price-qty">
                 <span className="fcfe-title-currency">{currency}</span>
                 <span className="number-inner">
-        
-                  {FreeCashFlowEquityData !== null
-                    ? FreeCashFlowEquityData.toLocaleString()
+                  {freeCashFlowEquityData !== null
+                    ? freeCashFlowEquityData.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>
@@ -466,7 +431,6 @@ export default function Financials({
                     </div>
                     <div className="number-inner">
                       <p>
-                 
                         {netIncomeData !== null
                           ? `${netIncomeData.toLocaleString()}`
                           : "Calculating..."}
@@ -487,7 +451,6 @@ export default function Financials({
                     </div>
                     <div className="number-inner">
                       <p>
-                
                         {depreceationAmortizationData !== null
                           ? `${depreceationAmortizationData.toLocaleString()}`
                           : "Calculating..."}
@@ -508,7 +471,6 @@ export default function Financials({
                     </div>
                     <div className="number-inner">
                       <p>
-                    
                         {capitalExpenditureData !== null
                           ? `${capitalExpenditureData.toLocaleString()}`
                           : "Calculating..."}
@@ -529,7 +491,6 @@ export default function Financials({
                     </div>
                     <div className="number-inner">
                       <p>
-                   
                         {changeInWorkingCapitalData !== null
                           ? `${changeInWorkingCapitalData.toLocaleString()}`
                           : "Calculating..."}
@@ -550,7 +511,6 @@ export default function Financials({
                     </div>
                     <div className="number-inner">
                       <p>
-                   
                         {netBorrowingData !== null
                           ? `${netBorrowingData.toLocaleString()}`
                           : "Calculating..."}
@@ -574,7 +534,6 @@ export default function Financials({
                 </div>
                 <div className="number-inner">
                   <p>
-                    
                     {fiveYearGrowthRate !== "Invalid data" &&
                     fiveYearGrowthRate !== "Insufficient data"
                       ? `${fiveYearGrowthRate} %`
@@ -605,7 +564,8 @@ export default function Financials({
           {/* 20-Year EPS Growth Rate */}
           <div className="row">
             <span className="cash-flow-label">
-              Cash Flow Growth Rate (Year 15-20)
+              Cash Flow Growth Rate (Year 15-{" "}
+              <span className="infinity-symbol">∞</span>)
             </span>
             <span className="value">
               <div className="price-qty-inner">
@@ -613,7 +573,7 @@ export default function Financials({
                   <span className="financial-percentage-inner">PCT</span>
                 </div>
                 <div className="number-inner">
-                  <p>{twentyYearGrowthRate} %</p>
+                  <p>{longTermGrowthRate} %</p>
                 </div>
               </div>
             </span>
@@ -638,7 +598,7 @@ export default function Financials({
               <div className="coe-price-qty">
                 <span className="coe-percentage">PCT</span>
                 <span className="number-inner">
-                  {costOfEquity !== null
+                  {costOfEquity !== null && costOfEquity !== undefined
                     ? `${costOfEquity.toFixed(2)} %`
                     : "Calculating..."}
                 </span>
@@ -679,7 +639,7 @@ export default function Financials({
                     <div className="number-inner">
                       <p>
                         {riskFreeRate !== null && !isNaN(riskFreeRate)
-                          ? `${(riskFreeRate * 100).toFixed(2)} %`
+                          ? `${(riskFreeRate).toFixed(2)} %`
                           : "Loading..."}
                       </p>
                     </div>
