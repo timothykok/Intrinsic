@@ -144,60 +144,64 @@ export default function Financials({
         const response = await axios.get(
           `https://financialmodelingprep.com/api/v3/ratios/${Ticker}?apikey=${fmpApiKey}`
         );
-
+    
         const data = response.data;
-
+    
+        // Check if data exists and has at least 5 years
         if (!data || data.length < 5) {
-          console.error(
-            `Insufficient data. Found only ${data.length} records.`
-          );
+          console.error(`Insufficient data. Found only ${data.length || 0} records.`);
           setFiveYearGrowthRate("Insufficient data");
           return;
         }
-
-        // Extract the most recent and 5-year-old ROE and Dividend Payout Ratio
+    
+        // Extract the most recent and 5-year-old ROE and Payout Ratio
         const mostRecentData = data[0];
         const fiveYearsAgoData = data[4];
-
-        const mostRecentROE = parseFloat(mostRecentData.returnOnEquity);
-        const fiveYearsAgoROE = parseFloat(fiveYearsAgoData.returnOnEquity);
-
-        const mostRecentPayoutRatio = parseFloat(mostRecentData.payoutRatio);
-        const fiveYearsAgoPayoutRatio = parseFloat(
-          fiveYearsAgoData.payoutRatio
-        );
-
+    
+        const mostRecentROE = parseFloat(mostRecentData.returnOnEquity || 0);
+        const fiveYearsAgoROE = parseFloat(fiveYearsAgoData.returnOnEquity || 0);
+    
+        const mostRecentPayoutRatio = parseFloat(mostRecentData.payoutRatio || 0);
+        const fiveYearsAgoPayoutRatio = parseFloat(fiveYearsAgoData.payoutRatio || 0);
+    
+        // Validate ROE and Payout Ratio ranges
         if (
           isNaN(mostRecentROE) ||
           isNaN(fiveYearsAgoROE) ||
-          isNaN(mostRecentPayoutRatio) ||
-          isNaN(fiveYearsAgoPayoutRatio)
+          mostRecentPayoutRatio < 0 ||
+          mostRecentPayoutRatio > 1 ||
+          fiveYearsAgoPayoutRatio < 0 ||
+          fiveYearsAgoPayoutRatio > 1
         ) {
-          console.error("Invalid data for calculation.");
+          console.error("Invalid data for ROE or Payout Ratio.");
           setFiveYearGrowthRate("Invalid data");
           return;
         }
-
+    
         // Calculate Retention Ratios
         const mostRecentRetentionRatio = 1 - mostRecentPayoutRatio;
         const fiveYearsAgoRetentionRatio = 1 - fiveYearsAgoPayoutRatio;
-
-        // Calculate Sustainable Growth Rates
+    
+        // Calculate Sustainable Growth Rates (SGR)
         const mostRecentSGR = mostRecentROE * mostRecentRetentionRatio;
         const fiveYearsAgoSGR = fiveYearsAgoROE * fiveYearsAgoRetentionRatio;
-
+    
+        if (mostRecentSGR <= 0 || fiveYearsAgoSGR <= 0) {
+          console.error("Invalid SGR values, resulting in non-positive growth.");
+          setFiveYearGrowthRate("Invalid data");
+          return;
+        }
+    
         // Calculate Compound Annual Growth Rate (CAGR)
         const cagr = Math.pow(mostRecentSGR / fiveYearsAgoSGR, 1 / 5) - 1;
-
+    
         console.log(`Most Recent SGR: ${(mostRecentSGR * 100).toFixed(2)}%`);
         console.log(`SGR 5 Years Ago: ${(fiveYearsAgoSGR * 100).toFixed(2)}%`);
-        console.log(
-          `5-Year SGR Growth Rate (CAGR): ${(cagr * 100).toFixed(2)}%`
-        );
-
+        console.log(`5-Year SGR Growth Rate (CAGR): ${(cagr * 100).toFixed(2)}%`);
+    
         // Format CAGR to 2 decimal places
         const formattedCAGR = (cagr * 100).toFixed(2);
-
+    
         setFiveYearGrowthRate(formattedCAGR);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -205,29 +209,19 @@ export default function Financials({
       }
     };
 
-    // Todo: Change this to y11 to perpetuity
-    // Logic for 20 Year Growth Rate
-
     const fetchLongTermGrowthRate = () => {
       if (
         freeCashFlowEquityData !== null &&
         fiveYearGrowthRate !== null &&
         costOfEquity !== null
       ) {
-        // Ensure valid input values
-        if (costOfEquity > fiveYearGrowthRate / 100) {
-          // Derive long-term growth rate as a fraction of the 5-year growth rate
-          const longTermGrowth = (fiveYearGrowthRate * 0.5); // Reduce the near-term growth rate to a steady-state level
+        // Derive long-term growth rate as a fraction of the 5-year growth rate
+        const longTermGrowth = (fiveYearGrowthRate * 0.5); // Reduce the near-term growth rate to a steady-state level
     
-          // Update the state
-          setLongTermGrowthRate(longTermGrowth);
+        // Update the state
+        setLongTermGrowthRate(longTermGrowth);
     
-          console.log("Derived Long-Term Growth Rate:", longTermGrowth);
-        } else {
-          console.error(
-            "Invalid rates: Cost of equity must exceed the 5-year growth rate."
-          );
-        }
+        console.log("Derived Long-Term Growth Rate:", longTermGrowth);
       } else {
         console.error(
           "Missing required values for long-term growth rate calculation."
