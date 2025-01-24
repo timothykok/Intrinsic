@@ -5,7 +5,7 @@ import axios from "axios";
 
 export default function Calculation({
   Ticker,
-  FreeCashFlowEquityData,
+  freeCashFlowEquityData,
   tenYearGrowthRate,
   costOfEquity,
   longTermGrowthRate,
@@ -45,7 +45,7 @@ export default function Calculation({
   // Calculate PV of FCFE
   useEffect(() => {
     if (
-      FreeCashFlowEquityData !== null &&
+      freeCashFlowEquityData !== null &&
       tenYearGrowthRate !== null &&
       costOfEquity !== null &&
       longTermGrowthRate !== null
@@ -54,13 +54,13 @@ export default function Calculation({
 
       // Calculate PV of FCFE from Year 1 to Year 10
       for (let t = 1; t <= 10; t++) {
-        const projectedFCFE = FreeCashFlowEquityData * Math.pow(1 + tenYearGrowthRate, t);
+        const projectedFCFE = freeCashFlowEquityData * Math.pow(1 + tenYearGrowthRate, t);
         const discountedFCFE = projectedFCFE / Math.pow(1 + costOfEquity, t);
         pv += discountedFCFE;
       }
 
       // Calculate the perpetuity value starting from Year 11
-      const fcfeYear11 = FreeCashFlowEquityData * Math.pow(1 + tenYearGrowthRate, 11);
+      const fcfeYear11 = freeCashFlowEquityData * Math.pow(1 + tenYearGrowthRate, 11);
       const perpetuityValue = fcfeYear11 / (costOfEquity - longTermGrowthRate);
 
       // Discount the perpetuity value back to the present
@@ -73,13 +73,13 @@ export default function Calculation({
       // Set the final present value
       setPresentValue(parseFloat(pv.toFixed(2)));
 
-      console.log("Initial FCFE - calc:", FreeCashFlowEquityData);
+      console.log("Initial FCFE - calc:", freeCashFlowEquityData);
       console.log("10 year Growth Rate - calc :", tenYearGrowthRate);
       console.log("Cost Of Equity -calc :", costOfEquity);
       console.log("Long-Term Growth Rate -calc :", longTermGrowthRate);
       console.log("Present Value of FCFE to Perpetuity - calc:", pv);
     }
-  }, [FreeCashFlowEquityData, tenYearGrowthRate, costOfEquity, longTermGrowthRate]);
+  }, [freeCashFlowEquityData, tenYearGrowthRate, costOfEquity, longTermGrowthRate]);
 
   return (
     <>

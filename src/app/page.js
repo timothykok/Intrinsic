@@ -116,7 +116,7 @@ export default function Home() {
           <Calculation
             Ticker={ticker}
             costOfEquity={costOfEquity}
-            FreeCashFlowEquityData={freeCashFlowEquityData}
+            freeCashFlowEquityData={freeCashFlowEquityData}
             tenYearGrowthRate={tenYearGrowthRate}
             longTermGrowthRate={longTermGrowthRate}
             outstandingShares={outstandingShares}
