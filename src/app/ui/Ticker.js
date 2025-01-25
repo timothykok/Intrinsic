@@ -47,16 +47,16 @@ export default function Ticker() {
         {stocks.map((stock, index) => (
           <div
             key={index}
-            className="ticker-item flex items-center space-x-4 text-black"
+            className="ticker-item flex items-center space-x-2 text-black"
           >
-            <span className="ticker-stock-symbol font-medium">
+            <span className="ticker-stock-symbol font-bold">
               {stock.symbol}
             </span>
-            <span className="ticker-stock-price font-light">
+            <span className="ticker-stock-price font-normal">
               ${stock.price.toFixed(2)}
             </span>
             <span
-              className={`font-light ${
+              className={`font-normal ${
                 stock.change.includes("+")
                   ? "text-green-500"
                   : "text-red-500"
