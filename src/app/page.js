@@ -14,7 +14,6 @@ export default function Home() {
   const [input, setInput] = useState(""); // Raw input from the user
   const [ticker, setTicker] = useState(""); // Debounced ticker value
 
-
   //Financials
   const [stockInfo, setStockInfo] = useState(null);
   const [freeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
@@ -100,6 +99,7 @@ export default function Home() {
             percentage={stockInfo.percentage}
             timestamp={stockInfo.timestamp}
           />
+
           <Financials
             Ticker={ticker}
             setCostOfEquity={setCostOfEquity}
@@ -113,6 +113,7 @@ export default function Home() {
             setLongTermGrowthRate={setLongTermGrowthRate}
             longTermGrowthRate={longTermGrowthRate}
           />
+
           <Calculation
             Ticker={ticker}
             costOfEquity={costOfEquity}
@@ -126,12 +127,17 @@ export default function Home() {
           />
           <ShareValue
             Ticker={ticker}
-          
             price={stockInfo.price}
             outStandingShares={outstandingShares}
             presentValue={presentValue}
           />
-          <Projection Ticker={ticker} freeCashFlowEquityData={freeCashFlowEquityData} fiveYearGrowthRate={fiveYearGrowthRate} tenYearGrowthRate={tenYearGrowthRate} longTermGrowthRate={longTermGrowthRate}/>
+          <Projection
+            Ticker={ticker}
+            freeCashFlowEquityData={freeCashFlowEquityData}
+            fiveYearGrowthRate={fiveYearGrowthRate}
+            tenYearGrowthRate={tenYearGrowthRate}
+            longTermGrowthRate={longTermGrowthRate}
+          />
 
           {/* <NewFinancials Ticker ={ticker}/> */}
         </>
