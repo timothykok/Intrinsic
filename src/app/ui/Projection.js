@@ -89,6 +89,8 @@ export default function Projection({ Ticker, freeCashFlowEquityData, fiveYearGro
           </tbody>
         </table>
       </div>
+
+      
     </>
   );
 }

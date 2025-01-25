@@ -83,19 +83,20 @@ export default function Calculation({
 
   return (
     <>
-      <div className="calculation">
-        <p>Calculation</p>
-        <hr className="divider" />
-
-        <div className="inner-container">
-          <div className="row">
-            <span className="label">
-              Present Value of Free Cash Flow to Equity to Perpetuity
+      <div className="max-w-3xl mx-auto mt-8">
+        <p className="text-lg font-light text-gray-600">Calculation</p>
+        <hr className="my-4 border-gray-300" />
+  
+        <div className="space-y-4">
+          {/* Present Value of Free Cash Flow to Equity to Perpetuity */}
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 text-lg ml-4 w-96 ">
+              Present Value of Free Cash Flow to Equity
             </span>
-            <span className="value">
-              <div className="price-qty">
-                <span className="currency">{currency}</span>
-                <span className="number-inner">
+            <span className="text-right">
+              <div className="flex items-center">
+                <span className="text-gray-600 text-lg mr-2">{currency}</span>
+                <span className="font-light text-lg w-48 text-gray-600">
                   {presentValue !== null
                     ? presentValue.toLocaleString()
                     : "Calculating..."}
@@ -103,13 +104,16 @@ export default function Calculation({
               </div>
             </span>
           </div>
-
-          <div className="row">
-            <span className="label">Outstanding Shares</span>
-            <span className="value">
-              <div className="price-qty">
-                <span className="currency">QTY</span>
-                <span className="number-inner">
+  
+          {/* Outstanding Shares */}
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 text-lg ml-4 w-80">
+              Outstanding Shares
+            </span>
+            <span className="text-right">
+              <div className="flex items-center">
+                <span className="text-gray-600 text-lg mr-2">QTY</span>
+                <span className="font-light text-lg w-48 text-gray-600">
                   {outstandingShares !== null
                     ? outstandingShares.toLocaleString()
                     : "Calculating..."}

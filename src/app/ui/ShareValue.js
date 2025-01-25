@@ -32,65 +32,75 @@ export default function ShareValue({
 
   return (
     <>
-      <div className="share-value">
-        <p>Intrinsic Value</p>
-        <hr className="divider"></hr>
-
-        <div className="inner-container">
-          <div className="row">
-            <span className="label">Intrinsic Value Per Share</span>
-            <span className="value">
-              <div className="price-qty">
-                <span className="currency">{currency}</span>
-                <span className="number-inner">
+      <div className="max-w-3xl mx-auto mt-8">
+        <p className="text-lg font-light text-gray-600">Intrinsic Value</p>
+        <hr className="my-4 border-gray-300" />
+  
+        <div className="space-y-4">
+          {/* Present Value of Free Cash Flow to Equity to Perpetuity */}
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 ml-4 w-96 text-lg">
+              Intrinsic Value Per Share
+            </span>
+            <span className="text-right">
+              <div className="flex items-center">
+                <span className="text-gray-600 mr-2">{currency}</span>
+                <span className="font-light w-48 text-gray-600 text-lg">
                   {intrinsicValuePerShare !== null
-                    ? `$ ${intrinsicValuePerShare.toLocaleString()}`
+                    ? intrinsicValuePerShare.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>
             </span>
           </div>
-
-          <div className="row">
-            <span className="label">Last Closing Price</span>
-            <span className="value">
-              <div className="price-qty">
-                <span className="currency">{currency}</span>
-                <span className="number-inner">
-                  {price !== null
-                    ? `$ ${price.toLocaleString()}`
-                    : "Calculating..."}
+  
+          {/* Outstanding Shares */}
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 ml-4 w-80 text-lg">
+              Last Closing Price
+            </span>
+            <span className="text-right">
+              <div className="flex items-center">
+                <span className="text-gray-600 mr-2">{currency}</span>
+                <span className="font-light w-48 text-gray-600 text-lg">
+                  {price !== null ? price.toLocaleString() : "Calculating..."}
                 </span>
               </div>
             </span>
           </div>
-
-          <div className="row">
-            <span className="label">Discount/Premium</span>
-            <span className="value">
-              <div className="price-qty">
-                <span className="currency">PCT</span>
-                <span className="number-inner">
+  
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 ml-4 w-80 text-lg">Discount/Premium</span>
+            <span className="text-right">
+              <div className="flex items-center">
+                <span className="text-gray-600 mr-2 text-lg">PCT</span>
+                <span className="font-light w-48 text-gray-600 text-lg">
                   {discountPremium !== null
-                    ? `${discountPremium.toFixed(2)} %`
+                    ? discountPremium.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>
             </span>
           </div>
-
-          <div className="intrinsic-result">
-            <p>
-              Estimated DCF Value of one {Ticker} stock is{" "}
-              <span>${intrinsicValuePerShare?.toFixed(2)}</span>. Compared to
-              the current market price of{" "}
-              <span>
-                ${price?.toFixed(2)} {currency}
-              </span>
-              , the stock is <span className="valuation-percentage"> {underOverValue} by{" "}
-              <span>{discountPremium?.toFixed(2)}%</span>. </span>
-            </p>
-          </div>
+        </div>
+  
+        {/* Ensure proper spacing for the last paragraph */}
+        <div className="mt-8 pt-4 text-gray-700">
+          <p className="text-lg font-light">
+            Estimated DCF Value of one {Ticker} stock is{" "}
+            <span className="font-medium text-lg">
+              ${intrinsicValuePerShare?.toFixed(2)}
+            </span>
+            . Compared to the current market price of{" "}
+            <span className="font-medium text-lg text-gray-600">
+              ${price?.toFixed(2)} {currency}
+            </span>
+            , the stock is{" "}
+            <span className="font-medium text-green-600 text-lg">
+              {/* Change to text-red-600 if undervalued */}
+              {underOverValue} by <span>{discountPremium?.toFixed(2)}%</span>.
+            </span>
+          </p>
         </div>
       </div>
     </>
