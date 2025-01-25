@@ -75,10 +75,12 @@ export default function Home() {
   return (
     <>
       <Ticker />
-      <div className="title-wrapper">
-        <h1 className="title">Intrinsic.</h1>
+      <div className="title-wrapper flex flex-col items-center py-8 px-4">
+        <h1 className="title text-4xl font-bold text-gray-800 mb-6">
+          Intrinsic.
+        </h1>
         <input
-          className="search-bar"
+          className="search-bar w-full max-w-md p-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           type="text"
           placeholder="Enter Stock Ticker (e.g., GOOG)"
           value={input}
