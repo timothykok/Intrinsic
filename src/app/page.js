@@ -76,16 +76,26 @@ export default function Home() {
     <>
       <Ticker />
       <div className="title-wrapper flex flex-col items-center py-8 px-4">
-  <h1 className="title text-4xl font-bold text-gray-800 mb-8">Intrinsic.</h1>
-  <input
-    className="search-bar w-[800px] h-10 px-4 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 mt-12"
-    type="text"
-    placeholder="Enter Stock Ticker (e.g., GOOG)"
-    value={input}
-    onChange={(e) => setInput(e.target.value)}
-    onKeyDown={handleKeyDown}
-  />
-</div>
+        {/* Title Section */}
+        <div className="title-container">
+          <h1 className="title text-4xl font-bold text-gray-800">Intrinsic.</h1>
+        </div>
+
+        {/* Spacing Section */}
+        <div className="spacer h-12"></div>
+
+        {/* Search Bar Section */}
+        <div className="search-bar-container">
+          <input
+            className="search-bar w-[800px] h-10 px-4 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            type="text"
+            placeholder="Enter Stock Ticker (e.g., GOOG)"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+      </div>
 
       {stockInfo && (
         <>
