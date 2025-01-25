@@ -88,7 +88,7 @@ export default function Home() {
         {/* Search Bar Section */}
         <div className="search-bar-container">
           <input
-            className="search-bar w-[800px] h-10 px-4 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            className="search-bar w-[800px] h-[40px] px-4 border border-gray-100 rounded-lg shadow-m placeholder-gray-600 "
             type="text"
             placeholder="Enter Stock Ticker (e.g., GOOG)"
             value={input}
