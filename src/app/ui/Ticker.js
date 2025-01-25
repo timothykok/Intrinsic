@@ -42,16 +42,25 @@ export default function Ticker() {
   }, []);
 
   return (
-    <div className="ticker-wrapper bg-gray-800 overflow-hidden">
+    <div className="ticker-wrapper bg-gray-800 overflow-hidden py-2">
       <div className="ticker-content flex animate-scroll space-x-8">
         {stocks.map((stock, index) => (
-          <div key={index} className="ticker-item flex items-center space-x-2">
-            <span className="ticker-stock-symbol">{stock.symbol}</span>
-            <span className="ticker-stock-price">${stock.price.toFixed(2)}</span>
+          <div
+            key={index}
+            className="ticker-item flex items-center space-x-4 text-white"
+          >
+            <span className="ticker-stock-symbol font-medium">
+              {stock.symbol}
+            </span>
+            <span className="ticker-stock-price font-light">
+              ${stock.price.toFixed(2)}
+            </span>
             <span
-              className={
-                stock.change.includes("+") ? "text-green-500" : "text-red-500"
-              }
+              className={`font-semibold ${
+                stock.change.includes("+")
+                  ? "text-green-500"
+                  : "text-red-500"
+              }`}
             >
               {stock.change}%
             </span>

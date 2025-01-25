@@ -82,7 +82,7 @@ export default function Home() {
         </div>
 
         {/* Spacing Section */}
-        <div className="spacer h-12"></div>
+        <div className="spacer h-24"></div>
 
         {/* Search Bar Section */}
         <div className="search-bar-container">
