@@ -47,7 +47,7 @@ export default function Ticker() {
         {stocks.map((stock, index) => (
           <div
             key={index}
-            className="ticker-item flex items-center space-x-4 text-white"
+            className="ticker-item flex items-center space-x-4 text-black"
           >
             <span className="ticker-stock-symbol font-medium">
               {stock.symbol}

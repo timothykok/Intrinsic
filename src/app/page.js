@@ -75,6 +75,7 @@ export default function Home() {
   return (
     <>
       <Ticker />
+      <div className="spacer h-24"></div>
       <div className="title-wrapper flex flex-col items-center py-8 px-4">
         {/* Title Section */}
         <div className="title-container">
