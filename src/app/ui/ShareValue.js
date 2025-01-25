@@ -85,7 +85,7 @@ export default function ShareValue({
         </div>
   
         {/* Ensure proper spacing for the last paragraph */}
-        <div className="mt-8 pt-4 text-gray-700">
+        <div className="mt-8 pt-4 text-gray-700 w-auto">
           <p className="text-lg font-light">
             Estimated DCF Value of one {Ticker} stock is{" "}
             <span className="font-medium text-lg">

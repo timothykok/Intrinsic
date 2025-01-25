@@ -543,7 +543,7 @@ export default function Financials({
           <div className="flex justify-between items-center h-6">
             <span className="text-gray-600 text-lg ml-6 w-80">
               Cash Flow Growth Rate (Year 15-{" "}
-              <span className="text-lg">∞</span>)
+              <span className="text-xxl">∞</span>)
             </span>
             <span className="text-right">
               <div className="flex items-center">
