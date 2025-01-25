@@ -56,7 +56,7 @@ export default function Ticker() {
               ${stock.price.toFixed(2)}
             </span>
             <span
-              className={`font-semibold ${
+              className={`font-light ${
                 stock.change.includes("+")
                   ? "text-green-500"
                   : "text-red-500"
