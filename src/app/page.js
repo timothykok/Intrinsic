@@ -80,7 +80,7 @@ export default function Home() {
           Intrinsic.
         </h1>
         <input
-          className="search-bar w-full max-w-md p-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="search-bar w-[800px] h-10 px-4 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-200"
           type="text"
           placeholder="Enter Stock Ticker (e.g., GOOG)"
           value={input}
