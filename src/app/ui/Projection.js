@@ -10,7 +10,7 @@ export default function Projection({
   tenYearGrowthRate,
   longTermGrowthRate,
 }) {
-  const years = Array.from({ length: 12 }, (_, i) => 2025 + i); // Generate years from 2025 to 2036
+  const years = Array.from({ length: 21 }, (_, i) => 2025 + i); // Generate years from 2025 to 2036
   const [projectedData, setProjectedData] = useState({
     freeCashFlows: [],
     discountFactors: [],
@@ -169,23 +169,34 @@ export default function Projection({
             </table>
           </div>
 
-          <div className="content-end w-max ml-auto">
-            {currentPage === 1 && (
+          <div className="content-end w-max ml-auto gap-2 flex">
+            <div>
+              <button
+                onClick={handleBack}
+                disabled={currentPage === 1} // Disable if on the first page
+                className={`bg-white mt-8 ${
+                  currentPage === 1
+                    ? "text-gray-400 border-gray-200 cursor-not-allowed"
+                    : "text-gray-700 hover:bg-gray-100"
+                } font-light py-2 px-4 border border-gray-400 rounded-[6px]`}
+              >
+                Prev
+              </button>
+            </div>
+
+            <div>
               <button
                 onClick={handleNext}
-                className="bg-white mt-8 hover:bg-gray-100 text-gray-700 font-light py-2 px-4 border border-gray-400 rounded-[6px]"
+                disabled={currentPage === 2} // Disable if on the last page
+                className={`bg-white mt-8 ${
+                  currentPage === 2
+                    ? "text-gray-400 cursor-not-allowed border-gray-200"
+                    : "text-gray-700 hover:bg-gray-100"
+                } font-light py-2 px-4 border border-gray-400 rounded-[6px]`}
               >
                 Next
               </button>
-            )}
-            {currentPage === 2 && (
-              <button
-                onClick={handleBack}
-                className="bg-white mt-8 hover:bg-gray-100 text-gray-700 font-light py-2 px-4 border border-gray-400 rounded-[6px]"
-              >
-                Back
-              </button>
-            )}
+            </div>
           </div>
         </div>
       </div>
