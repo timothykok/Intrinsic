@@ -10,14 +10,16 @@ export default function Projection({
   tenYearGrowthRate,
   longTermGrowthRate,
 }) {
-  const years = Array.from({ length: 21 }, (_, i) => 2025 + i); // Generate years from 2025 to 2036
+  const years = Array.from({ length: 21 }, (_, i) => 2025 + i); // Generate years from 2025 to 2045
   const [projectedData, setProjectedData] = useState({
     freeCashFlows: [],
     discountFactors: [],
     discountedValues: [],
   });
-  const [currentPage, setCurrentPage] = useState(1); // 1 for first part, 2 for second part
-  const tableRef = useRef(null);
+  const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
+  const itemsPerPage = 4; // Number of years to display per page
+  const totalPages = Math.ceil(years.length / itemsPerPage); // Total number of pages
+  const tableRef = useRef(null); // Ref for the table container
 
   useEffect(() => {
     if (
@@ -32,7 +34,7 @@ export default function Projection({
       let currentFCFE = freeCashFlowEquityData;
       const discountRate = 1 + tenYearGrowthRate / 100;
 
-      // Generate data for 2025 to 2036
+      // Generate data for 2025 to 2045
       years.forEach((year, index) => {
         // Determine the growth rate: first 5 years, next 5 years, and long term
         let growthRate;
@@ -68,17 +70,30 @@ export default function Projection({
     longTermGrowthRate,
   ]);
 
+  // Handle next page scroll
   const handleNext = () => {
-    setCurrentPage(2);
-    tableRef.current.scrollTo({
-      left: tableRef.current.scrollWidth,
-      behavior: "smooth",
-    });
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      // Calculate the scroll position for the next page
+      const scrollAmount = tableRef.current.clientWidth; // Scroll by the width of the visible table
+      tableRef.current.scrollTo({
+        left: tableRef.current.scrollLeft + scrollAmount,
+        behavior: "smooth",
+      });
+    }
   };
 
+  // Handle previous page scroll
   const handleBack = () => {
-    setCurrentPage(1);
-    tableRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      // Calculate the scroll position for the previous page
+      const scrollAmount = tableRef.current.clientWidth; // Scroll by the width of the visible table
+      tableRef.current.scrollTo({
+        left: tableRef.current.scrollLeft - scrollAmount,
+        behavior: "smooth",
+      });
+    }
   };
 
   return (
@@ -99,12 +114,7 @@ export default function Projection({
                   <th className="min-w-[185px] text-left text-sm font-light">
                     Year
                   </th>
-                  {years.slice(0, 4).map((year) => (
-                    <td key={year} className="p-3 text-sm text-center">
-                      {year}
-                    </td>
-                  ))}
-                  {years.slice(4).map((year) => (
+                  {years.map((year) => (
                     <td key={year} className="p-3 text-sm text-center">
                       {year}
                     </td>
@@ -116,13 +126,8 @@ export default function Projection({
                   <th className="min-w-[185px] text-left text-sm font-light">
                     Free Cash Flow (Projected) (Millions)
                   </th>
-                  {projectedData.freeCashFlows.slice(0, 4).map((fcf, index) => (
+                  {projectedData.freeCashFlows.map((fcf, index) => (
                     <td key={index} className="p-3 text-sm text-center">
-                      {(fcf / 1_000_000).toFixed(2)}
-                    </td>
-                  ))}
-                  {projectedData.freeCashFlows.slice(4).map((fcf, index) => (
-                    <td key={index + 4} className="p-3 text-sm text-center">
                       {(fcf / 1_000_000).toFixed(2)}
                     </td>
                   ))}
@@ -131,39 +136,21 @@ export default function Projection({
                   <th className="min-w-[185px] text-left text-sm font-light">
                     Discount Factor
                   </th>
-                  {projectedData.discountFactors
-                    .slice(0, 4)
-                    .map((factor, index) => (
-                      <td key={index} className="p-3 text-sm text-center">
-                        {factor.toFixed(2)}
-                      </td>
-                    ))}
-                  {projectedData.discountFactors
-                    .slice(4)
-                    .map((factor, index) => (
-                      <td key={index + 4} className="p-3 text-sm text-center">
-                        {factor.toFixed(2)}
-                      </td>
-                    ))}
+                  {projectedData.discountFactors.map((factor, index) => (
+                    <td key={index} className="p-3 text-sm text-center">
+                      {factor.toFixed(2)}
+                    </td>
+                  ))}
                 </tr>
                 <tr>
                   <th className="min-w-[185px] text-left text-sm font-light">
                     Discount Value (Millions)
                   </th>
-                  {projectedData.discountedValues
-                    .slice(0, 4)
-                    .map((value, index) => (
-                      <td key={index} className="p-3 text-sm text-center">
-                        {(value / 1_000_000).toFixed(2)}
-                      </td>
-                    ))}
-                  {projectedData.discountedValues
-                    .slice(4)
-                    .map((value, index) => (
-                      <td key={index + 4} className="p-3 text-sm text-center">
-                        {(value / 1_000_000).toFixed(2)}
-                      </td>
-                    ))}
+                  {projectedData.discountedValues.map((value, index) => (
+                    <td key={index} className="p-3 text-sm text-center">
+                      {(value / 1_000_000).toFixed(2)}
+                    </td>
+                  ))}
                 </tr>
               </tbody>
             </table>
@@ -187,9 +174,9 @@ export default function Projection({
             <div>
               <button
                 onClick={handleNext}
-                disabled={currentPage === 2} // Disable if on the last page
+                disabled={currentPage === totalPages} // Disable if on the last page
                 className={`bg-white mt-8 ${
-                  currentPage === 2
+                  currentPage === totalPages
                     ? "text-gray-400 cursor-not-allowed border-gray-200"
                     : "text-gray-700 hover:bg-gray-100"
                 } font-light py-2 px-4 border border-gray-400 rounded-[6px]`}
