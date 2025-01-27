@@ -11,20 +11,18 @@ export default function Ticker() {
   useEffect(() => {
     const fetchStocks = async () => {
       try {
-        // API Call to Financial Modeling Prep
         const symbols = ["AAPL", "MSFT", "UBER", "AMZN", "META", "GOOG", "TSLA", "NVDA", "ADBE", "MA", "PYPL"];
-        const symbolString = symbols.join(","); // Create a comma-separated string of symbols
+        const symbolString = symbols.join(",");
 
         const response = await axios.get(
           `https://financialmodelingprep.com/api/v3/quote/${symbolString}?apikey=${fmpApiKey}`
         );
 
-        // Map API response to desired format
         const stockData = response.data.map((data) => {
           return {
             symbol: data.symbol,
-            price: data.price, // Current price
-            change: data.change > 0 ? `+${data.change}` : `${data.change} (${data.changesPercentage.toFixed(2)})`, // Price change and percentage
+            price: data.price,
+            change: data.change > 0 ? `+${data.change}` : `${data.change} (${data.changesPercentage.toFixed(2)})`,
           };
         });
 
@@ -36,36 +34,33 @@ export default function Ticker() {
 
     fetchStocks();
 
-    // Refresh stock data every minute
-    const interval = setInterval(fetchStocks, 60000); // Update every 60 seconds
-    return () => clearInterval(interval); // Clean up interval on unmount
+    const interval = setInterval(fetchStocks, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="ticker-wrapper bg-gray-800 overflow-hidden py-2">
-      <div className="ticker-content flex animate-scroll space-x-8">
+    <div className="ticker-wrapper bg-gray-800 overflow-hidden py-2 w-auto">
+      <div className="ticker-content flex animate-ticker-scroll whitespace-nowrap gap-8">
+        {/* Original Ticker Items */}
         {stocks.map((stock, index) => (
           <div
             key={index}
-            className="ticker-item flex items-center space-x-2 text-black"
+            className="ticker-item flex items-center mr-8 flex-shrink-0"
           >
-            <span className="ticker-stock-symbol font-bold">
-              {stock.symbol}
-            </span>
-            <span className="ticker-stock-price font-normal">
+            <span className="ticker-stock-symbol font-bold">{stock.symbol}</span>
+            <span className="ticker-stock-price font-normal mx-2">
               ${stock.price.toFixed(2)}
             </span>
             <span
               className={`font-normal ${
-                stock.change.includes("+")
-                  ? "text-green-500"
-                  : "text-red-500"
+                stock.change.includes("+") ? "text-green-500" : "text-red-500"
               }`}
             >
               {stock.change}%
             </span>
           </div>
         ))}
+        
       </div>
     </div>
   );

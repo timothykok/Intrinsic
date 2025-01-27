@@ -11,6 +11,9 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      animation: {
+        "ticker-scroll": "ticker-scroll 30s linear infinite",
+      },
     },
   },
   plugins: [],

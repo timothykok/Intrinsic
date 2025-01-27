@@ -112,8 +112,13 @@ body {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%); /* Move by 50% of the total width */
   }
+}
+
+.animate-scroll {
+  animation: scroll 20s linear infinite; /* Adjust duration as needed */
+  white-space: nowrap;
 }
 
 .ticker-wrapper {
@@ -512,4 +517,13 @@ body {
 
 .infinity-symbol {
   font-size: 24px;
+}
+
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

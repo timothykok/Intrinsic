@@ -32,7 +32,7 @@ export default function ShareValue({
 
   return (
     <>
-      <div className="max-w-3xl mx-auto mt-8">
+      <div className="max-w-[800px] mx-auto mt-8">
         <p className="text-lg font-light text-gray-600">Intrinsic Value</p>
         <hr className="my-4 border-gray-300" />
   

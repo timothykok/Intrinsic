@@ -135,17 +135,14 @@ export default function Financials({
         }
       }
     };
-
     const fetchFiveYearGrowthRate = async () => {
       try {
         // Fetch financial ratios from FMP API
         const response = await axios.get(
           `https://financialmodelingprep.com/api/v3/ratios/${Ticker}?apikey=${fmpApiKey}`
-        );
+        );       
 
         const data = response.data;
-
-        // Check if data exists and has at least 5 years
         if (!data || data.length < 5) {
           console.error(
             `Insufficient data. Found only ${data.length || 0} records.`
@@ -154,64 +151,22 @@ export default function Financials({
           return;
         }
 
-        // Extract the most recent and 5-year-old ROE and Payout Ratio
-        const mostRecentData = data[0];
-        const fiveYearsAgoData = data[4];
+        // Extract ROE for the most recent year (end of the year) and 5 years ago (start of the year)
+        const mostRecentROE = parseFloat(data[0].returnOnEquity || 0); // End of the year
+        const fiveYearsAgoROE = parseFloat(data[4].returnOnEquity || 0); // Start of the year
 
-        const mostRecentROE = parseFloat(mostRecentData.returnOnEquity || 0);
-        const fiveYearsAgoROE = parseFloat(
-          fiveYearsAgoData.returnOnEquity || 0
-        );
+        // Log the ROE values for debugging
+        console.log(`Most Recent ROE: ${(mostRecentROE * 100).toFixed(2)}%`);
+        console.log(`ROE 5 Years Ago: ${(fiveYearsAgoROE * 100).toFixed(2)}%`);
 
-        const mostRecentPayoutRatio = parseFloat(
-          mostRecentData.payoutRatio || 0
-        );
-        const fiveYearsAgoPayoutRatio = parseFloat(
-          fiveYearsAgoData.payoutRatio || 0
-        );
+        // Calculate the Compound Annual Growth Rate (CAGR) for ROE
+        const cagr = Math.pow(mostRecentROE / fiveYearsAgoROE, 1 / 5) - 1;
 
-        // Validate ROE and Payout Ratio ranges
-        if (
-          isNaN(mostRecentROE) ||
-          isNaN(fiveYearsAgoROE) ||
-          mostRecentPayoutRatio < 0 ||
-          mostRecentPayoutRatio > 1 ||
-          fiveYearsAgoPayoutRatio < 0 ||
-          fiveYearsAgoPayoutRatio > 1
-        ) {
-          console.error("Invalid data for ROE or Payout Ratio.");
-          setFiveYearGrowthRate("Invalid data");
-          return;
-        }
+        // Log the CAGR for debugging
+        console.log(`5-Year ROE CAGR: ${(cagr * 100).toFixed(2)}%`);
 
-        // Calculate Retention Ratios
-        const mostRecentRetentionRatio = 1 - mostRecentPayoutRatio;
-        const fiveYearsAgoRetentionRatio = 1 - fiveYearsAgoPayoutRatio;
-
-        // Calculate Sustainable Growth Rates (SGR)
-        const mostRecentSGR = mostRecentROE * mostRecentRetentionRatio;
-        const fiveYearsAgoSGR = fiveYearsAgoROE * fiveYearsAgoRetentionRatio;
-
-        if (mostRecentSGR <= 0 || fiveYearsAgoSGR <= 0) {
-          console.error(
-            "Invalid SGR values, resulting in non-positive growth."
-          );
-          setFiveYearGrowthRate("Invalid data");
-          return;
-        }
-
-        // Calculate Compound Annual Growth Rate (CAGR)
-        const cagr = Math.pow(mostRecentSGR / fiveYearsAgoSGR, 1 / 5) - 1;
-
-        console.log(`Most Recent SGR: ${(mostRecentSGR * 100).toFixed(2)}%`);
-        console.log(`SGR 5 Years Ago: ${(fiveYearsAgoSGR * 100).toFixed(2)}%`);
-        console.log(
-          `5-Year SGR Growth Rate (CAGR): ${(cagr * 100).toFixed(2)}%`
-        );
-
-        // Format CAGR to 2 decimal places
+        // Format CAGR to 2 decimal places and set the state
         const formattedCAGR = (cagr * 100).toFixed(2);
-
         setFiveYearGrowthRate(formattedCAGR);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -219,23 +174,56 @@ export default function Financials({
       }
     };
 
-    const fetchLongTermGrowthRate = () => {
-      if (
-        freeCashFlowEquityData !== null &&
-        fiveYearGrowthRate !== null &&
-        costOfEquity !== null
-      ) {
-        // Derive long-term growth rate as a fraction of the 5-year growth rate
-        const longTermGrowth = fiveYearGrowthRate * 0.5; // Reduce the near-term growth rate to a steady-state level
-
-        // Update the state
-        setLongTermGrowthRate(longTermGrowth);
-
-        console.log("Derived Long-Term Growth Rate:", longTermGrowth);
-      } else {
-        console.error(
-          "Missing required values for long-term growth rate calculation."
+    const fetchLongTermGrowthRate = async () => {
+      try {
+        // Fetch financial ratios from FMP API
+        const response = await axios.get(
+          `https://financialmodelingprep.com/api/v3/ratios/${Ticker}?apikey=${fmpApiKey}`
         );
+    
+        const data = response.data;
+    
+        // Check if data exists and has at least 1 year
+        if (!data || data.length < 1) {
+          console.error(
+            `Insufficient data. Found only ${data.length || 0} records.`
+          );
+          setLongTermGrowthRate("Insufficient data");
+          return;
+        }
+    
+        // Extract the most recent year's data
+        const mostRecentData = data[0];
+    
+        // Extract ROE and payout ratio
+        const roe = parseFloat(mostRecentData.returnOnEquity || 0);
+        const payoutRatio = parseFloat(mostRecentData.payoutRatio || 0);
+    
+        // Validate ROE and payout ratio
+        if (isNaN(roe) || isNaN(payoutRatio) || payoutRatio < 0 || payoutRatio > 1) {
+          console.error("Invalid data for ROE or payout ratio.");
+          setLongTermGrowthRate("Invalid data");
+          return;
+        }
+    
+        // Calculate retention ratio
+        const retentionRatio = 1 - payoutRatio;
+    
+        // Calculate long-term growth rate: retention ratio * ROE
+        const longTermGrowth = retentionRatio * roe;
+    
+        // Log the values for debugging
+        console.log(`Most Recent ROE: ${(roe * 100).toFixed(2)}%`);
+        console.log(`Payout Ratio: ${(payoutRatio * 100).toFixed(2)}%`);
+        console.log(`Retention Ratio: ${(retentionRatio * 100).toFixed(2)}%`);
+        console.log(`Long-Term Growth Rate: ${(longTermGrowth * 100).toFixed(2)}%`);
+    
+        // Format long-term growth rate to 2 decimal places and set the state
+        const formattedLongTermGrowth = (longTermGrowth * 100).toFixed(2);
+        setLongTermGrowthRate(formattedLongTermGrowth);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLongTermGrowthRate("Error");
       }
     };
 
@@ -388,10 +376,10 @@ export default function Financials({
 
   return (
     <>
-      <div className="max-w-3xl mx-auto mt-8">
+      <div className="max-w-[800px] mx-auto mt-8">
         <p className="text-lg font-light text-gray-600">Financials</p>
         <hr className="my-4 border-gray-300" />
-  
+
         <div className="space-y-4">
           <div className="flex justify-between items-center min-w-s">
             {/* Group the arrow toggle and title together */}
@@ -415,7 +403,7 @@ export default function Financials({
                 Free Cash Flow to Equity
               </span>
             </div>
-  
+
             {/* Currency and value on the right */}
             <span className="text-right">
               <div className="flex items-center">
@@ -428,14 +416,18 @@ export default function Financials({
               </div>
             </span>
           </div>
-  
+
           {!isCollapsed && (
             <div className="pl-8 space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 text-lg ml-4 w-80">Net Income</span>
+                <span className="text-gray-600 text-lg ml-4 w-80">
+                  Net Income
+                </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className="text-gray-600 text-lg mr-2">{currency}</span>
+                    <span className="text-gray-600 text-lg mr-2">
+                      {currency}
+                    </span>
                     <span className="font-light text-lg w-48 text-gray-600">
                       {netIncomeData !== null
                         ? `${netIncomeData.toLocaleString()}`
@@ -444,14 +436,16 @@ export default function Financials({
                   </div>
                 </span>
               </div>
-  
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 text-lg ml-4 w-80">
                   Depreciation & Amortization
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className="text-gray-600 text-lg mr-2">{currency}</span>
+                    <span className="text-gray-600 text-lg mr-2">
+                      {currency}
+                    </span>
                     <span className="font-light text-lg w-48 text-gray-600">
                       {depreceationAmortizationData !== null
                         ? `${depreceationAmortizationData.toLocaleString()}`
@@ -460,14 +454,16 @@ export default function Financials({
                   </div>
                 </span>
               </div>
-  
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 text-lg ml-4 w-80">
                   Capital Expenditure
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className="text-gray-600 text-lg mr-2">{currency}</span>
+                    <span className="text-gray-600 text-lg mr-2">
+                      {currency}
+                    </span>
                     <span className="font-light text-lg w-48 text-gray-600">
                       {capitalExpenditureData !== null
                         ? `${capitalExpenditureData.toLocaleString()}`
@@ -476,14 +472,16 @@ export default function Financials({
                   </div>
                 </span>
               </div>
-  
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 text-lg ml-4 w-80">
                   Change In Working Capital
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className="text-gray-600 text-lg mr-2">{currency}</span>
+                    <span className="text-gray-600 text-lg mr-2">
+                      {currency}
+                    </span>
                     <span className="font-light text-lg w-48 text-gray-600">
                       {changeInWorkingCapitalData !== null
                         ? `${changeInWorkingCapitalData.toLocaleString()}`
@@ -492,12 +490,16 @@ export default function Financials({
                   </div>
                 </span>
               </div>
-  
+
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 text-lg ml-4 w-80">Net Borrowing</span>
+                <span className="text-gray-600 text-lg ml-4 w-80">
+                  Net Borrowing
+                </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className="text-gray-600 text-lg mr-2">{currency}</span>
+                    <span className="text-gray-600 text-lg mr-2">
+                      {currency}
+                    </span>
                     <span className="font-light text-lg w-48 text-gray-600">
                       {netBorrowingData !== null
                         ? `${netBorrowingData.toLocaleString()}`
@@ -508,7 +510,7 @@ export default function Financials({
               </div>
             </div>
           )}
-  
+
           <div className="flex justify-between items-center">
             <span className="text-gray-600 text-lg ml-6 w-80">
               Cash Flow Growth Rate (Year 1-5)
@@ -525,7 +527,7 @@ export default function Financials({
               </div>
             </span>
           </div>
-  
+
           {/* Cash Flow Growth Rate (Year 6-10) */}
           <div className="flex justify-between items-center">
             <span className="text-gray-600 text-lg ml-6 w-80">
@@ -534,11 +536,13 @@ export default function Financials({
             <span className="text-right">
               <div className="flex items-center">
                 <span className="text-gray-600 text-lg mr-2">PCT</span>
-                <span className="font-light text-lg w-48 text-gray-600">{tenYearGrowthRate} %</span>
+                <span className="font-light text-lg w-48 text-gray-600">
+                  {tenYearGrowthRate} %
+                </span>
               </div>
             </span>
           </div>
-  
+
           {/* Cash Flow Growth Rate (Year 15-∞) */}
           <div className="flex justify-between items-center h-6">
             <span className="text-gray-600 text-lg ml-6 w-80">
@@ -548,11 +552,13 @@ export default function Financials({
             <span className="text-right">
               <div className="flex items-center">
                 <span className="text-gray-600 text-lg mr-2">PCT</span>
-                <span className="font-light text-lg w-48 text-gray-600">{longTermGrowthRate} %</span>
+                <span className="font-light text-lg w-48 text-gray-600">
+                  {longTermGrowthRate} %
+                </span>
               </div>
             </span>
           </div>
-  
+
           {/* Cost of Equity Section */}
           <div className="flex justify-between items-center">
             {/* Group the arrow toggle and title together */}
@@ -575,9 +581,11 @@ export default function Financials({
                   />
                 )}
               </span>
-              <span className="text-gray-600 text-lg ml-4 w-80">Cost Of Equity</span>
+              <span className="text-gray-600 text-lg ml-4 w-80">
+                Cost Of Equity
+              </span>
             </div>
-  
+
             {/* Percentage and value on the right */}
             <span className="text-right">
               <div className="flex items-center">
@@ -590,7 +598,7 @@ export default function Financials({
               </div>
             </span>
           </div>
-  
+
           {/* Sub-labels (Beta, Risk Free Rate, Market Risk Premium) */}
           {!isCostOfEquityCollapsed && (
             <div className="pl-8 space-y-4">
@@ -608,10 +616,12 @@ export default function Financials({
                   </div>
                 </span>
               </div>
-  
+
               {/* Risk Free Rate */}
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 text-lg ml-4 w-80">Risk Free Rate</span>
+                <span className="text-gray-600 text-lg ml-4 w-80">
+                  Risk Free Rate
+                </span>
                 <span className="text-right">
                   <div className="flex items-center">
                     <span className="text-gray-600 text-lg mr-2">PCT</span>
@@ -623,7 +633,7 @@ export default function Financials({
                   </div>
                 </span>
               </div>
-  
+
               {/* Market Risk Premium */}
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 text-lg ml-4 w-80">

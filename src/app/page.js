@@ -143,7 +143,7 @@ export default function Home() {
             presentValue={presentValue}
           />
           <Projection
-            Ticker={ticker}
+          
             freeCashFlowEquityData={freeCashFlowEquityData}
             fiveYearGrowthRate={fiveYearGrowthRate}
             tenYearGrowthRate={tenYearGrowthRate}
