@@ -41,25 +41,53 @@ export default function Home() {
   useEffect(() => {
     const fetchStockInfo = async () => {
       if (!ticker) return; // Skip if ticker is empty
-
+    
       try {
-        const response = await fetch(
+        const profileResponse = await fetch(
           `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
         );
-        const data = await response.json();
+        const profileData = await profileResponse.json();
+    
+        const quoteResponse = await fetch(
+          `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${fmpApiKey}`
+        );
+        const quoteData = await quoteResponse.json();
+    
+        if (profileData && profileData.length > 0 && quoteData && quoteData.length > 0) {
+          const stockProfileData = profileData[0]; // Fix: Remove `.data`
+          console.log("profile data =", stockProfileData);
+    
+          const stockQuoteData = quoteData[0]; // Fix: Remove `.data`
+          console.log("stock quote data =", stockQuoteData);
 
-        // const logo_response = await fetch(`https://api.api-ninjas.com/v1/logo`);
 
-        if (data && data.length > 0) {
-          const stockData = data[0];
+          const formatMarketCloseTimeNY = (timestamp) => {
+            const date = new Date(timestamp * 1000); // Convert from seconds to milliseconds
+          
+            const options = {
+              hour: '2-digit',
+              minute: '2-digit',
+              timeZone: 'America/New_York', // New York timezone (ET)
+              hour12: false, // Keep it in 24-hour format
+            };
+          
+            const formattedTime = new Intl.DateTimeFormat('en-US', options).format(date);
+            return `At close at ${formattedTime} ET`; // ET covers both EST and EDT
+            
+          };
+        
+  
+          const marketCloseMessageNY = formatMarketCloseTimeNY(1738098001);
+          console.log(marketCloseMessageNY);
+    
           setStockInfo({
-            companyName: stockData.companyName,
-            price: stockData.price,
-            currency: stockData.currency,
-            change: stockData.changes,
-            percentage: (stockData.changes / stockData.price) * 100,
-            timestamp: "At close at 11:59 UTC +11",
-            logoSrc: stockData.image,
+            companyName: stockProfileData.companyName,
+            price: stockProfileData.price,
+            currency: stockProfileData.currency,
+            change: stockQuoteData.change, // Fix: change field name
+            percentage: stockQuoteData.changesPercentage, // Fix: field name
+            timestamp: marketCloseMessageNY,
+            logoSrc: stockProfileData.image,
           });
         } else {
           setStockInfo(null); // Clear state if no valid data is returned
@@ -69,7 +97,7 @@ export default function Home() {
         setStockInfo(null);
       }
     };
-
+    
     fetchStockInfo();
   }, [ticker]);
 

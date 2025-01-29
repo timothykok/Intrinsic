@@ -15,12 +15,12 @@ export default function StockInfo({
         <img
           src={logoSrc}
           alt={`${companyName} Logo`}
-          className="w-32 h-32 rounded-lg bg-gray-300 object-cover"
+          className="w-32 h-32 rounded-lg object-cover"
         />
       </div>
 
       {/* Stock Details and Price */}
-      <div className="ml-7 flex flex-row gap-7 mt-6">
+      <div className="ml-7 flex flex-row gap-7 ">
         {/* Stock Details */}
         <div className="flex-1 mr-4 w-80 mt-1">
           <div className="text-2xl font-light">{companyName}</div>
@@ -28,16 +28,16 @@ export default function StockInfo({
         </div>
 
         {/* Price Section */}
-        <div className="text-left">
+        <div className="text-left mt-2">
           <div className="text-3xl">
             {price?.toFixed(2)}{" "}
             <span className="text-sm text-gray-600">{currency}</span>
           </div>
-          <div className="text-sm text-gray-500 font-light mt-5">{timestamp}</div>
+          <div className="text-sm text-gray-500 font-light mt-2">{timestamp}</div>
         </div>
 
         {/* Change Section */}
-        <div className="text-sm font-normal mt-5">
+        <div className="text-sm font-normal mt-7">
           <span style={{ color: change > 0 ? "#29B353" : "#ef4444" }}>
             {change > 0 ? "+" : ""}
             {change?.toFixed(2)} ({percentage?.toFixed(2)}%)
