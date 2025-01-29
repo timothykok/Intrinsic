@@ -18,14 +18,20 @@ export default function ShareValue({
   useEffect(() => {
     if (presentValue && outStandingShares && price) {
       const intrinsicValue = presentValue / outStandingShares;
-      setIntrinsicValuePerShare(intrinsicValue);
+
+      const formattedIntrinsicValue = intrinsicValue.toFixed(2)
+
+      setIntrinsicValuePerShare(formattedIntrinsicValue);
 
       const discountPremiumValue = (price / intrinsicValue - 1) * 100; // Calculate as percentage
-      setDiscountPremium(discountPremiumValue);
+
+      const formattedDiscountPremium =discountPremiumValue.toFixed(2)
+
+      setDiscountPremium(formattedDiscountPremium);
 
       // Determine under/overvaluation
       setUnderOverValue(
-        discountPremiumValue > 0 ? "overvalued" : "undervalued"
+        formattedDiscountPremium > 0 ? "overvalued" : "undervalued"
       );
     }
   }, [presentValue, outStandingShares, price]);
@@ -84,24 +90,8 @@ export default function ShareValue({
           </div>
         </div>
   
-        {/* Ensure proper spacing for the last paragraph */}
-        <div className="mt-8 pt-4 text-gray-700 w-auto">
-          <p className="text-lg font-light">
-            Estimated DCF Value of one {Ticker} stock is{" "}
-            <span className="font-medium text-lg">
-              ${intrinsicValuePerShare?.toFixed(2)}
-            </span>
-            . Compared to the current market price of{" "}
-            <span className="font-medium text-lg text-gray-600">
-              ${price?.toFixed(2)} {currency}
-            </span>
-            , the stock is{" "}
-            <span className="font-medium text-green-600 text-lg">
-              {/* Change to text-red-600 if undervalued */}
-              {underOverValue} by <span>{discountPremium?.toFixed(2)}%</span>.
-            </span>
-          </p>
-        </div>
+        
+        
       </div>
     </>
   );

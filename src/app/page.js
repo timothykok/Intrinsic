@@ -9,6 +9,7 @@ import Calculation from "./ui/Calculation";
 import ShareValue from "./ui/ShareValue";
 import StockInfo from "./ui/StockInfo.js";
 import Projection from "./ui/Projection.js";
+import Valuation from "./ui/Valuation.js";
 
 export default function Home() {
   const [input, setInput] = useState(""); // Raw input from the user
@@ -109,6 +110,13 @@ export default function Home() {
             change={stockInfo.change}
             percentage={stockInfo.percentage}
             timestamp={stockInfo.timestamp}
+          />
+
+          <Valuation
+            Ticker={ticker}
+            price={stockInfo.price}
+            outStandingShares={outstandingShares}
+            presentValue={presentValue}
           />
 
           <Financials
