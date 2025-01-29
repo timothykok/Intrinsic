@@ -111,7 +111,7 @@ export default function Projection({
             <table className="w-full max-w-[800px] mx-auto text-center border-collapse">
               <thead>
                 <tr>
-                  <th className="min-w-[185px] text-left text-sm font-light">
+                  <th className="min-w-[185px] text-left text-sm font-light text-gray-800">
                     Year
                   </th>
                   {years.map((year) => (

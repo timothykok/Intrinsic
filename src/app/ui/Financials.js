@@ -135,14 +135,55 @@ export default function Financials({
         }
       }
     };
+    // const fetchFiveYearGrowthRate = async () => {
+    //   try {
+    //     // Fetch financial ratios from FMP API
+    //     const response = await axios.get(
+    //       `https://financialmodelingprep.com/api/v3/ratios/${Ticker}?apikey=${fmpApiKey}`
+    //     );       
+
+    //     const data = response.data;
+    //     if (!data || data.length < 5) {
+    //       console.error(
+    //         `Insufficient data. Found only ${data.length || 0} records.`
+    //       );
+    //       setFiveYearGrowthRate("Insufficient data");
+    //       return;
+    //     }
+
+    //     // Extract ROE for the most recent year (end of the year) and 5 years ago (start of the year)
+    //     const mostRecentROE = parseFloat(data[0].returnOnEquity || 0); // End of the year
+    //     const fiveYearsAgoROE = parseFloat(data[4].returnOnEquity || 0); // Start of the year
+
+    //     // Log the ROE values for debugging
+    //     console.log(`Most Recent ROE: ${(mostRecentROE * 100).toFixed(2)}%`);
+    //     console.log(`ROE 5 Years Ago: ${(fiveYearsAgoROE * 100).toFixed(2)}%`);
+
+    //     // Calculate the Compound Annual Growth Rate (CAGR) for ROE
+    //     const cagr = Math.pow(mostRecentROE / fiveYearsAgoROE, 1 / 5) - 1;
+
+    //     // Log the CAGR for debugging
+    //     console.log(`5-Year ROE CAGR: ${(cagr * 100).toFixed(2)}%`);
+
+    //     // Format CAGR to 2 decimal places and set the state
+    //     const formattedCAGR = (cagr * 100).toFixed(2);
+    //     setFiveYearGrowthRate(formattedCAGR);
+    //   } catch (error) {
+    //     console.error("Error fetching data:", error);
+    //     setFiveYearGrowthRate("Error");
+    //   }
+    // };
+
     const fetchFiveYearGrowthRate = async () => {
       try {
-        // Fetch financial ratios from FMP API
+        // Fetch financial ratios from API (for ROE)
         const response = await axios.get(
           `https://financialmodelingprep.com/api/v3/ratios/${Ticker}?apikey=${fmpApiKey}`
-        );       
-
+        );
+    
         const data = response.data;
+    
+        // Ensure data exists and has at least 5 years
         if (!data || data.length < 5) {
           console.error(
             `Insufficient data. Found only ${data.length || 0} records.`
@@ -150,82 +191,59 @@ export default function Financials({
           setFiveYearGrowthRate("Insufficient data");
           return;
         }
-
-        // Extract ROE for the most recent year (end of the year) and 5 years ago (start of the year)
-        const mostRecentROE = parseFloat(data[0].returnOnEquity || 0); // End of the year
-        const fiveYearsAgoROE = parseFloat(data[4].returnOnEquity || 0); // Start of the year
-
-        // Log the ROE values for debugging
-        console.log(`Most Recent ROE: ${(mostRecentROE * 100).toFixed(2)}%`);
-        console.log(`ROE 5 Years Ago: ${(fiveYearsAgoROE * 100).toFixed(2)}%`);
-
-        // Calculate the Compound Annual Growth Rate (CAGR) for ROE
-        const cagr = Math.pow(mostRecentROE / fiveYearsAgoROE, 1 / 5) - 1;
-
-        // Log the CAGR for debugging
-        console.log(`5-Year ROE CAGR: ${(cagr * 100).toFixed(2)}%`);
-
-        // Format CAGR to 2 decimal places and set the state
-        const formattedCAGR = (cagr * 100).toFixed(2);
-        setFiveYearGrowthRate(formattedCAGR);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setFiveYearGrowthRate("Error");
-      }
-    };
-
-    const fetchLongTermGrowthRate = async () => {
-      try {
-        // Fetch financial ratios from FMP API
-        const response = await axios.get(
-          `https://financialmodelingprep.com/api/v3/ratios/${Ticker}?apikey=${fmpApiKey}`
-        );
     
-        const data = response.data;
+        // Extract ROE values for the last 5 years
+        const roeValues = data.slice(0, 5).map((year) => parseFloat(year.returnOnEquity || 0));
     
-        // Check if data exists and has at least 1 year
-        if (!data || data.length < 1) {
-          console.error(
-            `Insufficient data. Found only ${data.length || 0} records.`
-          );
-          setLongTermGrowthRate("Insufficient data");
+        // Filter out invalid values (negative or zero ROE can be unrealistic for growth calculations)
+        const validROEValues = roeValues.filter(roe => !isNaN(roe) && roe > 0);
+    
+        if (validROEValues.length < 1) {
+          console.error("No valid ROE values found.");
+          setFiveYearGrowthRate("Invalid data");
           return;
         }
     
-        // Extract the most recent year's data
-        const mostRecentData = data[0];
+        // Calculate the average ROE over 5 years
+        const averageROE = validROEValues.reduce((sum, roe) => sum + roe, 0) / validROEValues.length;
     
-        // Extract ROE and payout ratio
-        const roe = parseFloat(mostRecentData.returnOnEquity || 0);
-        const payoutRatio = parseFloat(mostRecentData.payoutRatio || 0);
+        console.log(`5-Year ROE Values: ${validROEValues.map(roe => (roe * 100).toFixed(2)).join(", ")}%`);
+        console.log(`Average ROE: ${(averageROE * 100).toFixed(2)}%`);
     
-        // Validate ROE and payout ratio
-        if (isNaN(roe) || isNaN(payoutRatio) || payoutRatio < 0 || payoutRatio > 1) {
-          console.error("Invalid data for ROE or payout ratio.");
-          setLongTermGrowthRate("Invalid data");
+        // Fetch the most recent payout ratio
+        const payoutRatio = parseFloat(data[0].payoutRatio || 0);
+    
+        if (isNaN(payoutRatio) || payoutRatio < 0 || payoutRatio > 1) {
+          console.error("Invalid payout ratio.");
+          setFiveYearGrowthRate("Invalid data");
           return;
         }
     
         // Calculate retention ratio
         const retentionRatio = 1 - payoutRatio;
     
-        // Calculate long-term growth rate: retention ratio * ROE
-        const longTermGrowth = retentionRatio * roe;
+        // Calculate five-year growth rate using retention ratio * avg ROE
+        const fiveYearGrowthRate = retentionRatio * averageROE;
     
-        // Log the values for debugging
-        console.log(`Most Recent ROE: ${(roe * 100).toFixed(2)}%`);
         console.log(`Payout Ratio: ${(payoutRatio * 100).toFixed(2)}%`);
         console.log(`Retention Ratio: ${(retentionRatio * 100).toFixed(2)}%`);
-        console.log(`Long-Term Growth Rate: ${(longTermGrowth * 100).toFixed(2)}%`);
+        console.log(`Five-Year Growth Rate: ${(fiveYearGrowthRate * 100).toFixed(2)}%`);
     
-        // Format long-term growth rate to 2 decimal places and set the state
-        const formattedLongTermGrowth = (longTermGrowth * 100).toFixed(2);
-        setLongTermGrowthRate(formattedLongTermGrowth);
+        // Format and set the five-year growth rate
+        setFiveYearGrowthRate((fiveYearGrowthRate * 100).toFixed(2));
       } catch (error) {
-        console.error("Error fetching data:", error);
-        setLongTermGrowthRate("Error");
+        console.error("Error fetching ROE or payout ratio:", error);
+        setFiveYearGrowthRate("Error");
       }
     };
+
+    const fetchLongTermGrowthRate = async () => {
+      try {
+        setLongTermGrowthRate(3);
+      } catch (error) {
+        console.log(error);
+      }
+    }; 
 
     const fetchBeta = async () => {
       try {
@@ -326,6 +344,7 @@ export default function Financials({
     fetchBeta();
     fetchRiskFreeRate();
     fetchMarketRiskPremium();
+
   }, [Ticker]);
 
   // Logic for 10 Year Growth Rate
@@ -350,6 +369,8 @@ export default function Financials({
       setCostOfEquity(calculatedCostOfEquity);
     }
   }, [betaData, riskFreeRate, marketRiskPremium, Ticker]);
+
+  
 
   // Calculate Free Cash Flow to Equity when all data is available. If all the required data comes from a single API call, you don’t need this separation.
   useEffect(() => {

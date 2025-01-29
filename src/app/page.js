@@ -165,6 +165,7 @@ export default function Home() {
             Ticker={ticker}
             costOfEquity={costOfEquity}
             freeCashFlowEquityData={freeCashFlowEquityData}
+            fiveYearGrowthRate={fiveYearGrowthRate}
             tenYearGrowthRate={tenYearGrowthRate}
             longTermGrowthRate={longTermGrowthRate}
             outstandingShares={outstandingShares}
