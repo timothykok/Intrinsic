@@ -41,55 +41,65 @@ export default function Calculation({
 
   // Calculate PV of FCFE
   useEffect(() => {
-    if (
-      freeCashFlowEquityData !== null &&
-      fiveYearGrowthRate !== null &&
-      tenYearGrowthRate !== null &&
-      longTermGrowthRate !== null &&
-      costOfEquity !== null
-    ) {
-      let pv = 0;
-  
-      // 1. Convert growth rates to decimal form if needed
-      const fiveYearG = fiveYearGrowthRate / 100;
-      const tenYearG = tenYearGrowthRate / 100;
-      const longTermG = longTermGrowthRate / 100;
-      const coe = costOfEquity / 100;
-  
-      // 2. Calculate PV of FCFE from Year 1 to Year 5
-      for (let t = 1; t <= 5; t++) {
-        const projectedFCFE = freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
-        const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
-        pv += discountedFCFE;
+
+    try{
+      if (
+        freeCashFlowEquityData !== null &&
+        fiveYearGrowthRate !== null &&
+        tenYearGrowthRate !== null &&
+        longTermGrowthRate !== null &&
+        costOfEquity !== null
+      ) {
+        let pv = 0;
+    
+        // 1. Convert growth rates to decimal form if needed
+        const fiveYearG = fiveYearGrowthRate / 100;
+        const tenYearG = tenYearGrowthRate / 100;
+        const longTermG = longTermGrowthRate / 100;
+        const coe = costOfEquity / 100;
+    
+        // 2. Calculate PV of FCFE from Year 1 to Year 5
+        for (let t = 1; t <= 5; t++) {
+          const projectedFCFE = freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
+          const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
+          pv += discountedFCFE;
+        }
+    
+        // 3. Calculate PV of FCFE from Year 6 to Year 10
+        let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // Start from Year 5 FCFE
+        for (let t = 6; t <= 10; t++) {
+          fcfeYearN *= (1 + tenYearG); // Grow each year separately
+          const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
+          pv += discountedFCFE;
+        }
+    
+        // 4. Calculate Perpetuity Value at Year 11
+        const fcfeYear10 = fcfeYearN; // Already grown to Year 10
+        const perpetuityValue = (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
+        const discountedPerpetuityValue = perpetuityValue / Math.pow(1 + coe, 10); // Discount to Year 0
+    
+        // 5. Add discounted perpetuity to PV
+        pv += discountedPerpetuityValue;
+    
+        // 6. Set the final present value
+        setPresentValue(parseFloat(pv.toFixed(2)));
+    
+        // Debugging Logs
+        console.log("Initial FCFE - calc:", freeCashFlowEquityData);
+        console.log("5-Year Growth Rate - calc:", fiveYearGrowthRate);
+        console.log("6-10 Year Growth Rate - calc:", tenYearGrowthRate);
+        console.log("Cost Of Equity - calc:", costOfEquity);
+        console.log("Long-Term Growth Rate - calc:", longTermGrowthRate);
+        console.log("Present Value of FCFE to Perpetuity - calc:", pv);
       }
-  
-      // 3. Calculate PV of FCFE from Year 6 to Year 10
-      let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // Start from Year 5 FCFE
-      for (let t = 6; t <= 10; t++) {
-        fcfeYearN *= (1 + tenYearG); // Grow each year separately
-        const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
-        pv += discountedFCFE;
-      }
-  
-      // 4. Calculate Perpetuity Value at Year 11
-      const fcfeYear10 = fcfeYearN; // Already grown to Year 10
-      const perpetuityValue = (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
-      const discountedPerpetuityValue = perpetuityValue / Math.pow(1 + coe, 10); // Discount to Year 0
-  
-      // 5. Add discounted perpetuity to PV
-      pv += discountedPerpetuityValue;
-  
-      // 6. Set the final present value
-      setPresentValue(parseFloat(pv.toFixed(2)));
-  
-      // Debugging Logs
-      console.log("Initial FCFE - calc:", freeCashFlowEquityData);
-      console.log("5-Year Growth Rate - calc:", fiveYearGrowthRate);
-      console.log("6-10 Year Growth Rate - calc:", tenYearGrowthRate);
-      console.log("Cost Of Equity - calc:", costOfEquity);
-      console.log("Long-Term Growth Rate - calc:", longTermGrowthRate);
-      console.log("Present Value of FCFE to Perpetuity - calc:", pv);
+
+      
+
+
+    }catch(error){
+      console.log(error)
     }
+   
   }, [
     freeCashFlowEquityData,
     fiveYearGrowthRate,
@@ -99,14 +109,14 @@ export default function Calculation({
   ]);
   return (
     <>
-      <div className="max-w-[800px] mx-auto mt-8">
+      <div className="max-w-[800px] mx-auto mt-12 border border-gray-300 rounded-lg p-6">
         <p className="text-lg font-light text-gray-600">Calculation</p>
         <hr className="my-4 border-gray-300" />
-
+  
         <div className="space-y-4">
           {/* Present Value of Free Cash Flow to Equity to Perpetuity */}
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600 text-lg ml-4 w-96 ">
+          <div className="flex justify-between items-center mb-6">
+            <span className="text-gray-600 text-lg ml-6 w-96">
               Present Value of Free Cash Flow to Equity
             </span>
             <span className="text-right">
@@ -120,10 +130,10 @@ export default function Calculation({
               </div>
             </span>
           </div>
-
+  
           {/* Outstanding Shares */}
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600 text-lg ml-4 w-80">
+          <div className="flex justify-between items-center mb-6">
+            <span className="text-gray-600 text-lg ml-6 w-80">
               Outstanding Shares
             </span>
             <span className="text-right">

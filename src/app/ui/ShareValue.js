@@ -38,14 +38,14 @@ export default function ShareValue({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto mt-8">
+      <div className="max-w-[800px] mx-auto mt-12 border border-gray-300 rounded-lg p-6">
         <p className="text-lg font-light text-gray-600">Intrinsic Value</p>
         <hr className="my-4 border-gray-300" />
   
         <div className="space-y-4">
-          {/* Present Value of Free Cash Flow to Equity to Perpetuity */}
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600 ml-4 w-96 text-lg">
+          {/* Intrinsic Value Per Share */}
+          <div className="flex justify-between items-center mb-6">
+            <span className="text-gray-600 ml-6 w-96 text-lg">
               Intrinsic Value Per Share
             </span>
             <span className="text-right">
@@ -60,9 +60,9 @@ export default function ShareValue({
             </span>
           </div>
   
-          {/* Outstanding Shares */}
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600 ml-4 w-80 text-lg">
+          {/* Last Closing Price */}
+          <div className="flex justify-between items-center mb-6">
+            <span className="text-gray-600 ml-6 w-80 text-lg">
               Last Closing Price
             </span>
             <span className="text-right">
@@ -75,8 +75,9 @@ export default function ShareValue({
             </span>
           </div>
   
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600 ml-4 w-80 text-lg">Discount/Premium</span>
+          {/* Discount/Premium */}
+          <div className="flex justify-between items-center mb-6">
+            <span className="text-gray-600 ml-6 w-80 text-lg">Discount/Premium</span>
             <span className="text-right">
               <div className="flex items-center">
                 <span className="text-gray-600 mr-2 text-lg">PCT</span>
@@ -89,9 +90,6 @@ export default function ShareValue({
             </span>
           </div>
         </div>
-  
-        
-        
       </div>
     </>
   );

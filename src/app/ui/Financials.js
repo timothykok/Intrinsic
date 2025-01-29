@@ -239,7 +239,7 @@ export default function Financials({
 
     const fetchLongTermGrowthRate = async () => {
       try {
-        setLongTermGrowthRate(3);
+        setLongTermGrowthRate(2);
       } catch (error) {
         console.log(error);
       }
@@ -397,7 +397,7 @@ export default function Financials({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto mt-8">
+     <div className="max-w-[800px] mx-auto mt-8 border border-gray-300 rounded-lg p-6">
         <p className="text-lg font-light text-gray-600">Financials</p>
         <hr className="my-4 border-gray-300" />
 
@@ -420,7 +420,7 @@ export default function Financials({
                   />
                 )}
               </span>
-              <span className="text-gray-600 text-lg ml-4 w-80">
+              <span className="text-gray-600 text-lg ml-4 w-80 ">
                 Free Cash Flow to Equity
               </span>
             </div>
@@ -457,8 +457,8 @@ export default function Financials({
                   </div>
                 </span>
               </div>
-
-              <div className="flex justify-between items-center">
+  
+              <div className="flex justify-between items-center mb-6">
                 <span className="text-gray-600 text-lg ml-4 w-80">
                   Depreciation & Amortization
                 </span>
@@ -475,6 +475,7 @@ export default function Financials({
                   </div>
                 </span>
               </div>
+              
 
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 text-lg ml-4 w-80">

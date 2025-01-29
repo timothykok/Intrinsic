@@ -98,7 +98,7 @@ export default function Projection({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto mt-6 mb-16">
+      <div className="max-w-[800px] mx-auto mt-12 mb-16">
         <div className="text-left">
           <p className="text-lg font-light text-gray-600">Year On Year</p>
           <hr className="border-t border-gray-400 my-3" />
@@ -133,7 +133,7 @@ export default function Projection({
                   ))}
                 </tr>
                 <tr>
-                  <th className="min-w-[185px] text-left text-sm font-light">
+                  <th className="min-w-[185px] text-left text-sm font-light ">
                     Discount Factor
                   </th>
                   {projectedData.discountFactors.map((factor, index) => (

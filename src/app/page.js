@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Ticker from "./ui/Ticker.js";
 import Financials from "./ui/Financials.js";
 import Calculation from "./ui/Calculation";
@@ -30,12 +30,23 @@ export default function Home() {
 
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
 
+
+   // Create a ref for StockInfo
+   const stockInfoRef = useRef(null);
+
   // Handle search on Enter key press
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       setTicker(input.toUpperCase());
     }
   };
+
+   // Scroll to StockInfo component when stockInfo is updated
+   useEffect(() => {
+    if (stockInfo && stockInfoRef.current) {
+      stockInfoRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [stockInfo]);
 
   // Fetch stock info when the ticker changes
   useEffect(() => {
@@ -103,16 +114,23 @@ export default function Home() {
 
   return (
     <>
+
+  
       <Ticker />
       <div className="spacer h-24"></div>
       <div className="title-wrapper flex flex-col items-center py-8 px-4">
         {/* Title Section */}
         <div className="title-container">
-          <h1 className="title text-4xl font-bold text-gray-800">Intrinsic.</h1>
+          {/* <h1 className="title text-4xl font-bold text-gray-800">Intrinsic.</h1> */}
+          <img
+                    src="/Intrinsic..svg"
+                    alt="View More"
+                    className="w-[716px] h-[196px]"
+                  />
         </div>
 
         {/* Spacing Section */}
-        <div className="spacer h-24"></div>
+        <div className="spacer h-8"></div>
 
         {/* Search Bar Section */}
         <div className="search-bar-container">
@@ -129,7 +147,10 @@ export default function Home() {
 
       {stockInfo && (
         <>
-          <StockInfo
+      
+
+        <StockInfo
+            ref={stockInfoRef}
             logoSrc={stockInfo.logoSrc}
             companyName={stockInfo.companyName}
             ticker={ticker}
