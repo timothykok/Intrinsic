@@ -49,8 +49,10 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: 300; /* Light weight */
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 1px;
   -webkit-font-smoothing: antialiased; /* Smooths the font on macOS */
   -moz-osx-font-smoothing: grayscale; /* Smooths the font on Windows */
 }

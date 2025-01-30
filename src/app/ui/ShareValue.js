@@ -38,20 +38,20 @@ export default function ShareValue({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm ">
-        <p className="text-lg font-light text-gray-600">Intrinsic Value</p>
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase">
+        <p className="text-sm text-gray-500 font-bold">Intrinsic Value</p>
         <hr className="my-4 border-zinc-200" />
 
-        <div className="space-y-4">
+        <div className="space-y-5 text-sm text-gray-500 ">
           {/* Intrinsic Value Per Share */}
           <div className="flex justify-between items-center ">
-            <span className="text-gray-600 ml-6 w-80 text-lg">
+            <span className=" ml-6 w-80">
               Intrinsic Value Per Share
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 mr-2 text-lg">{currency}</span>
-                <span className="font-light w-48 text-gray-600 text-lg">
+                <span className=" mr-2">{currency}</span>
+                <span className="w-48 ">
                   {intrinsicValuePerShare !== null
                     ? intrinsicValuePerShare.toLocaleString()
                     : "Calculating..."}
@@ -62,13 +62,13 @@ export default function ShareValue({
 
           {/* Last Closing Price */}
           <div className="flex justify-between items-center ">
-            <span className="text-gray-600 ml-6 w-80 text-lg">
+            <span className=" ml-6 w-80">
               Last Closing Price
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 mr-2 text-lg">{currency}</span>
-                <span className="font-light w-48 text-gray-600 text-lg">
+                <span className=" mr-2">{currency}</span>
+                <span className="w-48 ">
                   {price !== null ? price.toLocaleString() : "Calculating..."}
                 </span>
               </div>
@@ -77,13 +77,13 @@ export default function ShareValue({
 
           {/* Discount/Premium */}
           <div className="flex justify-between items-center ">
-            <span className="text-gray-600 ml-6 w-80 text-lg">
+            <span className=" ml-6 w-80">
               Discount/Premium
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 mr-[11px] text-lg">PCT</span>
-                <span className="font-light w-48 text-gray-600 text-lg">
+                <span className=" mr-[11px]">PCT</span>
+                <span className="w-48 ">
                   {discountPremium !== null
                     ? discountPremium.toLocaleString()
                     : "Calculating..."}

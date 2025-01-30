@@ -98,51 +98,56 @@ export default function Projection({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm ">
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase">
         <div className="text-left">
-          <p className="text-lg font-light text-gray-600">Year On Year</p>
+          <p className="text-sm font-bold  text-gray-600">Year On Year</p>
           <hr className="border-t border-zinc-200 my-3" />
         </div>
         <div className="relative">
           <div className="flex">
-            {/* Fixed Headers Table */}
-            <table className="sticky left-0 z-10">
+           
+            {/* unscrollable table headers*/}
+         
+
+           <table className="sticky left-0 z-10 text-gray-500 mt-[21px]">
               <thead>
                 <tr>
-                  <th className="min-w-[185px] text-left text-sm font-light text-gray-800">
+                  <th className="min-w-[185px] text-left text-xs font-light  ">
                     Year
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="space-y-6">
                 <tr>
-                  <th className="min-w-[185px] text-left text-sm font-light">
+                  <th className="min-w-[185px] text-left text-xs font-light">
                     Free Cash Flow (Projected) (Millions)
                   </th>
                 </tr>
                 <tr>
-                  <th className="min-w-[185px] text-left text-sm font-light">
+                  <th className="min-w-[185px] text-left text-xs font-light">
                     Discount Factor
                   </th>
                 </tr>
                 <tr>
-                  <th className="min-w-[185px] text-left text-sm font-light">
+                  <th className="min-w-[185px] text-left text-xs font-light">
                     Discount Value (Millions)
                   </th>
                 </tr>
               </tbody>
             </table>
+ 
+           
 
             {/* Scrollable Data Table */}
             <div
               className="overflow-x-auto no-scrollbar"
               ref={tableRef}
             >
-              <table className="text-center border-collapse">
+              <table className="text-center border-collapse text-gray-500">
                 <thead>
                   <tr>
                     {years.map((year) => (
-                      <td key={year} className="p-3 text-sm text-center">
+                      <td key={year} className="p-3 text-sm text-left">
                         {year}
                       </td>
                     ))}
@@ -151,21 +156,21 @@ export default function Projection({
                 <tbody>
                   <tr>
                     {projectedData.freeCashFlows.map((fcf, index) => (
-                      <td key={index} className="p-3 text-sm text-center">
+                      <td key={index} className="p-3 text-sm text-left">
                         {(fcf / 1_000_000).toFixed(2)}
                       </td>
                     ))}
                   </tr>
                   <tr>
                     {projectedData.discountFactors.map((factor, index) => (
-                      <td key={index} className="p-3 text-sm text-center">
+                      <td key={index} className="p-3 text-sm text-left">
                         {factor.toFixed(2)}
                       </td>
                     ))}
                   </tr>
                   <tr>
                     {projectedData.discountedValues.map((value, index) => (
-                      <td key={index} className="p-3 text-sm text-center">
+                      <td key={index} className="p-3 text-sm text-left">
                         {(value / 1_000_000).toFixed(2)}
                       </td>
                     ))}
@@ -184,7 +189,7 @@ export default function Projection({
                   currentPage === 1
                     ? "text-gray-300 border-gray-100 cursor-not-allowed "
                     : "text-gray-600 hover:bg-[#E9E9E9]"
-                } font-light py-2 px-4 rounded-[6px]`}
+                }  py-2 px-4 rounded-[6px]`}
               >
                 Prev
               </button>
@@ -198,7 +203,7 @@ export default function Projection({
                   currentPage === totalPages
                     ? "text-gray-300 cursor-not-allowed border-gray-100 "
                     : "text-gray-600 hover:bg-[#E9E9E9]"
-                } font-light py-2 px-4 rounded-[6px]`}
+                }  py-2 px-4 rounded-[6px]`}
               >
                 Next
               </button>

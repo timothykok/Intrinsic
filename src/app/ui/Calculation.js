@@ -109,20 +109,20 @@ export default function Calculation({
   ]);
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm  ">
-        <p className="text-lg font-light text-gray-600">Calculation</p>
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase text-sm ">
+        <p className="text-gray-600 font-bold">Calculation</p>
         <hr className="my-4 border-gray-300" />
   
-        <div className="space-y-4">
+        <div className="space-y-5 gray-500 ">
           {/* Present Value of Free Cash Flow to Equity to Perpetuity */}
           <div className="flex justify-between items-center mb-6">
-            <span className="text-gray-600 text-lg ml-6 w-96">
+            <span className="text-gray-600 ml-6 w-96">
               Present Value of Free Cash Flow to Equity
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 text-lg mr-2">{currency}</span>
-                <span className="font-light text-lg w-48 text-gray-600">
+                <span className="text-gray-600 mr-2">{currency}</span>
+                <span className="w-48 text-gray-600">
                   {presentValue !== null
                     ? presentValue.toLocaleString()
                     : "Calculating..."}
@@ -133,13 +133,13 @@ export default function Calculation({
   
           {/* Outstanding Shares */}
           <div className="flex justify-between items-center mb-6">
-            <span className="text-gray-600 text-lg ml-6 w-80">
+            <span className="text-gray-600 ml-6 w-80">
               Outstanding Shares
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 text-lg mr-2">QTY</span>
-                <span className="font-light text-lg w-48 text-gray-600">
+                <span className="text-gray-600 mr-2">QTY</span>
+                <span className="w-48 text-gray-600">
                   {outstandingShares !== null
                     ? outstandingShares.toLocaleString()
                     : "Calculating..."}
