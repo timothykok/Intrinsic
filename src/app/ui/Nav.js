@@ -20,15 +20,15 @@ export default function Nav() {
 
 
           <div className="flex gap-2">
-            <div className="hover:bg-[#D9D9D9]  hover:font-normal hover:text-[#878686]  text-[#878686] p-2 rounded-lg pr-2 pl-2">
+            <div className="hover:bg-[#EEEEEE]  hover:font-normal hover:text-stone-500  text-[#878686] p-2 rounded-lg pr-2 pl-2">
             <Link href="/home"> Watchlist </Link>
             </div>
-           <div className="hover:bg-[#D9D9D9]  hover:font-normal hover:text-[#878686]  text-[#878686] p-2 rounded-lg pr-2 pl-2">
+           <div className="hover:bg-[#EEEEEE]  hover:font-normal hover:text-stone-500  text-[#878686] p-2 rounded-lg pr-2 pl-2">
            <Link href="/about"> User Manual </Link>
            </div> 
          
 
-           <div className="hover:bg-[#D9D9D9]  hover:font-normal hover:text-[#878686]  text-[#878686] p-2 rounded-lg pr-2 pl-2">
+           <div className="hover:bg-[#EEEEEE]  hover:font-normal hover:text-stone-500  text-[#878686] p-2 rounded-lg pr-2 pl-2">
            <Link href="/about"> Login </Link>
            </div> 
           </div>

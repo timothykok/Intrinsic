@@ -397,7 +397,7 @@ export default function Financials({
 
   return (
     <>
-     <div className="max-w-[800px] mx-auto pt-8 pb-8 mt-8 border border-gray-200 bg-white rounded-lg p-6 shadow-lg hover:shadow-xl">
+     <div className="max-w-[800px] mx-auto pt-8 pb-8 mt-8 border border-gray-200 bg-white-100 rounded-lg p-6 shadow-md hover:shadow-xl">
         <p className="text-lg font-light text-gray-600">Financials</p>
         <hr className="my-4 border-gray-300" />
 

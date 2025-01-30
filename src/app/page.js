@@ -9,7 +9,7 @@ import Calculation from "./ui/Calculation";
 import ShareValue from "./ui/ShareValue";
 import StockInfo from "./ui/StockInfo.js";
 import Projection from "./ui/Projection.js";
-import Valuation from "./ui/Valuation.js";
+// import Valuation from "./ui/Valuation.js";
 import Footer from "./ui/Footer.js";
 
 export default function Home() {
@@ -144,7 +144,7 @@ export default function Home() {
         
           {/* Input Field */}
           <input
-          className="relative w-full h-[40px] px-4 border border-gray-300 rounded-lg placeholder-gray-600 shadow-sm focus:outline focus:outline-black focus:outline-[3.5px] focus:outline-offset-[-2px] transition-[outline-width,outline-color] delay-100"
+          className="relative w-full h-[40px] mt-8 px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:outline focus:outline-black focus:outline-[3.5px] focus:outline-offset-[-2px] transition-[outline-width,outline-color] delay-100"
   type="text"
             placeholder="Enter Stock Ticker (e.g., GOOG)"
             value={input}
@@ -156,7 +156,10 @@ export default function Home() {
 
       {stockInfo && (
         <>
-          <StockInfo
+
+        <div className="">
+
+        <StockInfo
             ref={stockInfoRef}
             logoSrc={stockInfo.logoSrc}
             companyName={stockInfo.companyName}
@@ -166,14 +169,16 @@ export default function Home() {
             change={stockInfo.change}
             percentage={stockInfo.percentage}
             timestamp={stockInfo.timestamp}
+            outStandingShares = {outstandingShares}
+            presentValue = {presentValue}
           />
 
-          <Valuation
+          {/* <Valuation
             Ticker={ticker}
             price={stockInfo.price}
             outStandingShares={outstandingShares}
             presentValue={presentValue}
-          />
+          /> */}
 
           <Financials
             Ticker={ticker}
@@ -214,7 +219,10 @@ export default function Home() {
             longTermGrowthRate={longTermGrowthRate}
           />
 
-          {/* <NewFinancials Ticker ={ticker}/> */}
+
+        </div>
+          
+       
         </>
       )}
 
