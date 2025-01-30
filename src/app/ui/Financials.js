@@ -397,9 +397,9 @@ export default function Financials({
 
   return (
     <>
-     <div className="max-w-[800px] mx-auto pt-8 pb-8 mt-8 border border-gray-200 bg-white-100 rounded-lg p-6 shadow-md hover:shadow-xl">
+     <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm ">
         <p className="text-lg font-light text-gray-600">Financials</p>
-        <hr className="my-4 border-gray-300" />
+        <hr className="my-4 border-zinc-200" />
 
         <div className="space-y-4">
           <div className="flex justify-between items-center min-w-s">
@@ -539,7 +539,7 @@ export default function Financials({
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 text-lg mr-2">PCT</span>
+                <span className="text-gray-600 text-lg mr-[11px]">PCT</span>
                 <span className="font-light text-lg w-48 text-gray-600">
                   {fiveYearGrowthRate !== "Invalid data" &&
                   fiveYearGrowthRate !== "Insufficient data"
@@ -557,7 +557,7 @@ export default function Financials({
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 text-lg mr-2">PCT</span>
+                <span className="text-gray-600 text-lg mr-[11px]">PCT</span>
                 <span className="font-light text-lg w-48 text-gray-600">
                   {tenYearGrowthRate} %
                 </span>
@@ -573,7 +573,7 @@ export default function Financials({
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 text-lg mr-2">PCT</span>
+                <span className="text-gray-600 text-lg mr-[11px]">PCT</span>
                 <span className="font-light text-lg w-48 text-gray-600">
                   {longTermGrowthRate} %
                 </span>
@@ -611,7 +611,7 @@ export default function Financials({
             {/* Percentage and value on the right */}
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 text-lg mr-2">PCT</span>
+                <span className="text-gray-600 text-lg mr-[11px]">PCT</span>
                 <span className="font-light text-lg w-48 text-gray-600">
                   {costOfEquity !== null && costOfEquity !== undefined
                     ? `${costOfEquity.toFixed(2)} %`
@@ -629,7 +629,7 @@ export default function Financials({
                 <span className="text-gray-600 text-lg ml-4 w-80">Beta</span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className="text-gray-600 text-lg mr-2">VAL</span>
+                    <span className="text-gray-600 text-lg mr-[11px]">VAL</span>
                     <span className="font-light text-lg w-48 text-gray-600">
                       {betaData !== null && !isNaN(betaData)
                         ? `${betaData}`
@@ -646,7 +646,7 @@ export default function Financials({
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className="text-gray-600 text-lg mr-2">PCT</span>
+                    <span className="text-gray-600 text-lg mr-[11px]">PCT</span>
                     <span className="font-light text-lg w-48 text-gray-600">
                       {riskFreeRate !== null && !isNaN(riskFreeRate)
                         ? `${riskFreeRate.toFixed(2)} %`
@@ -663,7 +663,7 @@ export default function Financials({
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className="text-gray-600 text-lg mr-2">PCT</span>
+                    <span className="text-gray-600 text-lg mr-[11px]">PCT</span>
                     <span className="font-light text-lg w-48 text-gray-600">
                       {marketRiskPremium !== null && !isNaN(marketRiskPremium)
                         ? `${marketRiskPremium} %`

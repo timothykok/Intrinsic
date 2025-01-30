@@ -98,10 +98,10 @@ export default function Projection({
 
   return (
     <>
-      <div className="max-w-[800px] bg-white mx-auto mt-12 mb-16 border border-gray-300 bg-gray-100 shadow-lg rounded-lg p-6 hover:shadow-xl">
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm ">
         <div className="text-left">
           <p className="text-lg font-light text-gray-600">Year On Year</p>
-          <hr className="border-t border-gray-300 my-3" />
+          <hr className="border-t border-zinc-200 my-3" />
         </div>
         <div className="relative">
           <div className="flex">
