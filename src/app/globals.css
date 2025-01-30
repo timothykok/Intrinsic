@@ -2,15 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* :root {
-  --background: #ffffff;
+:root {
+  --background: #f2f2f1;
   --foreground: #000000;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #f1f1f1;
+    --foreground: #1a1919;
   }
 } */
 
@@ -527,3 +527,5 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+

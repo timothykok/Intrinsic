@@ -19,13 +19,13 @@ export default function ShareValue({
     if (presentValue && outStandingShares && price) {
       const intrinsicValue = presentValue / outStandingShares;
 
-      const formattedIntrinsicValue = intrinsicValue.toFixed(2)
+      const formattedIntrinsicValue = intrinsicValue.toFixed(2);
 
       setIntrinsicValuePerShare(formattedIntrinsicValue);
 
       const discountPremiumValue = (price / intrinsicValue - 1) * 100; // Calculate as percentage
 
-      const formattedDiscountPremium =discountPremiumValue.toFixed(2)
+      const formattedDiscountPremium = discountPremiumValue.toFixed(2);
 
       setDiscountPremium(formattedDiscountPremium);
 
@@ -38,10 +38,10 @@ export default function ShareValue({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto mt-12 border border-gray-300 rounded-lg p-6">
+      <div className="max-w-[800px] pt-8 pb-8 bg-white  mx-auto mt-12 border border-gray-300  shadow-lg rounded-lg p-6 hover:shadow-xl">
         <p className="text-lg font-light text-gray-600">Intrinsic Value</p>
         <hr className="my-4 border-gray-300" />
-  
+
         <div className="space-y-4">
           {/* Intrinsic Value Per Share */}
           <div className="flex justify-between items-center mb-6">
@@ -59,7 +59,7 @@ export default function ShareValue({
               </div>
             </span>
           </div>
-  
+
           {/* Last Closing Price */}
           <div className="flex justify-between items-center mb-6">
             <span className="text-gray-600 ml-6 w-80 text-lg">
@@ -74,10 +74,12 @@ export default function ShareValue({
               </div>
             </span>
           </div>
-  
+
           {/* Discount/Premium */}
           <div className="flex justify-between items-center mb-6">
-            <span className="text-gray-600 ml-6 w-80 text-lg">Discount/Premium</span>
+            <span className="text-gray-600 ml-6 w-80 text-lg">
+              Discount/Premium
+            </span>
             <span className="text-right">
               <div className="flex items-center">
                 <span className="text-gray-600 mr-2 text-lg">PCT</span>

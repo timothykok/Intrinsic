@@ -98,27 +98,20 @@ export default function Projection({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto mt-12 mb-16">
+      <div className="max-w-[800px] bg-white mx-auto mt-12 mb-16 border border-gray-300 bg-gray-100 shadow-lg rounded-lg p-6 hover:shadow-xl">
         <div className="text-left">
           <p className="text-lg font-light text-gray-600">Year On Year</p>
-          <hr className="border-t border-gray-400 my-3" />
+          <hr className="border-t border-gray-300 my-3" />
         </div>
         <div className="relative">
-          <div
-            className="overflow-x-auto no-scrollbar"
-            ref={tableRef}
-          >
-            <table className="w-full max-w-[800px] mx-auto text-center border-collapse">
+          <div className="flex">
+            {/* Fixed Headers Table */}
+            <table className="sticky left-0 z-10">
               <thead>
                 <tr>
                   <th className="min-w-[185px] text-left text-sm font-light text-gray-800">
                     Year
                   </th>
-                  {years.map((year) => (
-                    <td key={year} className="p-3 text-sm text-center">
-                      {year}
-                    </td>
-                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -126,46 +119,72 @@ export default function Projection({
                   <th className="min-w-[185px] text-left text-sm font-light">
                     Free Cash Flow (Projected) (Millions)
                   </th>
-                  {projectedData.freeCashFlows.map((fcf, index) => (
-                    <td key={index} className="p-3 text-sm text-center">
-                      {(fcf / 1_000_000).toFixed(2)}
-                    </td>
-                  ))}
                 </tr>
                 <tr>
-                  <th className="min-w-[185px] text-left text-sm font-light ">
+                  <th className="min-w-[185px] text-left text-sm font-light">
                     Discount Factor
                   </th>
-                  {projectedData.discountFactors.map((factor, index) => (
-                    <td key={index} className="p-3 text-sm text-center">
-                      {factor.toFixed(2)}
-                    </td>
-                  ))}
                 </tr>
                 <tr>
                   <th className="min-w-[185px] text-left text-sm font-light">
                     Discount Value (Millions)
                   </th>
-                  {projectedData.discountedValues.map((value, index) => (
-                    <td key={index} className="p-3 text-sm text-center">
-                      {(value / 1_000_000).toFixed(2)}
-                    </td>
-                  ))}
                 </tr>
               </tbody>
             </table>
+
+            {/* Scrollable Data Table */}
+            <div
+              className="overflow-x-auto no-scrollbar"
+              ref={tableRef}
+            >
+              <table className="text-center border-collapse">
+                <thead>
+                  <tr>
+                    {years.map((year) => (
+                      <td key={year} className="p-3 text-sm text-center">
+                        {year}
+                      </td>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    {projectedData.freeCashFlows.map((fcf, index) => (
+                      <td key={index} className="p-3 text-sm text-center">
+                        {(fcf / 1_000_000).toFixed(2)}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    {projectedData.discountFactors.map((factor, index) => (
+                      <td key={index} className="p-3 text-sm text-center">
+                        {factor.toFixed(2)}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    {projectedData.discountedValues.map((value, index) => (
+                      <td key={index} className="p-3 text-sm text-center">
+                        {(value / 1_000_000).toFixed(2)}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div className="content-end w-max ml-auto gap-2 flex">
+          <div className="content-end w-max ml-auto flex">
             <div>
               <button
                 onClick={handleBack}
                 disabled={currentPage === 1} // Disable if on the first page
-                className={`bg-white mt-8 ${
+                className={`mt-8 ${
                   currentPage === 1
-                    ? "text-gray-400 border-gray-200 cursor-not-allowed"
-                    : "text-gray-700 hover:bg-gray-100"
-                } font-light py-2 px-4 border border-gray-400 rounded-[6px]`}
+                    ? "text-gray-300 border-gray-100 cursor-not-allowed "
+                    : "text-gray-600 hover:bg-[#E9E9E9]"
+                } font-light py-2 px-4 rounded-[6px]`}
               >
                 Prev
               </button>
@@ -175,11 +194,11 @@ export default function Projection({
               <button
                 onClick={handleNext}
                 disabled={currentPage === totalPages} // Disable if on the last page
-                className={`bg-white mt-8 ${
+                className={`mt-8 ${
                   currentPage === totalPages
-                    ? "text-gray-400 cursor-not-allowed border-gray-200"
-                    : "text-gray-700 hover:bg-gray-100"
-                } font-light py-2 px-4 border border-gray-400 rounded-[6px]`}
+                    ? "text-gray-300 cursor-not-allowed border-gray-100 "
+                    : "text-gray-600 hover:bg-[#E9E9E9]"
+                } font-light py-2 px-4 rounded-[6px]`}
               >
                 Next
               </button>
@@ -196,6 +215,12 @@ export default function Projection({
         .no-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+        .sticky {
+          position: sticky;
+          left: 0;
+         
+          z-index: 10;
         }
       `}</style>
     </>

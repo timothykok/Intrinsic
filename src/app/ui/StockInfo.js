@@ -16,7 +16,8 @@ const StockInfo = forwardRef(
   ) => {
     return (
       <div ref={ref}>
-        <div className="flex items-center justify-left mx-auto pt-28 w-[800px]">
+        <div className="pt-28">
+        <div className="flex items-center justify-left mx-auto  pt-12 pb-12 w-[800px] ">
           {/* Logo */}
           <div className="mr-4">
             <img
@@ -54,6 +55,10 @@ const StockInfo = forwardRef(
             </div>
           </div>
         </div>
+
+
+        </div>
+       
       </div>
     );
   }
