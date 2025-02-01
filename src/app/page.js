@@ -36,22 +36,24 @@ export default function Home() {
    const [errorMessage, setErrorMessage] = useState(null);
    const inputRef = useRef(null); // Ref for GSAP shake effect
    const errorRef = useRef(null); // Ref for GSAP error message animation
- 
+
+
   // Create a ref for StockInfo
   const stockInfoRef = useRef(null);
 
    // Function to trigger the shake effect
    const triggerShake = () => {
+    gsap.killTweensOf(inputRef.current);
     if (inputRef.current) {
       gsap.fromTo(
         inputRef.current,
-        { x: -6 }, // Start position (left)
+        { x: -6 }, // Start further left
         {
-          x: 6, // Move right
-          duration: 0.1, // Short duration
-          repeat: 4, // Shake 4 times
-          yoyo: true, // Moves back and forth
-          ease: "power1.inOut", // Smooth easing
+          x: 6, // Move further right
+          duration: 0.1,
+          repeat: 4, // Shake more times
+          yoyo: true,
+          ease: "power1.inOut",
         }
       );
     }
@@ -93,6 +95,8 @@ export default function Home() {
       });
     }
   }, [stockInfo]);
+
+ 
 
   // Fetch stock info when the ticker changes
   useEffect(() => {
@@ -197,16 +201,17 @@ export default function Home() {
             {/* Input Field */}
             <input
              ref={inputRef} // Attach ref for shake effect
-              className=" relative w-full h-[40px] mt-8 px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:outline focus:outline-black focus:outline-[3.5px] focus:outline-offset-[-2px] transition-[outline-width,outline-color] delay-100"
+             className=" relative w-full h-[40px] mt-8 px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:outline focus:outline-black focus:outline-[3.5px] focus:outline-offset-[-2px] transition-[outline-width,outline-color] delay-100"
               type="text"
               placeholder="Enter Stock Ticker (e.g., GOOG)"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
+            
             />
 
             {errorMessage && (
-              <p ref={errorRef} className="text-red-400 text-xs font-bold mt-2 ">
+              <p ref={errorRef} className="text-red-400 text-xs font-bold mt-2 ml-2">
                 {errorMessage}
               </p>
             )}
