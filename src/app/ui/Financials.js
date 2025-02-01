@@ -397,11 +397,11 @@ export default function Financials({
 
   return (
     <>
-     <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase">
-        <p className="text-sm text-gray-600 font-bold">Financials</p>
-        <hr className="my-4 border-zinc-200" />
+     <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase text-sm font-normal">
+        <p className=" text-gray-600 font-bold">Financials</p>
+        <hr className="my-4 border-zinc-200 mt-4 mb-4" />
 
-        <div className="space-y-5 text-gray-500">
+        <div className="space-y-5 text-gray-500"> 
           <div className="flex justify-between items-center min-w-s">
             {/* Group the arrow toggle and title together */}
             <div className="flex items-center">
@@ -420,7 +420,7 @@ export default function Financials({
                   />
                 )}
               </span>
-              <span className=" text-sm ml-4 w-80 ">
+              <span className="  ml-4 w-80 ">
                 Free Cash Flow to Equity
               </span>
             </div>
@@ -428,8 +428,8 @@ export default function Financials({
             {/* Currency and value on the right */}
             <span className="text-right">
               <div className="flex items-center">
-                <span className=" text-sm mr-2">{currency}</span>
-                <span className="text-sm w-48 ">
+                <span className="  mr-2">{currency}</span>
+                <span className=" w-48 ">
                   {freeCashFlowEquityData !== null
                     ? freeCashFlowEquityData.toLocaleString()
                     : "Calculating..."}
@@ -441,15 +441,15 @@ export default function Financials({
           {!isCollapsed && (
             <div className="pl-8 space-y-5">
               <div className="flex justify-between items-center">
-                <span className=" text-sm ml-4 w-80">
+                <span className="  ml-4 w-80">
                   Net Income
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className=" text-sm mr-2">
+                    <span className="  mr-2">
                       {currency}
                     </span>
-                    <span className="text-sm w-48 ">
+                    <span className=" w-48 ">
                       {netIncomeData !== null
                         ? `${netIncomeData.toLocaleString()}`
                         : "Calculating..."}
@@ -459,15 +459,15 @@ export default function Financials({
               </div>
   
               <div className="flex justify-between items-center mb-6">
-                <span className=" text-sm ml-4 w-80">
+                <span className="  ml-4 w-80">
                   Depreciation & Amortization
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className=" text-sm mr-2">
+                    <span className="  mr-2">
                       {currency}
                     </span>
-                    <span className="text-sm w-48 ">
+                    <span className=" w-48 ">
                       {depreceationAmortizationData !== null
                         ? `${depreceationAmortizationData.toLocaleString()}`
                         : "Calculating..."}
@@ -478,15 +478,15 @@ export default function Financials({
               
 
               <div className="flex justify-between items-center">
-                <span className=" text-sm ml-4 w-80">
+                <span className="  ml-4 w-80">
                   Capital Expenditure
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className=" text-sm mr-2">
+                    <span className="  mr-2">
                       {currency}
                     </span>
-                    <span className="text-sm w-48 ">
+                    <span className=" w-48 ">
                       {capitalExpenditureData !== null
                         ? `${capitalExpenditureData.toLocaleString()}`
                         : "Calculating..."}
@@ -496,15 +496,15 @@ export default function Financials({
               </div>
 
               <div className="flex justify-between items-center">
-                <span className=" text-sm ml-4 w-80">
+                <span className="  ml-4 w-80">
                   Change In Working Capital
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className=" text-sm mr-2">
+                    <span className="  mr-2">
                       {currency}
                     </span>
-                    <span className="text-sm w-48 ">
+                    <span className=" w-48 ">
                       {changeInWorkingCapitalData !== null
                         ? `${changeInWorkingCapitalData.toLocaleString()}`
                         : "Calculating..."}
@@ -514,15 +514,15 @@ export default function Financials({
               </div>
 
               <div className="flex justify-between items-center">
-                <span className=" text-sm ml-4 w-80">
+                <span className="  ml-4 w-80">
                   Net Borrowing
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className=" text-sm mr-2">
+                    <span className="  mr-2">
                       {currency}
                     </span>
-                    <span className="text-sm w-48 ">
+                    <span className=" w-48 ">
                       {netBorrowingData !== null
                         ? `${netBorrowingData.toLocaleString()}`
                         : "Calculating..."}
@@ -534,13 +534,13 @@ export default function Financials({
           )}
 
           <div className="flex justify-between items-center">
-            <span className=" text-sm ml-6 w-80">
+            <span className="  ml-6 w-80">
               Cash Flow Growth Rate (Year 1-5)
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className=" text-sm mr-[11px]">PCT</span>
-                <span className="text-sm w-48 ">
+                <span className="  mr-[11px]">PCT</span>
+                <span className=" w-48 ">
                   {fiveYearGrowthRate !== "Invalid data" &&
                   fiveYearGrowthRate !== "Insufficient data"
                     ? `${fiveYearGrowthRate} %`
@@ -552,13 +552,13 @@ export default function Financials({
 
           {/* Cash Flow Growth Rate (Year 6-10) */}
           <div className="flex justify-between items-center">
-            <span className=" text-sm ml-6 w-80 ">
+            <span className="  ml-6 w-80 ">
               Cash Flow Growth Rate (Year 6-10)
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className=" text-sm mr-[11px]">PCT</span>
-                <span className="text-sm w-48 ">
+                <span className="  mr-[11px]">PCT</span>
+                <span className=" w-48 ">
                   {tenYearGrowthRate} %
                 </span>
               </div>
@@ -567,14 +567,14 @@ export default function Financials({
 
           {/* Cash Flow Growth Rate (Year 15-∞) */}
           <div className="flex justify-between items-center h-6">
-            <span className=" text-sm ml-6 w-80">
+            <span className="  ml-6 w-80">
               Cash Flow Growth Rate (Year 15-{" "}
               <span className="text-xxl">∞</span>)
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className=" text-sm mr-[11px]">PCT</span>
-                <span className="text-sm w-48 ">
+                <span className="  mr-[11px]">PCT</span>
+                <span className=" w-48 ">
                   {longTermGrowthRate} %
                 </span>
               </div>
@@ -603,7 +603,7 @@ export default function Financials({
                   />
                 )}
               </span>
-              <span className=" text-sm ml-4 w-80">
+              <span className="  ml-4 w-80">
                 Cost Of Equity
               </span>
             </div>
@@ -611,8 +611,8 @@ export default function Financials({
             {/* Percentage and value on the right */}
             <span className="text-right">
               <div className="flex items-center">
-                <span className=" text-sm mr-[11px]">PCT</span>
-                <span className="text-sm w-48 ">
+                <span className="  mr-[11px]">PCT</span>
+                <span className=" w-48 ">
                   {costOfEquity !== null && costOfEquity !== undefined
                     ? `${costOfEquity.toFixed(2)} %`
                     : "Calculating..."}
@@ -626,11 +626,11 @@ export default function Financials({
             <div className="pl-8 space-y-5">
               {/* Beta */}
               <div className="flex justify-between items-center">
-                <span className=" text-sm ml-4 w-80">Beta</span>
+                <span className="  ml-4 w-80">Beta</span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className=" text-sm mr-[13px]">VAL</span>
-                    <span className="text-sm w-48 ">
+                    <span className="  mr-[13px]">VAL</span>
+                    <span className=" w-48 ">
                       {betaData !== null && !isNaN(betaData)
                         ? `${betaData}`
                         : "Loading..."}
@@ -641,13 +641,13 @@ export default function Financials({
 
               {/* Risk Free Rate */}
               <div className="flex justify-between items-center">
-                <span className=" text-sm ml-4 w-80">
+                <span className="  ml-4 w-80">
                   Risk Free Rate
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className=" text-sm mr-[11px]">PCT</span>
-                    <span className="text-sm w-48 ">
+                    <span className="  mr-[11px]">PCT</span>
+                    <span className=" w-48 ">
                       {riskFreeRate !== null && !isNaN(riskFreeRate)
                         ? `${riskFreeRate.toFixed(2)} %`
                         : "Loading..."}
@@ -658,13 +658,13 @@ export default function Financials({
 
               {/* Market Risk Premium */}
               <div className="flex justify-between items-center">
-                <span className=" text-sm ml-4 w-80">
+                <span className="  ml-4 w-80">
                   Market Risk Premium
                 </span>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className=" text-sm mr-[11px]">PCT</span>
-                    <span className="text-sm w-48 ">
+                    <span className="  mr-[11px]">PCT</span>
+                    <span className=" w-48 ">
                       {marketRiskPremium !== null && !isNaN(marketRiskPremium)
                         ? `${marketRiskPremium} %`
                         : "Loading..."}

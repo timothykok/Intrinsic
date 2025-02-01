@@ -120,6 +120,8 @@ export default function Home() {
     fetchStockInfo();
   }, [ticker]);
 
+
+
   return (
     <>
     <div className="mb-64">
@@ -144,7 +146,7 @@ export default function Home() {
         
           {/* Input Field */}
           <input
-          className="relative w-full h-[40px] mt-8 px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:outline focus:outline-black focus:outline-[3.5px] focus:outline-offset-[-2px] transition-[outline-width,outline-color] delay-100"
+          className=" relative w-full h-[40px] mt-8 px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:outline focus:outline-black focus:outline-[3.5px] focus:outline-offset-[-2px] transition-[outline-width,outline-color] delay-100"
   type="text"
             placeholder="Enter Stock Ticker (e.g., GOOG)"
             value={input}

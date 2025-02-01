@@ -82,20 +82,20 @@ const StockInfo = forwardRef(
 
           {/* Additional Information */}
           <div>
-            <div className="max-w-[800px] mx-auto mt-[64px] mb-[64px]">
+            <div className="max-w-[800px] mx-auto mt-[64px] mb-[64px] text-sm">
               <div className="mt-8 pt-4 text-gray-700 w-auto">
-                <p className="text-lg font-light">
+                <p className="text-sm font-light">
                   Estimated DCF Value of one {ticker} stock is{" "}
-                  <span className="font-medium text-lg">
+                  <span className="font-medium">
                     ${intrinsicValuePerShare?.toFixed(2)}
                   </span>
                   . Compared to the current market price of{" "}
-                  <span className="font-medium text-lg text-gray-600">
+                  <span className="font-medium text-gray-600">
                     ${price?.toFixed(2)} {currency}
                   </span>
                   , the stock is{" "}
                   <span
-                    className={`font-bold text-lg ${
+                    className={`font-bold ${
                       underOverValue === "overvalued"
                         ? "text-red-600"
                         : "text-green-600"

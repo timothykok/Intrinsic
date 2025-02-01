@@ -39,7 +39,7 @@ export default function Ticker() {
   }, []);
 
   return (
-    <div className="ticker-wrapper  overflow-hidden py-2 w-auto">
+    <div className="ticker-wrapper  overflow-hidden py-2 w-auto text-base">
       <div className="ticker-content flex animate-ticker-scroll whitespace-nowrap gap-8">
         {/* Original Ticker Items */}
         {stocks.map((stock, index) => (
