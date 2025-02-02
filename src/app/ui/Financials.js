@@ -43,13 +43,13 @@ export default function Financials({
     "Communication Services": 11.27,
     "Consumer Cyclical": 12.07, // Mapped from Financials (Consumer Cyclical includes discretionary spending)
     "Consumer Defensive": 10.92, // Mapped from Consumer Staples
-    Energy: 6.18,
+    "Energy": 6.18,
     "Financial Services": 12.07, // Mapped from Financials
-    Healthcare: 12.45,
-    Industrials: 12.97,
+    "Healthcare": 12.45,
+    "Industrials": 12.97,
     "Real Estate": 10.4,
-    Technology: 19.8, // Mapped from Information Technology
-    Utilities: 10.05,
+    "Technology": 19.8, // Mapped from Information Technology
+    "Utilities": 10.05,
   };
 
   const [sectorGrowthRates, setSectorGrowthRates] = useState([]); // Store collected growth rates
@@ -189,7 +189,6 @@ export default function Financials({
         }
       }
     };
-
     const fetchFiveYearGrowthRate = async () => {
       try {
         const response = await axios.get(
@@ -197,47 +196,34 @@ export default function Financials({
         );
         const data = response.data;
     
-        // Ensure data exists and has at least 5 records
-        if (!data || data.length < 5) {
+        if (!data || data.length < 10) {
           console.error(`Insufficient data. Found only ${data?.length || 0} records.`);
           setFiveYearGrowthRate("Insufficient data");
           return;
         }
     
-        // Extract ROE values for the last 5 years
-        const roeValues = data.slice(0, 5).map((year) =>
-          parseFloat(year.returnOnEquity || 0)
-        );
-        // Filter out invalid ROE values
-        const validROEValues = roeValues.filter((roe) => !isNaN(roe) && roe > 0);
+        const roeValues = data.slice(0, 5).map(year => parseFloat(year.returnOnEquity || 0));
+        const validROEValues = roeValues.filter(roe => !isNaN(roe) && roe > 0);
         if (validROEValues.length < 1) {
           console.error("No valid ROE values found.");
           setFiveYearGrowthRate("Invalid data");
           return;
         }
-        // Calculate the average ROE over the 5 years
-        const averageROE =
-          validROEValues.reduce((sum, roe) => sum + roe, 0) / validROEValues.length;
+        const averageROE = validROEValues.reduce((sum, roe) => sum + roe, 0) / validROEValues.length;
     
-        // Get payout ratio from the first record (adjust if needed)
         const payoutRatio = parseFloat(data[0].payoutRatio || 0);
         if (isNaN(payoutRatio) || payoutRatio < 0 || payoutRatio > 1) {
           console.error("Invalid payout ratio.");
           setFiveYearGrowthRate("Invalid data");
           return;
         }
-        // Calculate the retention ratio
         const retentionRatio = 1 - payoutRatio;
     
-        // Compute the growth rate using ROE * retention ratio
-        let computedGrowthRate = retentionRatio * averageROE;
-
-        let formattedGrowthRate = computedGrowthRate * 100
-
-
-    
-        
-        setFiveYearGrowthRate(formattedGrowthRate.toFixed(2) );
+        // Compute the five-year growth rate as a decimal
+        const computedGrowthRate = retentionRatio * averageROE;
+        // Format it as a percentage (e.g., 12.34)
+        const formattedGrowthRate = (computedGrowthRate * 100).toFixed(2);
+        setFiveYearGrowthRate(formattedGrowthRate);
       } catch (error) {
         console.error("Error fetching financial data:", error);
         setFiveYearGrowthRate("Error");
@@ -354,6 +340,29 @@ export default function Financials({
     fetchMarketRiskPremium();
   }, [Ticker]);
 
+  useEffect(() => {
+    // Only proceed if both rates are available and valid (and not error strings)
+    if (
+      fiveYearGrowthRate &&
+      tenYearGrowthRate &&
+      fiveYearGrowthRate !== "Invalid data" &&
+      fiveYearGrowthRate !== "Insufficient data" &&
+      fiveYearGrowthRate !== "Error"
+    ) {
+      // Convert the computed five-year growth rate (which is a string percentage) to a number.
+      const fiveYearNum = parseFloat(fiveYearGrowthRate);
+      // If it's above 50%, update it to match the 10-year growth rate.
+      if (fiveYearNum > 50) {
+
+        tenYearGrowthRate = parseFloat(tenYearGrowthRate) 
+
+        let formattedTenYearGrowthRate = tenYearGrowthRate.toFixed(2)
+
+        setFiveYearGrowthRate(tenYearGrowthRate);
+      }
+    }
+  }, [fiveYearGrowthRate, tenYearGrowthRate]);
+
   // Calculate Cost of Equity when all data is available. If all the required data comes from a single API call, you don’t need this separation.
   useEffect(() => {
     if (
@@ -395,11 +404,11 @@ export default function Financials({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase text-sm font-normal">
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase text-sm ">
         <p className=" text-gray-600 font-bold">Financials</p>
         <hr className="my-4 border-zinc-200 mt-4 mb-4" />
 
-        <div className="space-y-5 text-gray-500">
+        <div className="space-y-5 text-gray-500 ">
           <div className="flex justify-between items-center min-w-s">
             {/* Group the arrow toggle and title together */}
             <div className="flex items-center">
