@@ -7,6 +7,13 @@
   --foreground: #000000;
 }
 
+
+/* Apply your font to the TradingView widget */
+#tradingview-widget-container * {
+  font-family: "Verlag", sans-serif !important;
+  font-weight: 300 !important;
+}
+
 /* @media (prefers-color-scheme: dark) {
   :root {
     --background: #f1f1f1;

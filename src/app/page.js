@@ -10,8 +10,9 @@ import Calculation from "./ui/Calculation";
 import ShareValue from "./ui/ShareValue";
 import StockInfo from "./ui/StockInfo.js";
 import Projection from "./ui/Projection.js";
-// import Valuation from "./ui/Valuation.js";
+
 import Footer from "./ui/Footer.js";
+
 
 export default function Home() {
   const [input, setInput] = useState(""); // Raw input from the user
@@ -177,6 +178,9 @@ export default function Home() {
     fetchStockInfo();
   }, [ticker]);
 
+
+
+
   return (
     <>
       <div className="mb-64">
@@ -280,6 +284,10 @@ export default function Home() {
                 tenYearGrowthRate={tenYearGrowthRate}
                 longTermGrowthRate={longTermGrowthRate}
               />
+
+      
+
+            {/* <StockChart ticker={ticker} />    */}
             </div>
           </>
         )}

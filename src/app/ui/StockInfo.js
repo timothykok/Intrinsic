@@ -1,5 +1,5 @@
 import { forwardRef, useState, useEffect } from "react";
-
+import StockChart from "./StockChart";
 const StockInfo = forwardRef(
   (
     {
@@ -80,10 +80,13 @@ const StockInfo = forwardRef(
             </div>
           </div>
 
+
+          <StockChart ticker={ticker} />   
+
           {/* Additional Information */}
-          <div>
-            <div className="max-w-[800px] mx-auto mt-[64px] mb-[64px] text-sm">
-              <div className="mt-8 pt-4 text-gray-700 w-auto">
+          <div className="max-w-[800px] mx-auto mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm text-xs ">
+          
+              <div className="p-4 text-gray-700 w-auto">
                 <p className="text-sm font-light">
                   Estimated DCF Value of one {ticker} stock is{" "}
                   <span className="font-medium">
@@ -106,7 +109,7 @@ const StockInfo = forwardRef(
                   </span>
                 </p>
               </div>
-            </div>
+         
           </div>
         </div>
       </div>
