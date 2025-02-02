@@ -11,7 +11,7 @@ export default function Nav() {
             <img
                     src="/Intrinsic..png"
                     alt="View More"
-                    className="w-[109] h-[11`px]"
+                    className="w-[128px] h-[24px]"
                     href="/"
                   />
             </Link>
