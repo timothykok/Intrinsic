@@ -20,14 +20,19 @@ export default function Nav() {
 
 
           <div className="flex gap-2 text-sm">
+
+
+          <div className="hover:bg-[#EEEEEE]  hover:font-sm hover:text-stone-500  text-[#878686] p-2 rounded-lg ">
+           <Link href="/"> How This Works </Link>
+           </div> 
+
+
             <div className="hover:bg-[#EEEEEE]  hover:font-sm hover:text-stone-500  text-[#878686] p-2 rounded-lg ">
             <Link href="/"> Watchlist </Link>
             </div>
 
             
-           <div className="hover:bg-[#EEEEEE]  hover:font-sm hover:text-stone-500  text-[#878686] p-2 rounded-lg ">
-           <Link href="/"> User Manual </Link>
-           </div> 
+        
          
 
            <div className="hover:bg-[#EEEEEE]  hover:font-sm hover:text-stone-500  text-[#878686] p-2 rounded-lg ">

@@ -84,16 +84,16 @@ const StockInfo = forwardRef(
           <StockChart ticker={ticker} />   
 
           {/* Additional Information */}
-          <div className="max-w-[800px] mx-auto mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm text-xs ">
+          <div className="max-w-[800px] mx-auto mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm text-xs font-semibold">
           
               <div className="p-4 text-gray-700 w-auto">
-                <p className="text-sm font-light">
+                <p className="text-sm ">
                   Estimated DCF Value of one {ticker} stock is{" "}
-                  <span className="font-medium">
+                  <span className="">
                     ${intrinsicValuePerShare?.toFixed(2)}
                   </span>
                   . Compared to the current market price of{" "}
-                  <span className="font-medium text-gray-600">
+                  <span className="text-gray-600">
                     ${price?.toFixed(2)} {currency}
                   </span>
                   , the stock is{" "}

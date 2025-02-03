@@ -30,7 +30,7 @@ export default function StockChart({ ticker }) {
           interval: "D", // Daily interval
           timezone: "Etc/UTC",
           theme: "light",
-          style: "2", // Line chart
+          style: "1", // Line chart
           locale: "en",
           toolbar_bg: "#f1f3f6",
           enable_publishing: false,
@@ -49,7 +49,7 @@ export default function StockChart({ ticker }) {
       id="tradingview-widget-container"
       ref={containerRef}
 
-      className="h-[450px] w-[800px] m-auto mt-12 mb-12 border border-solid rounded-lg shadow-sm z-100"
+      className="h-[450px] w-[800px] m-auto mt-12 mb-12 border border-solid rounded-lg shadow-xs z-100"
     
 
 
