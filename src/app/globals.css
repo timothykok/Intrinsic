@@ -10,7 +10,7 @@
 
 /* Apply your font to the TradingView widget */
 #tradingview-widget-container * {
-  font-family: "Verlag", sans-serif !important;
+  font-family: "Montserrat", serif !important;
   font-weight: 300 !important;
 }
 

@@ -39,7 +39,7 @@ export default function Ticker() {
   }, []);
 
   return (
-    <div className="ticker-wrapper  overflow-hidden py-2 w-auto text-base">
+    <div className="ticker-wrapper  overflow-hidden py-2 w-auto font-bold text-base">
       <div className="ticker-content flex animate-ticker-scroll whitespace-nowrap gap-8">
         {/* Original Ticker Items */}
         {stocks.map((stock, index) => (
@@ -52,7 +52,7 @@ export default function Ticker() {
               ${stock.price.toFixed(2)}
             </span>
             <span
-              className={`font-normal ${
+              className={`font-normal text-base ${
                 stock.change.includes("+") ? "text-green-500" : "text-red-500"
               }`}
             >

@@ -17,7 +17,6 @@
 //   );
 // }
 
-
 import "./globals.css";
 import Nav from "./ui/Nav";
 
@@ -29,7 +28,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased font-light" style={{ fontFamily: '"Verlag", sans-serif' }}>
+      <body className="antialiased font-light" style={{ fontFamily: '"Montserrat", sans-serif' }}>
         <Nav />
         {children}
       </body>
