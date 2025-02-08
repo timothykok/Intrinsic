@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import axios from "axios";
 
-export default function Calculation({
+export default function DCFCalculation({
   Ticker,
   freeCashFlowEquityData,
   fiveYearGrowthRate,

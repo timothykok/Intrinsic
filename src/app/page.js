@@ -3,20 +3,23 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import gsap from "gsap"; 
+import gsap from "gsap";
 import Ticker from "./ui/Ticker.js";
-import Financials from "./ui/Financials.js";
-import Calculation from "./ui/Calculation";
+import DiscountedCashFlow from "./ui/DiscountedCashFlow.js";
+import DCFCalculation from "./ui/DCFCalculation.js";
+import ResidualCalculation from "./ui/ResidualCalculation.js";
+import ResidualIncome from "./ui/ResidualIncome.js";
 import ShareValue from "./ui/ShareValue";
 import StockInfo from "./ui/StockInfo.js";
 import Projection from "./ui/Projection.js";
 
 import Footer from "./ui/Footer.js";
 
-
 export default function Home() {
   const [input, setInput] = useState(""); // Raw input from the user
   const [ticker, setTicker] = useState(""); // Debounced ticker value
+
+  const [selectedMethod, setSelectedMethod] = useState("DCF"); // Default to DCF method
 
   //Financials
   const [stockInfo, setStockInfo] = useState(null);
@@ -33,17 +36,16 @@ export default function Home() {
 
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
 
-   //Error handling
-   const [errorMessage, setErrorMessage] = useState(null);
-   const inputRef = useRef(null); // Ref for GSAP shake effect
-   const errorRef = useRef(null); // Ref for GSAP error message animation
-
+  //Error handling
+  const [errorMessage, setErrorMessage] = useState(null);
+  const inputRef = useRef(null); // Ref for GSAP shake effect
+  const errorRef = useRef(null); // Ref for GSAP error message animation
 
   // Create a ref for StockInfo
   const stockInfoRef = useRef(null);
 
-   // Function to trigger the shake effect
-   const triggerShake = () => {
+  // Function to trigger the shake effect
+  const triggerShake = () => {
     gsap.killTweensOf(inputRef.current);
     if (inputRef.current) {
       gsap.fromTo(
@@ -60,8 +62,12 @@ export default function Home() {
     }
   };
 
-   // Function to show error message with animation
-   const triggerErrorMessage = () => {
+  const handleMethodChange = (e) => {
+    setSelectedMethod(e.target.value);
+  };
+
+  // Function to show error message with animation
+  const triggerErrorMessage = () => {
     if (errorRef.current) {
       gsap.fromTo(
         errorRef.current,
@@ -70,7 +76,6 @@ export default function Home() {
       );
     }
   };
-
 
   // Handle search on Enter key press
   const handleKeyDown = (e) => {
@@ -96,8 +101,6 @@ export default function Home() {
       });
     }
   }, [stockInfo]);
-
- 
 
   // Fetch stock info when the ticker changes
   useEffect(() => {
@@ -178,9 +181,6 @@ export default function Home() {
     fetchStockInfo();
   }, [ticker]);
 
-
-
-
   return (
     <>
       <div className="mb-64">
@@ -198,29 +198,49 @@ export default function Home() {
           </div>
 
           {/* Spacing Section */}
-          <div className="spacer h-8"></div>
+         
 
           {/* Search Bar Section */}
           <div className="relative w-[800px] mx-auto">
             {/* Input Field */}
             <input
-             ref={inputRef} // Attach ref for shake effect
-             className=" relative w-full h-[40px] mt-8 px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:outline focus:outline-black focus:outline-[3.5px] focus:outline-offset-[-2px] transition-[outline-width,outline-color] delay-100"
+              ref={inputRef} // Attach ref for shake effect
+              className=" relative w-full h-[40px] mt-8 px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:outline focus:outline-black focus:outline-[3.5px] focus:outline-offset-[-2px] transition-[outline-width,outline-color] delay-100"
               type="text"
               placeholder="Enter Stock Ticker (e.g., GOOG)"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-            
             />
 
             {errorMessage && (
-              <p ref={errorRef} className="text-red-400 text-xs font-bold mt-2 ml-2">
+              <p
+                ref={errorRef}
+                className="text-red-400 text-xs font-bold mt-2 ml-2"
+              >
                 {errorMessage}
               </p>
             )}
           </div>
+
+
+          <div className="spacer h-8 mt-8"></div>
+          <div className="w-[800px]">
+            <div className="flex mr-auto space-x-4">
+              <select
+                value={selectedMethod}
+                onChange={handleMethodChange}
+                className="border border-gray-300 rounded px-4 py-2"
+              >
+                <option value="DCF">Discounted Cash Flow</option>
+                <option value="RI">Residual Income</option>
+              </select>
+            </div>
+          </div>
         </div>
+
+
+        
 
         {stockInfo && (
           <>
@@ -246,48 +266,85 @@ export default function Home() {
             presentValue={presentValue}
           /> */}
 
-              <Financials
-                Ticker={ticker}
-                setCostOfEquity={setCostOfEquity}
-                costOfEquity={costOfEquity}
-                setFreeCashFlowEquityData={setFreeCashFlowEquityData}
-                freeCashFlowEquityData={freeCashFlowEquityData}
-                fiveYearGrowthRate={fiveYearGrowthRate}
-                setFiveYearGrowthRate={setFiveYearGrowthRate}
-                setTenYearGrowthRate={setTenYearGrowthRate}
-                tenYearGrowthRate={tenYearGrowthRate}
-                setLongTermGrowthRate={setLongTermGrowthRate}
-                longTermGrowthRate={longTermGrowthRate}
-              />
+              {selectedMethod === "DCF" && (
+                <>
+                  <DiscountedCashFlow
+                    Ticker={ticker}
+                    setCostOfEquity={setCostOfEquity}
+                    costOfEquity={costOfEquity}
+                    setFreeCashFlowEquityData={setFreeCashFlowEquityData}
+                    freeCashFlowEquityData={freeCashFlowEquityData}
+                    fiveYearGrowthRate={fiveYearGrowthRate}
+                    setFiveYearGrowthRate={setFiveYearGrowthRate}
+                    setTenYearGrowthRate={setTenYearGrowthRate}
+                    tenYearGrowthRate={tenYearGrowthRate}
+                    setLongTermGrowthRate={setLongTermGrowthRate}
+                    longTermGrowthRate={longTermGrowthRate}
+                  />
 
-              <Calculation
-                Ticker={ticker}
-                costOfEquity={costOfEquity}
-                freeCashFlowEquityData={freeCashFlowEquityData}
-                fiveYearGrowthRate={fiveYearGrowthRate}
-                tenYearGrowthRate={tenYearGrowthRate}
-                longTermGrowthRate={longTermGrowthRate}
-                outstandingShares={outstandingShares}
-                setOutstandingShares={setOutstandingShares}
-                presentValue={presentValue}
-                setPresentValue={setPresentValue}
-              />
-              <ShareValue
-                Ticker={ticker}
-                price={stockInfo.price}
-                outStandingShares={outstandingShares}
-                presentValue={presentValue}
-              />
-              <Projection
-                freeCashFlowEquityData={freeCashFlowEquityData}
-                fiveYearGrowthRate={fiveYearGrowthRate}
-                tenYearGrowthRate={tenYearGrowthRate}
-                longTermGrowthRate={longTermGrowthRate}
-              />
+                  <DCFCalculation
+                    Ticker={ticker}
+                    costOfEquity={costOfEquity}
+                    freeCashFlowEquityData={freeCashFlowEquityData}
+                    fiveYearGrowthRate={fiveYearGrowthRate}
+                    tenYearGrowthRate={tenYearGrowthRate}
+                    longTermGrowthRate={longTermGrowthRate}
+                    outstandingShares={outstandingShares}
+                    setOutstandingShares={setOutstandingShares}
+                    presentValue={presentValue}
+                    setPresentValue={setPresentValue}
+                  />
+                  <ShareValue
+                    Ticker={ticker}
+                    price={stockInfo.price}
+                    outStandingShares={outstandingShares}
+                    presentValue={presentValue}
+                  />
+                  <Projection
+                    freeCashFlowEquityData={freeCashFlowEquityData}
+                    fiveYearGrowthRate={fiveYearGrowthRate}
+                    tenYearGrowthRate={tenYearGrowthRate}
+                    longTermGrowthRate={longTermGrowthRate}
+                  />
+                </>
+              )}
 
-      
+              {selectedMethod === "RI" && (
+                <>
+                  <ResidualIncome
+                    Ticker={ticker}
+                    netIncome={stockInfo.price * 1000000} // Example calculation for net income
+                    costOfEquity={costOfEquity}
+                  />
 
-            {/* <StockChart ticker={ticker} />    */}
+                  <ResidualCalculation
+                    Ticker={ticker}
+                    costOfEquity={costOfEquity}
+                    freeCashFlowEquityData={freeCashFlowEquityData}
+                    fiveYearGrowthRate={fiveYearGrowthRate}
+                    tenYearGrowthRate={tenYearGrowthRate}
+                    longTermGrowthRate={longTermGrowthRate}
+                    outstandingShares={outstandingShares}
+                    setOutstandingShares={setOutstandingShares}
+                    presentValue={presentValue}
+                    setPresentValue={setPresentValue}
+                  />
+                  <ShareValue
+                    Ticker={ticker}
+                    price={stockInfo.price}
+                    outStandingShares={outstandingShares}
+                    presentValue={presentValue}
+                  />
+                  <Projection
+                    freeCashFlowEquityData={freeCashFlowEquityData}
+                    fiveYearGrowthRate={fiveYearGrowthRate}
+                    tenYearGrowthRate={tenYearGrowthRate}
+                    longTermGrowthRate={longTermGrowthRate}
+                  />
+                </>
+              )}
+
+              {/* <StockChart ticker={ticker} />    */}
             </div>
           </>
         )}

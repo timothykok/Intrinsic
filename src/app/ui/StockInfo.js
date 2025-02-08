@@ -40,8 +40,8 @@ const StockInfo = forwardRef(
     // Component JSX
     return (
       <div ref={ref}>
-        <div className="pt-28">
-          <div className="flex items-center justify-left mx-auto pt-8 pb-8 mt-8 w-[800px]">
+        <div className="pt-8">
+          <div className="flex items-center justify-left mx-auto pt-8 pb-8 mt-4 w-[800px]">
             {/* Logo */}
             <div className="mr-4 p-12 bg-slate-200 rounded-full">
               <img
