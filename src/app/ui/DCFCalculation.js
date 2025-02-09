@@ -16,29 +16,7 @@ export default function DCFCalculation({
   const currency = "USD"; // Hardcoded currency symbol
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
 
-  // Fetch outstanding shares
-  useEffect(() => {
-    const fetchOutstandingShares = async () => {
-      try {
-        const response = await axios.get(
-          `https://financialmodelingprep.com/api/v4/shares_float?symbol=${Ticker}&apikey=${fmpApiKey}`
-        );
-
-        if (response.data && response.data.length > 0) {
-          const data = response.data[0].outstandingShares;
-          console.log("Outstanding Shares:", data);
-          setOutstandingShares(data);
-        } else {
-          console.error("No data found for outstanding shares.");
-        }
-      } catch (error) {
-        console.error("Error fetching Outstanding Shares:", error);
-      }
-    };
-
-    fetchOutstandingShares();
-  }, [Ticker]);
-
+  
   // Calculate PV of FCFE
   useEffect(() => {
 
@@ -84,13 +62,7 @@ export default function DCFCalculation({
         // 6. Set the final present value
         setPresentValue(parseFloat(pv.toFixed(2)));
     
-        // Debugging Logs
-        console.log("Initial FCFE - calc:", freeCashFlowEquityData);
-        console.log("5-Year Growth Rate - calc:", fiveYearGrowthRate);
-        console.log("6-10 Year Growth Rate - calc:", tenYearGrowthRate);
-        console.log("Cost Of Equity - calc:", costOfEquity);
-        console.log("Long-Term Growth Rate - calc:", longTermGrowthRate);
-        console.log("Present Value of FCFE to Perpetuity - calc:", pv);
+
       }
 
       

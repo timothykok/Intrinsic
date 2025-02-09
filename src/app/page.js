@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
+import axios from "axios";
 import Ticker from "./ui/Ticker.js";
 import DiscountedCashFlow from "./ui/DiscountedCashFlow.js";
 import DCFCalculation from "./ui/DCFCalculation.js";
@@ -12,7 +13,6 @@ import ResidualIncome from "./ui/ResidualIncome.js";
 import ShareValue from "./ui/ShareValue";
 import StockInfo from "./ui/StockInfo.js";
 import Projection from "./ui/Projection.js";
-
 import Footer from "./ui/Footer.js";
 
 export default function Home() {
@@ -20,6 +20,7 @@ export default function Home() {
   const [ticker, setTicker] = useState(""); // Debounced ticker value
 
   const [selectedMethod, setSelectedMethod] = useState("DCF"); // Default to DCF method
+  const [selectedCurrency, setSelectedCurrency] = useState("USD"); // Default to DCF method
 
   //Financials
   const [stockInfo, setStockInfo] = useState(null);
@@ -27,11 +28,20 @@ export default function Home() {
   const [fiveYearGrowthRate, setFiveYearGrowthRate] = useState(null);
   const [tenYearGrowthRate, setTenYearGrowthRate] = useState(null);
   const [longTermGrowthRate, setLongTermGrowthRate] = useState(null);
-
+  const [financialData, setFinancialData] = useState({
+    netIncome: null,
+    depreciationAmortization: 0,
+    capitalExpenditure: 0,
+    changeInWorkingCapital: 0,
+    netBorrowing: 0,
+    beta: null,
+    riskFreeRate: null,
+    marketRiskPremium: null,
+    sector: null,
+  });
   //Calculation component
   const [outstandingShares, setOutstandingShares] = useState([]);
   const [presentValue, setPresentValue] = useState(null);
-
   const [costOfEquity, setCostOfEquity] = useState(null);
 
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
@@ -43,6 +53,20 @@ export default function Home() {
 
   // Create a ref for StockInfo
   const stockInfoRef = useRef(null);
+
+  const sectorPerformance = {
+    "Basic Materials": 8.98,
+    "Communication Services": 11.27,
+    "Consumer Cyclical": 12.07,
+    "Consumer Defensive": 10.92,
+    "Energy": 6.18,
+    "Financial Services": 12.07,
+    "Healthcare": 12.45,
+    "Industrials": 12.97,
+    "Real Estate": 10.4,
+    "Technology": 19.8,
+    "Utilities": 10.05,
+  };
 
   // Function to trigger the shake effect
   const triggerShake = () => {
@@ -64,6 +88,10 @@ export default function Home() {
 
   const handleMethodChange = (e) => {
     setSelectedMethod(e.target.value);
+  };
+
+  const handleCurrencyChange = (e) => {
+    setSelectedCurrency(e.target.value);
   };
 
   // Function to show error message with animation
@@ -89,6 +117,19 @@ export default function Home() {
 
       setErrorMessage(null); // Clear previous errors
       setTicker(input.toUpperCase().trim());
+    }
+  };
+
+  const fetchData = async (url) => {
+    try {
+      const response = await axios.get(url);
+      console.log(
+        "HOME - fetchData: " + JSON.stringify(response.data, null, 2)
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching data from ${url}:`, error);
+      return null;
     }
   };
 
@@ -124,10 +165,10 @@ export default function Home() {
           quoteData &&
           quoteData.length > 0
         ) {
-          const stockProfileData = profileData[0]; // Fix: Remove `.data`
+          const stockProfileData = profileData[0];
           console.log("profile data =", stockProfileData);
 
-          const stockQuoteData = quoteData[0]; // Fix: Remove `.data`
+          const stockQuoteData = quoteData[0];
           console.log("stock quote data =", stockQuoteData);
 
           const formatMarketCloseTimeNY = (timestamp) => {
@@ -181,6 +222,105 @@ export default function Home() {
     fetchStockInfo();
   }, [ticker]);
 
+  useEffect(() => {
+    if (!ticker) return;
+
+    const fetchFinancialData = async () => {
+      const [
+        profileData,
+        incomeData,
+        cashFlowData,
+        ratioData,
+        treasuryData,
+        marketRiskData,
+        outstandingSharesData
+      ] = await Promise.all([
+        fetchData(
+          `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
+        ),
+        fetchData(
+          `https://financialmodelingprep.com/api/v3/income-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
+        ),
+        fetchData(
+          `https://financialmodelingprep.com/api/v3/cash-flow-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
+        ),
+        fetchData(
+          `https://financialmodelingprep.com/api/v3/ratios/${ticker}?apikey=${fmpApiKey}`
+        ),
+        fetchData(
+          `https://financialmodelingprep.com/api/v4/treasury?apikey=${fmpApiKey}`
+        ),
+        fetchData(
+          `https://financialmodelingprep.com/api/v4/market_risk_premium?apikey=${fmpApiKey}`
+        ),
+        fetchData(
+            `https://financialmodelingprep.com/api/v4/shares_float?symbol=${ticker}&apikey=${fmpApiKey}`
+        ),
+      ]);
+
+      // Determine sector and set ten-year growth rate using the sectorPerformance mapping
+      const sector = profileData?.[0]?.sector || null;
+      const tenYearGrowthRate = sectorPerformance[sector] || "N/A";
+      setTenYearGrowthRate(tenYearGrowthRate.toFixed(2));
+
+      // Retrieve net income and cash flow components
+      const netIncome = incomeData?.[0]?.netIncome || 0;
+      const mostRecentCashFlow = cashFlowData?.[0] || {};
+      const netBorrowing =
+        parseFloat(mostRecentCashFlow.commonStockIssued || 0) -
+        parseFloat(mostRecentCashFlow.debtRepayment || 0);
+
+      // Calculate five-year growth rate using ratios data
+      const fiveYearGrowthRate = (() => {
+        if (!ratioData || ratioData.length < 5) return "Insufficient data";
+        const roeValues = ratioData
+          .slice(0, 5)
+          .map((year) => parseFloat(year.returnOnEquity || 0))
+          .filter((roe) => !isNaN(roe) && roe > 0);
+        if (roeValues.length === 0) return "Invalid data";
+        const avgROE =
+          roeValues.reduce((sum, roe) => sum + roe, 0) / roeValues.length;
+        const payoutRatio = parseFloat(ratioData[0].payoutRatio || 0);
+        if (isNaN(payoutRatio) || payoutRatio < 0 || payoutRatio > 1)
+          return "Invalid data";
+        return ((1 - payoutRatio) * avgROE * 100).toFixed(2);
+      })();
+      setFiveYearGrowthRate(fiveYearGrowthRate);
+
+      // Retrieve risk-free rate and market risk premium from treasury and market data
+      const riskFreeRate = parseFloat(treasuryData?.[0]?.year10) || null;
+      const marketRiskPremium =
+        marketRiskData?.find(
+          (item) => item.country.toLowerCase() === "united states"
+        )?.countryRiskPremium || null;
+
+
+        const outstandingShares = outstandingSharesData?.[0]?.outstandingShares || null;
+        console.log("HOME OUTSTANDING SHARES: " + outstandingShares)
+        setOutstandingShares(outstandingShares)
+
+      // Update the financialData state object with all fetched metrics
+      setFinancialData({
+        netIncome,
+        depreciationAmortization:
+          mostRecentCashFlow.depreciationAndAmortization || 0,
+        capitalExpenditure: mostRecentCashFlow.capitalExpenditure || 0,
+        changeInWorkingCapital: mostRecentCashFlow.changeInWorkingCapital || 0,
+        netBorrowing,
+        beta: profileData?.[0]?.beta || null,
+        riskFreeRate,
+        marketRiskPremium,
+        sector,
+      });
+
+      // Set a default long-term growth rate (here, 3%)
+      setLongTermGrowthRate(3);
+    };
+
+    fetchFinancialData();
+  }, [ticker]);
+
+ 
   return (
     <>
       <div className="mb-64">
@@ -198,7 +338,6 @@ export default function Home() {
           </div>
 
           {/* Spacing Section */}
-         
 
           {/* Search Bar Section */}
           <div className="relative w-[800px] mx-auto">
@@ -223,24 +362,50 @@ export default function Home() {
             )}
           </div>
 
-
           <div className="spacer h-8 mt-8"></div>
           <div className="w-[800px]">
             <div className="flex mr-auto space-x-4">
               <select
+                value={selectedCurrency}
+                onChange={handleCurrencyChange}
+                className="border border-gray-300 rounded rounded-md px-4 py-2"
+              >
+                <option value="USD">USD</option>
+                <option disabled value="EUR">
+                  EUR (Coming Soon!){" "}
+                </option>
+                <option disabled value="AUD">
+                  AUD (Coming Soon!){" "}
+                </option>
+                <option disabled value="JYP">
+                  JYP (Coming Soon!){" "}
+                </option>
+                <option disabled value="MYR">
+                  MYR (Coming Soon!){" "}
+                </option>
+              </select>
+
+              <select
                 value={selectedMethod}
                 onChange={handleMethodChange}
-                className="border border-gray-300 rounded px-4 py-2"
+                className="border border-gray-300 rounded  rounded-md w-[300px] px-4 py-2 shadow-sm"
               >
-                <option value="DCF">Discounted Cash Flow</option>
-                <option value="RI">Residual Income</option>
+                <option
+                  className="border border-gray-300 rounded  rounded-md  px-4 py-2"
+                  value="DCF"
+                >
+                  Discounted Cash Flow
+                </option>
+                <option
+                  className="border border-gray-300 rounded  rounded-md  px-4 py-2"
+                  value="RI"
+                >
+                  Residual Income
+                </option>
               </select>
             </div>
           </div>
         </div>
-
-
-        
 
         {stockInfo && (
           <>
@@ -269,7 +434,7 @@ export default function Home() {
               {selectedMethod === "DCF" && (
                 <>
                   <DiscountedCashFlow
-                    Ticker={ticker}
+                    ticker={ticker}
                     setCostOfEquity={setCostOfEquity}
                     costOfEquity={costOfEquity}
                     setFreeCashFlowEquityData={setFreeCashFlowEquityData}
@@ -280,10 +445,12 @@ export default function Home() {
                     tenYearGrowthRate={tenYearGrowthRate}
                     setLongTermGrowthRate={setLongTermGrowthRate}
                     longTermGrowthRate={longTermGrowthRate}
+                    financialData={financialData}
+                    setFinancialData={setFinancialData}
                   />
 
                   <DCFCalculation
-                    Ticker={ticker}
+                    ticker={ticker}
                     costOfEquity={costOfEquity}
                     freeCashFlowEquityData={freeCashFlowEquityData}
                     fiveYearGrowthRate={fiveYearGrowthRate}
@@ -295,7 +462,7 @@ export default function Home() {
                     setPresentValue={setPresentValue}
                   />
                   <ShareValue
-                    Ticker={ticker}
+                    ticker={ticker}
                     price={stockInfo.price}
                     outStandingShares={outstandingShares}
                     presentValue={presentValue}
@@ -312,13 +479,14 @@ export default function Home() {
               {selectedMethod === "RI" && (
                 <>
                   <ResidualIncome
-                    Ticker={ticker}
-                    netIncome={stockInfo.price * 1000000} // Example calculation for net income
+                    ticker={ticker}
+                    netIncome={stockInfo.price} // Example calculation for net income
                     costOfEquity={costOfEquity}
+                    financialData={financialData}
                   />
 
                   <ResidualCalculation
-                    Ticker={ticker}
+                    ticker={ticker}
                     costOfEquity={costOfEquity}
                     freeCashFlowEquityData={freeCashFlowEquityData}
                     fiveYearGrowthRate={fiveYearGrowthRate}
@@ -330,7 +498,7 @@ export default function Home() {
                     setPresentValue={setPresentValue}
                   />
                   <ShareValue
-                    Ticker={ticker}
+                    ticker={ticker}
                     price={stockInfo.price}
                     outStandingShares={outstandingShares}
                     presentValue={presentValue}
