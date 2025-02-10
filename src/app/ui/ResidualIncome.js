@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const currency = "USD";
 
-export default function ResidualIncomeComponent({ Ticker, financialData }) {
+export default function ResidualIncome({ Ticker, financialData }) {
   const [residualIncome, setResidualIncome] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(true);
   
@@ -99,8 +99,8 @@ export default function ResidualIncomeComponent({ Ticker, financialData }) {
                         <div className="flex items-center">
                           <span className="mr-2">{currency}</span>
                           <span className="w-48">
-                            {startOfYearEquity !== null
-                              ? startOfYearEquity.toLocaleString()
+                            {financialData.startEquity !== null
+                              ? financialData.startEquity.toLocaleString()
                               : "Calculating..."}
                           </span>
                         </div>
@@ -144,8 +144,8 @@ export default function ResidualIncomeComponent({ Ticker, financialData }) {
               <div className="flex items-center">
                 <span className="mr-2">{currency}</span>
                 <span className="w-48">
-                  {currentEquity !== null
-                    ? currentEquity.toLocaleString()
+                  {financialData.currentEquity !== null
+                    ? financialData.currentEquity.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>
