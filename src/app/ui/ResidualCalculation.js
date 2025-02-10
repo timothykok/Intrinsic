@@ -1,83 +1,82 @@
+"use client";
+
 import { useEffect } from "react";
 import axios from "axios";
 
 export default function ResidualCalculation({
-  Ticker,
-  freeCashFlowEquityData,
-  fiveYearGrowthRate,
-  tenYearGrowthRate,
-  longTermGrowthRate,
-  costOfEquity,
-  outstandingShares,
-  setOutstandingShares,
-  presentValue,
+  ticker,
+  financialData,
+  costOfEquity,         // e.g., 10 for 10%
+  longTermGrowthRate,     // e.g., 3 for 3%
   setPresentValue,
+  presentValue,
+  outstandingShares
 }) {
   const currency = "USD"; // Hardcoded currency symbol
-  const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
 
-
-  // Calculate PV of FCFE
+  // Calculate present value based on Residual Income Model
   useEffect(() => {
-
-    try{
+    try {
+      // Ensure required data is available.
+      // (Remove balanceSheetData check because we are using currentEquity and netIncome)
       if (
-        freeCashFlowEquityData !== null &&
-        fiveYearGrowthRate !== null &&
-        tenYearGrowthRate !== null &&
-        longTermGrowthRate !== null &&
-        costOfEquity !== null
-      ) {
-        let pv = 0;
-    
-        // 1. Convert growth rates to decimal form if needed
-        const fiveYearG = fiveYearGrowthRate / 100;
-        const tenYearG = tenYearGrowthRate / 100;
-        const longTermG = longTermGrowthRate / 100;
-        const coe = costOfEquity / 100;
-    
-        // 2. Calculate PV of FCFE from Year 1 to Year 5
-        for (let t = 1; t <= 5; t++) {
-          const projectedFCFE = freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
-          const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
-          pv += discountedFCFE;
-        }
-    
-        // 3. Calculate PV of FCFE from Year 6 to Year 10
-        let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // Start from Year 5 FCFE
-        for (let t = 6; t <= 10; t++) {
-          fcfeYearN *= (1 + tenYearG); // Grow each year separately
-          const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
-          pv += discountedFCFE;
-        }
-    
-        // 4. Calculate Perpetuity Value at Year 11
-        const fcfeYear10 = fcfeYearN; // Already grown to Year 10
-        const perpetuityValue = (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
-        const discountedPerpetuityValue = perpetuityValue / Math.pow(1 + coe, 10); // Discount to Year 0
-    
-        // 5. Add discounted perpetuity to PV
-        pv += discountedPerpetuityValue;
-    
-        // 6. Set the final present value
-        setPresentValue(parseFloat(pv.toFixed(2)));
-    
-        
+        !ticker ||
+        financialData.netIncome === null ||
+        financialData.currentEquity === null ||
+        costOfEquity === null ||
+        longTermGrowthRate === null
+      )
+        return;
+
+      // Convert percentages to decimals
+      const coeDecimal = costOfEquity / 100; // e.g., 10% becomes 0.10
+      const g = longTermGrowthRate / 100;      // e.g., 3% becomes 0.03
+
+      // Calculate the starting residual income (for the most recent year)
+      // Residual Income = Net Income - (Current Equity * Cost of Equity)
+      const startingRI =
+        financialData.netIncome - financialData.currentEquity * coeDecimal;
+
+      // Choose a forecast period—for example, 5 years.
+      const forecastYears = 5;
+      let pvResidualIncome = 0;
+
+      // Forecast and discount residual incomes over the forecast period.
+      for (let t = 1; t <= forecastYears; t++) {
+        // Forecast residual income for year t.
+        // Here we assume residual income grows at rate "g" each year.
+        const RI_t = startingRI * Math.pow(1 + g, t);
+        // Discount to present value.
+        const discountedRI = RI_t / Math.pow(1 + coeDecimal, t);
+        pvResidualIncome += discountedRI;
       }
 
-      
+      // Calculate terminal value at the end of the forecast period.
+      // Using a perpetuity formula:
+      // Terminal Value = (Residual Income in Year (forecastYears) * (1 + g)) / (coeDecimal - g)
+      const RI_final = startingRI * Math.pow(1 + g, forecastYears);
+      const terminalValue =
+        (RI_final * (1 + g)) / (coeDecimal - g);
+      const discountedTerminalValue =
+        terminalValue / Math.pow(1 + coeDecimal, forecastYears);
 
+      pvResidualIncome += discountedTerminalValue;
 
-    }catch(error){
-      console.log(error)
+      // According to the Residual Income Model, the total intrinsic value is:
+      // Intrinsic Value = Current Book Value of Equity + PV of Residual Incomes
+      const intrinsicValue =
+        financialData.currentEquity + pvResidualIncome;
+
+      setPresentValue(parseFloat(intrinsicValue.toFixed(2)));
+    } catch (error) {
+      console.log(error);
     }
-   
   }, [
-    freeCashFlowEquityData,
-    fiveYearGrowthRate,
-    tenYearGrowthRate,
-    longTermGrowthRate,
+    ticker,
+    financialData.netIncome,
+    financialData.currentEquity,
     costOfEquity,
+    longTermGrowthRate,
   ]);
   return (
     <>

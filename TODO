@@ -2,10 +2,11 @@
 Todo:
   ☐ refactor code
   ☐ make mobile / tablet responsive 
-  ☐
+  ☐ re design UI - as good as ECONIC 
+  
 
   Residual Income:
     ☐ Make sure net income and cost of equity values match the ones from DCF
-    ☐ Get book value of equity to render
-    ☐ get sales growth to perpetuity (based on historic on 5 year)
-    ☐ get current book value of equity to render
+    ✔ Get book value of equity to render @done(25-02-11 00:04)
+    ✔ get sales growth to perpetuity (based on historic on 5 year) @done(25-02-11 00:04)
+    ✔ get current book value of equity to render @done(25-02-11 00:04)

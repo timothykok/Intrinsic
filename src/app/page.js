@@ -584,12 +584,11 @@ if (incomeData && incomeData.length >= 2) {
                     ticker={ticker}
                     costOfEquity={costOfEquity}
                     freeCashFlowEquityData={freeCashFlowEquityData}
-                    fiveYearGrowthRate={fiveYearGrowthRate}
-                    tenYearGrowthRate={tenYearGrowthRate}
                     longTermGrowthRate={longTermGrowthRate}
                     outstandingShares={outstandingShares}
                     setOutstandingShares={setOutstandingShares}
                     presentValue={presentValue}
+                    financialData={financialData}
                     setPresentValue={setPresentValue}
                   />
                   <ShareValue
