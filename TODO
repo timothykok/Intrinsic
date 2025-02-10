@@ -2,3 +2,10 @@
 Todo:
   ☐ refactor code
   ☐ make mobile / tablet responsive 
+  ☐
+
+  Residual Income:
+    ☐ Make sure net income and cost of equity values match the ones from DCF
+    ☐ Get book value of equity to render
+    ☐ get sales growth to perpetuity (based on historic on 5 year)
+    ☐ get current book value of equity to render

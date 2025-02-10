@@ -7,8 +7,7 @@ const currency = "USD";
 export default function ResidualIncomeComponent({ Ticker, financialData }) {
   const [residualIncome, setResidualIncome] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const [currentEquity, setCurrentEquity] = useState(null);
-  const [startOfYearEquity, setStartOfYearEquity] = useState(null);
+  
 
   useEffect(() => {
     if (
@@ -19,17 +18,10 @@ export default function ResidualIncomeComponent({ Ticker, financialData }) {
       return;
 
     const calculateResidualIncome = () => {
-      const balanceSheetData = financialData.balanceSheetData;
-
-      const startEquity = balanceSheetData[1]?.totalStockholdersEquity || 0;
-      const currentEquity = balanceSheetData[0]?.totalStockholdersEquity || 0;
-
-      setStartOfYearEquity(parseFloat(startEquity));
-      setCurrentEquity(parseFloat(currentEquity));
-
+   
       const residualIncome =
         financialData.netIncome -
-        (currentEquity || 0) * (financialData.costOfEquity / 100 || 0);
+        (financialData.currentEquity || 0) * (financialData.costOfEquity / 100 || 0);
 
       setResidualIncome(residualIncome);
     };
@@ -50,7 +42,19 @@ export default function ResidualIncomeComponent({ Ticker, financialData }) {
                 className="cursor-pointer"
                 onClick={() => setIsCollapsed(!isCollapsed)}
               >
-                {isCollapsed ? "▶" : "▼"}
+              {isCollapsed ? (
+                  <img
+                    src="/Toggle-Arrow-Collapsed.svg"
+                    alt="View More"
+                    className="w-2 h-2"
+                  />
+                ) : (
+                  <img
+                    src="/Toggle-Arrow-notCollapsed.svg"
+                    alt="View Less"
+                    className="w-2 h-2"
+                  />
+                )}
               </span>
               <span className="ml-4 w-80">Projected Residual Income</span>
             </div>
@@ -70,20 +74,7 @@ export default function ResidualIncomeComponent({ Ticker, financialData }) {
           {!isCollapsed && (
             <div>
               <div className="pl-8 space-y-5">
-                <div className="flex justify-between items-center">
-                  <span className="ml-4 w-80">Net Income</span>
-                  <span className="text-right">
-                    <div className="flex items-center">
-                      <span className="mr-2">{currency}</span>
-                      <span className="w-48">
-                        {financialData.netIncome !== null
-                          ? financialData.netIncome.toLocaleString()
-                          : "Calculating..."}
-                      </span>
-                    </div>
-                  </span>
-                </div>
-
+                
                 <div>
                   <div className="pl-8 space-y-5">
                     <div className="flex justify-between items-center">
@@ -122,8 +113,8 @@ export default function ResidualIncomeComponent({ Ticker, financialData }) {
                         <div className="flex items-center">
                           <span className="mr-2">PCT</span>
                           <span className="w-48">
-                            {costOfEquity !== null
-                              ? `${parseFloat(costOfEquity).toFixed(2)} %`
+                            {financialData.costOfEquity !== null
+                              ? `${parseFloat(financialData.costOfEquity).toFixed(2)} %`
                               : "Calculating..."}
                           </span>
                         </div>

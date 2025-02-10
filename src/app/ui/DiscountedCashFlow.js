@@ -32,50 +32,7 @@ export default function DiscountedCashFlow({
     setIsCostOfEquityCollapsed((prevState) => !prevState);
   };
 
-  // 2️⃣ Compute Cost of Equity (CAPM)
-  useEffect(() => {
-    if (
-      !financialData.beta ||
-      !financialData.riskFreeRate ||
-      !financialData.marketRiskPremium
-    )
-      return;
-
-    const calculatedCostOfEquity = (
-      financialData.riskFreeRate +
-      financialData.beta * financialData.marketRiskPremium
-    ).toFixed(2);
-
-    setCostOfEquity(calculatedCostOfEquity);
-
-    // 🔹 Update financialData with Cost of Equity
-    setFinancialData((prevData) => ({
-      ...prevData,
-      costOfEquity: calculatedCostOfEquity,
-    }));
-  }, [
-    financialData.beta,
-    financialData.riskFreeRate,
-    financialData.marketRiskPremium,
-  ]);
-
-  // 4️⃣ Compute Free Cash Flow to Equity
-  const calculatedFreeCashFlowEquity = useMemo(() => {
-    const {
-      netIncome,
-      depreciationAmortization,
-      capitalExpenditure,
-      netBorrowing,
-      changeInWorkingCapital
-    } = financialData;
-    return (
-      netIncome + depreciationAmortization + capitalExpenditure + netBorrowing - changeInWorkingCapital
-    );
-  }, [financialData]);
-
-  useEffect(() => {
-    setFreeCashFlowEquityData(calculatedFreeCashFlowEquity);
-  }, [calculatedFreeCashFlowEquity]);
+ 
 
 
 

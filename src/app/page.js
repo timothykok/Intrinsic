@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import gsap from "gsap";
 import axios from "axios";
 import Ticker from "./ui/Ticker.js";
@@ -28,8 +28,14 @@ export default function Home() {
   const [fiveYearGrowthRate, setFiveYearGrowthRate] = useState(null);
   const [tenYearGrowthRate, setTenYearGrowthRate] = useState(null);
   const [longTermGrowthRate, setLongTermGrowthRate] = useState(null);
+
+
+
   const [financialData, setFinancialData] = useState({
     netIncome: null,
+    currentEquity: 0,
+    startEquity:0,
+
     depreciationAmortization: 0,
     capitalExpenditure: 0,
     changeInWorkingCapital: 0,
@@ -38,6 +44,7 @@ export default function Home() {
     riskFreeRate: null,
     marketRiskPremium: null,
     sector: null,
+  
   });
   //Calculation component
   const [outstandingShares, setOutstandingShares] = useState([]);
@@ -123,9 +130,7 @@ export default function Home() {
   const fetchData = async (url) => {
     try {
       const response = await axios.get(url);
-      console.log(
-        "HOME - fetchData: " + JSON.stringify(response.data, null, 2)
-      );
+      
       return response.data;
     } catch (error) {
       console.error(`Error fetching data from ${url}:`, error);
@@ -228,6 +233,7 @@ export default function Home() {
     const fetchFinancialData = async () => {
       const [
         profileData,
+        balanceSheetData,
         incomeData,
         cashFlowData,
         ratioData,
@@ -237,6 +243,9 @@ export default function Home() {
       ] = await Promise.all([
         fetchData(
           `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
+        ),
+        fetchData(
+          `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${ticker}?apikey=${fmpApiKey}`
         ),
         fetchData(
           `https://financialmodelingprep.com/api/v3/income-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
@@ -258,8 +267,17 @@ export default function Home() {
         ),
       ]);
 
+      
+
       // Determine sector and set ten-year growth rate using the sectorPerformance mapping
       const sector = profileData?.[0]?.sector || null;
+
+      const startEquity = balanceSheetData[1]?.totalStockholdersEquity || 0;
+      console.log("HOME - EQUITY AT THE START: " + startEquity);
+      const currentEquity = balanceSheetData[0]?.totalStockholdersEquity || 0;
+      console.log("HOME - EQUITY NOW: " + currentEquity);
+
+
       const tenYearGrowthRate = sectorPerformance[sector] || "N/A";
       setTenYearGrowthRate(tenYearGrowthRate.toFixed(2));
 
@@ -289,10 +307,15 @@ export default function Home() {
 
       // Retrieve risk-free rate and market risk premium from treasury and market data
       const riskFreeRate = parseFloat(treasuryData?.[0]?.year10) || null;
+
+
+     
       const marketRiskPremium =
         marketRiskData?.find(
           (item) => item.country.toLowerCase() === "united states"
-        )?.countryRiskPremium || null;
+        )?.totalEquityRiskPremium || null;
+
+        console.log("market risk premium HOME: " + marketRiskPremium )
 
 
         const outstandingShares = outstandingSharesData?.[0]?.outstandingShares || null;
@@ -302,6 +325,12 @@ export default function Home() {
       // Update the financialData state object with all fetched metrics
       setFinancialData({
         netIncome,
+
+        currentEquity,
+        startEquity,
+
+
+
         depreciationAmortization:
           mostRecentCashFlow.depreciationAndAmortization || 0,
         capitalExpenditure: mostRecentCashFlow.capitalExpenditure || 0,
@@ -320,6 +349,50 @@ export default function Home() {
     fetchFinancialData();
   }, [ticker]);
 
+   // 2️⃣ Compute Cost of Equity (CAPM)
+    useEffect(() => {
+      if (
+        financialData.beta == null ||
+        financialData.riskFreeRate == null ||
+        financialData.marketRiskPremium == null
+      )
+        return;
+  
+      const calculatedCostOfEquity = (
+        financialData.riskFreeRate +
+        financialData.beta * financialData.marketRiskPremium
+      ).toFixed(2);
+  
+      setCostOfEquity(calculatedCostOfEquity);
+  
+      // 🔹 Update financialData with Cost of Equity
+      setFinancialData((prevData) => ({
+        ...prevData,
+        costOfEquity: calculatedCostOfEquity,
+      }));
+    }, [
+      financialData.beta,
+      financialData.riskFreeRate,
+      financialData.marketRiskPremium,
+    ]);
+  
+    // 4️⃣ Compute Free Cash Flow to Equity
+    const calculatedFreeCashFlowEquity = useMemo(() => {
+      const {
+        netIncome,
+        depreciationAmortization,
+        capitalExpenditure,
+        netBorrowing,
+        changeInWorkingCapital
+      } = financialData;
+      return (
+        netIncome + depreciationAmortization + capitalExpenditure + netBorrowing - changeInWorkingCapital
+      );
+    }, [financialData]);
+  
+    useEffect(() => {
+      setFreeCashFlowEquityData(calculatedFreeCashFlowEquity);
+    }, [calculatedFreeCashFlowEquity]);
  
   return (
     <>
