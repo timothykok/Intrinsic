@@ -273,9 +273,30 @@ export default function Home() {
       const sector = profileData?.[0]?.sector || null;
 
       const startEquity = balanceSheetData[1]?.totalStockholdersEquity || 0;
-      console.log("HOME - EQUITY AT THE START: " + startEquity);
       const currentEquity = balanceSheetData[0]?.totalStockholdersEquity || 0;
-      console.log("HOME - EQUITY NOW: " + currentEquity);
+
+
+// Compute the historical revenue growth rates if we have at least 2 years of data
+let salesGrowthToPerpetuity = null;
+if (incomeData && incomeData.length >= 2) {
+  const growthRates = [];
+  // Assuming incomeData is sorted with the most recent year first:
+  for (let i = 0; i < Math.min(incomeData.length - 1, 5 - 1); i++) {
+    const currentRevenue = parseFloat(incomeData[i].revenue);
+    const previousRevenue = parseFloat(incomeData[i + 1].revenue);
+    if (previousRevenue > 0) {
+      const growth = (currentRevenue / previousRevenue - 1) * 100;
+      growthRates.push(growth);
+    }
+  }
+  if (growthRates.length > 0) {
+    // Average the growth rates
+    salesGrowthToPerpetuity =
+      growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length;
+    // Optional: Cap or adjust the growth rate if needed (e.g., not more than 3-4%)
+    salesGrowthToPerpetuity = Math.min(salesGrowthToPerpetuity, 4);
+  }
+}
 
 
       const tenYearGrowthRate = sectorPerformance[sector] || "N/A";
@@ -340,6 +361,7 @@ export default function Home() {
         riskFreeRate,
         marketRiskPremium,
         sector,
+        salesGrowthToPerpetuity,
       });
 
       // Set a default long-term growth rate (here, 3%)

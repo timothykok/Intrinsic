@@ -4,30 +4,25 @@ import { useEffect, useState } from "react";
 
 const currency = "USD";
 
-export default function ResidualIncome({ Ticker, financialData }) {
+export default function ResidualIncome({ ticker, financialData }) {
   const [residualIncome, setResidualIncome] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(true);
-  
 
   useEffect(() => {
-    if (
-      !Ticker ||
-      !financialData?.balanceSheetData ||
-      financialData.netIncome === null
-    )
-      return;
+    if (!ticker || financialData.netIncome === null) return;
 
     const calculateResidualIncome = () => {
-   
       const residualIncome =
         financialData.netIncome -
-        (financialData.currentEquity || 0) * (financialData.costOfEquity / 100 || 0);
+        (financialData.currentEquity || 0) *
+          (financialData.costOfEquity / 100 || 0);
 
+          console.log("RESIDUAL INCOME: " + residualIncome)
       setResidualIncome(residualIncome);
     };
 
     calculateResidualIncome();
-  }, [Ticker, financialData]);
+  }, [ticker, financialData]);
 
   return (
     <>
@@ -42,7 +37,7 @@ export default function ResidualIncome({ Ticker, financialData }) {
                 className="cursor-pointer"
                 onClick={() => setIsCollapsed(!isCollapsed)}
               >
-              {isCollapsed ? (
+                {isCollapsed ? (
                   <img
                     src="/Toggle-Arrow-Collapsed.svg"
                     alt="View More"
@@ -74,7 +69,6 @@ export default function ResidualIncome({ Ticker, financialData }) {
           {!isCollapsed && (
             <div>
               <div className="pl-8 space-y-5">
-                
                 <div>
                   <div className="pl-8 space-y-5">
                     <div className="flex justify-between items-center">
@@ -114,7 +108,9 @@ export default function ResidualIncome({ Ticker, financialData }) {
                           <span className="mr-2">PCT</span>
                           <span className="w-48">
                             {financialData.costOfEquity !== null
-                              ? `${parseFloat(financialData.costOfEquity).toFixed(2)} %`
+                              ? `${parseFloat(
+                                  financialData.costOfEquity
+                                ).toFixed(2)} %`
                               : "Calculating..."}
                           </span>
                         </div>
@@ -128,7 +124,14 @@ export default function ResidualIncome({ Ticker, financialData }) {
                       <span className="text-right">
                         <div className="flex items-center">
                           <span className="mr-2">PCT</span>
-                          <span className="w-48">{"Coming soon..."}</span>
+                          <span className="w-48">
+                            {financialData.salesGrowthToPerpetuity !== null &&
+                            financialData.salesGrowthToPerpetuity !== undefined
+                              ? `${parseFloat(
+                                  financialData.salesGrowthToPerpetuity
+                                ).toFixed(2)} %`
+                              : "Calculating..."}
+                          </span>
                         </div>
                       </span>
                     </div>
