@@ -98,9 +98,9 @@ export default function Projection({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase">
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8  uppercase">
         <div className="text-left">
-          <p className="text-sm font-bold  text-gray-600">Year On Year</p>
+          <p className="text-sm text-[#626262] font-bold">Year On Year</p>
           <hr className="border-t border-zinc-200 my-3" />
         </div>
         <div className="relative">
@@ -109,7 +109,7 @@ export default function Projection({
             {/* unscrollable table headers*/}
          
 
-           <table className="sticky left-0 z-10 text-gray-500 mt-[21px]">
+           <table className="sticky left-0 z-10 font-medium text-[#909090] mt-[21px]">
               <thead>
                 <tr>
                   <th className="min-w-[185px] text-left text-xs font-light  ">
@@ -143,7 +143,7 @@ export default function Projection({
               className="overflow-x-auto no-scrollbar"
               ref={tableRef}
             >
-              <table className="text-center border-collapse text-gray-500">
+              <table className="text-center border-collapse font-light text-[#909090]">
                 <thead>
                   <tr>
                     {years.map((year) => (

@@ -80,13 +80,10 @@ const StockInfo = forwardRef(
             </div>
           </div>
 
-
-          <StockChart ticker={ticker} />   
-
           {/* Additional Information */}
-          <div className="max-w-[800px] mx-auto mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm text-xs font-semibold">
+          <div className="max-w-[800px] mx-auto mt-8 text-xs font-medium">
           
-              <div className="p-4 text-gray-700 w-auto">
+              <div className="p-4 text-[#909090] w-auto">
                 <p className="text-sm ">
                   Estimated DCF Value of one {ticker} stock is{" "}
                   <span className="">
@@ -111,6 +108,11 @@ const StockInfo = forwardRef(
               </div>
          
           </div>
+
+
+          <StockChart ticker={ticker} />   
+
+          
         </div>
       </div>
     );

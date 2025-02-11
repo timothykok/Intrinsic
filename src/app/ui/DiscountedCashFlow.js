@@ -38,11 +38,11 @@ export default function DiscountedCashFlow({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase text-sm ">
-        <p className=" text-gray-600 font-bold">Financials</p>
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8  uppercase text-sm ">
+        <p className=" text-[#626262] font-bold">Financials</p>
         <hr className="my-4 border-zinc-200 mt-4 mb-4" />
 
-        <div className="space-y-5 text-gray-500 ">
+        <div className="space-y-5  font-medium text-[#909090]">
           <div className="flex justify-between items-center min-w-s">
             {/* Group the arrow toggle and title together */}
             <div className="flex items-center">
@@ -188,7 +188,7 @@ export default function DiscountedCashFlow({
 
           {/* Cash Flow Growth Rate (Year 10-∞) */}
           <div className="flex justify-between items-center h-6">
-            <span className="  ml-6 w-80">
+            <span className="  ml-6 w-auto">
               Cash Flow Growth Rate (Long Term)
             </span>
             <span className="text-right">

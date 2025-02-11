@@ -10,3 +10,22 @@ Todo:
     ✔ Get book value of equity to render @done(25-02-11 00:04)
     ✔ get sales growth to perpetuity (based on historic on 5 year) @done(25-02-11 00:04)
     ✔ get current book value of equity to render @done(25-02-11 00:04)
+    ☐ update the intrinsic statement for residual 
+    ☐ double check projection table 
+
+
+
+  reDesign:
+    ☐ align everything left 
+    ☐ create slug page
+    ☐ get rid of borders
+    ☐ watch for spacing 
+    ☐ updated footer
+    ☐ updated filter buttons 
+    ☐ add fundemantal analysis 
+
+
+  review: 
+      ☐ review how gsap works in ticker 
+      ☐ how slugs work 
+      ☐

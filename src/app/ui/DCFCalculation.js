@@ -61,6 +61,8 @@ export default function DCFCalculation({
     
         // 6. Set the final present value
         setPresentValue(parseFloat(pv.toFixed(2)));
+
+        console.log("PRESENT VALUE: " + presentValue)
     
 
       }
@@ -81,20 +83,20 @@ export default function DCFCalculation({
   ]);
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase text-sm ">
-        <p className="text-gray-600 font-bold">Calculation</p>
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8  uppercase text-sm ">
+        <p className="text-[#626262] font-bold">Calculation</p>
         <hr className="my-4 border-gray-300" />
   
-        <div className="space-y-5 gray-500 ">
+        <div className="space-y-5 font-medium text-[#909090] ">
           {/* Present Value of Free Cash Flow to Equity to Perpetuity */}
           <div className="flex justify-between items-center mb-6">
-            <span className="text-gray-600 ml-6 w-96">
+            <span className=" ml-6 w-96">
               Present Value of Free Cash Flow to Equity
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 mr-2">{currency}</span>
-                <span className="w-48 text-gray-600">
+                <span className=" mr-2">{currency}</span>
+                <span className="w-48 ">
                   {presentValue !== null
                     ? presentValue.toLocaleString()
                     : "Calculating..."}
@@ -105,13 +107,13 @@ export default function DCFCalculation({
   
           {/* Outstanding Shares */}
           <div className="flex justify-between items-center mb-6">
-            <span className="text-gray-600 ml-6 w-80">
+            <span className=" ml-6 w-80">
               Outstanding Shares
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="text-gray-600 mr-2">QTY</span>
-                <span className="w-48 text-gray-600">
+                <span className=" mr-2">QTY</span>
+                <span className="w-48 ">
                   {outstandingShares !== null
                     ? outstandingShares.toLocaleString()
                     : "Calculating..."}

@@ -38,11 +38,11 @@ export default function ShareValue({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase">
-        <p className="text-sm text-gray-600 font-bold">Intrinsic Value</p>
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 uppercase">
+        <p className="text-sm text-[#626262] font-bold">Intrinsic Value</p>
         <hr className="my-4 border-zinc-200" />
 
-        <div className="space-y-5 text-sm text-gray-500 ">
+        <div className="space-y-5 text-sm font-medium text-[#909090] ">
           {/* Intrinsic Value Per Share */}
           <div className="flex justify-between items-center ">
             <span className=" ml-6 w-80">

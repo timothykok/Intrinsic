@@ -80,7 +80,7 @@ export default function ResidualCalculation({
   ]);
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 border border-zinc-200 bg-white-100 rounded-md p-6 shadow-sm uppercase text-sm ">
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8  uppercase text-sm ">
         <p className="text-gray-600 font-bold">Calculation</p>
         <hr className="my-4 border-gray-300" />
   

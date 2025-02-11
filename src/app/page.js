@@ -3,6 +3,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import axios from "axios";
 import Ticker from "./ui/Ticker.js";
@@ -18,6 +19,8 @@ import Footer from "./ui/Footer.js";
 export default function Home() {
   const [input, setInput] = useState(""); // Raw input from the user
   const [ticker, setTicker] = useState(""); // Debounced ticker value
+
+  const router = useRouter();
 
   const [selectedMethod, setSelectedMethod] = useState("DCF"); // Default to DCF method
   const [selectedCurrency, setSelectedCurrency] = useState("USD"); // Default to DCF method
@@ -112,20 +115,47 @@ export default function Home() {
     }
   };
 
-  // Handle search on Enter key press
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      if (!input.trim()) {
-        setErrorMessage("Please enter a valid stock ticker.");
-        triggerShake(); // Shake effect
-        triggerErrorMessage(); // Error fade-in
-        return;
-      }
-
-      setErrorMessage(null); // Clear previous errors
-      setTicker(input.toUpperCase().trim());
+// Handle search on Enter key press
+const handleKeyDown = async (e) => {
+  if (e.key === "Enter") {
+    // If input is empty, trigger error and shake
+    if (!input.trim()) {
+      setErrorMessage("Please enter a valid stock ticker.");
+      triggerShake();
+      triggerErrorMessage();
+      return;
     }
-  };
+    
+    // Convert input to uppercase and trim it
+    const tickerInput = input.toUpperCase().trim();
+
+    try {
+      // Validate the ticker by fetching its profile data
+      const profileResponse = await fetch(
+        `https://financialmodelingprep.com/api/v3/profile/${tickerInput}?apikey=${fmpApiKey}`
+      );
+      const profileData = await profileResponse.json();
+
+      // Check if we got valid data
+      if (profileData && profileData.length > 0) {
+        // Clear any previous errors and navigate to the slug page
+        setErrorMessage(null);
+        setTicker(tickerInput);
+        router.push(`/stocks/${tickerInput}`);
+      } else {
+        // If no valid data, trigger error message and shake
+        setErrorMessage(`No matching results for "${tickerInput}"`);
+        triggerShake();
+        triggerErrorMessage();
+      }
+    } catch (error) {
+      console.error("Error validating ticker:", error);
+      setErrorMessage("An error occurred while verifying the ticker. Please try again.");
+      triggerShake();
+      triggerErrorMessage();
+    }
+  }
+};
 
   const fetchData = async (url) => {
     try {
@@ -502,114 +532,7 @@ if (incomeData && incomeData.length >= 2) {
           </div>
         </div>
 
-        {stockInfo && (
-          <>
-            <div className="">
-              <StockInfo
-                ref={stockInfoRef}
-                logoSrc={stockInfo.logoSrc}
-                companyName={stockInfo.companyName}
-                ticker={ticker}
-                price={stockInfo.price}
-                currency={stockInfo.currency}
-                change={stockInfo.change}
-                percentage={stockInfo.percentage}
-                timestamp={stockInfo.timestamp}
-                outStandingShares={outstandingShares}
-                presentValue={presentValue}
-              />
-
-              {/* <Valuation
-            Ticker={ticker}
-            price={stockInfo.price}
-            outStandingShares={outstandingShares}
-            presentValue={presentValue}
-          /> */}
-
-              {selectedMethod === "DCF" && (
-                <>
-                  <DiscountedCashFlow
-                    ticker={ticker}
-                    setCostOfEquity={setCostOfEquity}
-                    costOfEquity={costOfEquity}
-                    setFreeCashFlowEquityData={setFreeCashFlowEquityData}
-                    freeCashFlowEquityData={freeCashFlowEquityData}
-                    fiveYearGrowthRate={fiveYearGrowthRate}
-                    setFiveYearGrowthRate={setFiveYearGrowthRate}
-                    setTenYearGrowthRate={setTenYearGrowthRate}
-                    tenYearGrowthRate={tenYearGrowthRate}
-                    setLongTermGrowthRate={setLongTermGrowthRate}
-                    longTermGrowthRate={longTermGrowthRate}
-                    financialData={financialData}
-                    setFinancialData={setFinancialData}
-                  />
-
-                  <DCFCalculation
-                    ticker={ticker}
-                    costOfEquity={costOfEquity}
-                    freeCashFlowEquityData={freeCashFlowEquityData}
-                    fiveYearGrowthRate={fiveYearGrowthRate}
-                    tenYearGrowthRate={tenYearGrowthRate}
-                    longTermGrowthRate={longTermGrowthRate}
-                    outstandingShares={outstandingShares}
-                    setOutstandingShares={setOutstandingShares}
-                    presentValue={presentValue}
-                    setPresentValue={setPresentValue}
-                  />
-                  <ShareValue
-                    ticker={ticker}
-                    price={stockInfo.price}
-                    outStandingShares={outstandingShares}
-                    presentValue={presentValue}
-                  />
-                  <Projection
-                    freeCashFlowEquityData={freeCashFlowEquityData}
-                    fiveYearGrowthRate={fiveYearGrowthRate}
-                    tenYearGrowthRate={tenYearGrowthRate}
-                    longTermGrowthRate={longTermGrowthRate}
-                  />
-                </>
-              )}
-
-              {selectedMethod === "RI" && (
-                <>
-                  <ResidualIncome
-                    ticker={ticker}
-                    netIncome={stockInfo.price} // Example calculation for net income
-                    costOfEquity={costOfEquity}
-                    financialData={financialData}
-                  />
-
-                  <ResidualCalculation
-                    ticker={ticker}
-                    costOfEquity={costOfEquity}
-                    freeCashFlowEquityData={freeCashFlowEquityData}
-                    longTermGrowthRate={longTermGrowthRate}
-                    outstandingShares={outstandingShares}
-                    setOutstandingShares={setOutstandingShares}
-                    presentValue={presentValue}
-                    financialData={financialData}
-                    setPresentValue={setPresentValue}
-                  />
-                  <ShareValue
-                    ticker={ticker}
-                    price={stockInfo.price}
-                    outStandingShares={outstandingShares}
-                    presentValue={presentValue}
-                  />
-                  <Projection
-                    freeCashFlowEquityData={freeCashFlowEquityData}
-                    fiveYearGrowthRate={fiveYearGrowthRate}
-                    tenYearGrowthRate={tenYearGrowthRate}
-                    longTermGrowthRate={longTermGrowthRate}
-                  />
-                </>
-              )}
-
-              {/* <StockChart ticker={ticker} />    */}
-            </div>
-          </>
-        )}
+      
       </div>
 
       <Footer />
