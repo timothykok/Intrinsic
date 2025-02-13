@@ -1,5 +1,3 @@
-//home - page.js
-
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useContext } from "react";
@@ -10,13 +8,7 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import axios from "axios";
 import Ticker from "./ui/Ticker.js";
-import DiscountedCashFlow from "./ui/DiscountedCashFlow.js";
-import DCFCalculation from "./ui/DCFCalculation.js";
-import ResidualCalculation from "./ui/ResidualCalculation.js";
-import ResidualIncome from "./ui/ResidualIncome.js";
-import ShareValue from "./ui/ShareValue";
-import StockInfo from "./ui/StockInfo.js";
-import Projection from "./ui/Projection.js";
+
 import Footer from "./ui/Footer.js";
 
 export default function Home() {
@@ -39,7 +31,9 @@ export default function Home() {
     netIncome: null,
     currentEquity: 0,
     startEquity: 0,
-
+    peRatio: null,
+    eps: null,
+    averagePeerPE:null,
     depreciationAmortization: 0,
     capitalExpenditure: 0,
     changeInWorkingCapital: 0,
@@ -48,6 +42,7 @@ export default function Home() {
     riskFreeRate: null,
     marketRiskPremium: null,
     sector: null,
+    peers: null,
   });
   //Calculation component
   const [outstandingShares, setOutstandingShares] = useState([]);
@@ -141,6 +136,7 @@ export default function Home() {
           // Clear any previous errors and navigate to the slug page
           setErrorMessage(null);
           setTicker(tickerInput);
+          setSelectedMethod(selectedMethod);
           // When navigating, include the selectedMethod in the query string:
           router.push(`/stocks/${tickerInput}?${selectedMethod}`);
         } else {
@@ -333,6 +329,7 @@ export default function Home() {
         treasuryData,
         marketRiskData,
         outstandingSharesData,
+        peersData,
       ] = await Promise.all([
         fetchData(
           `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
@@ -358,6 +355,10 @@ export default function Home() {
         fetchData(
           `https://financialmodelingprep.com/api/v4/shares_float?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
+
+        fetchData(
+          `https://financialmodelingprep.com/api/v4/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
+        ),
       ]);
 
       //------------------------------------------------------------------------------------
@@ -367,6 +368,39 @@ export default function Home() {
 
       const startEquity = balanceSheetData[1]?.totalStockholdersEquity || 0;
       const currentEquity = balanceSheetData[0]?.totalStockholdersEquity || 0;
+
+      //------------------------------------------------------------------------------------
+
+      //outstanding shares
+      const outstandingShares =
+      outstandingSharesData?.[0]?.outstandingShares || null;
+    console.log("HOME OUTSTANDING SHARES: " + outstandingShares);
+    setOutstandingShares(outstandingShares);
+
+
+
+
+
+      // PE ratio
+      const currentPrice = stockInfo?.price || 0;
+      const peRatio = eps ? currentPrice / eps : 0;
+
+      
+      //------------------------------------------------------------------------------------
+
+      // Peer Data
+      const peers = peersData.data[0]?.peersList;
+
+      const peerSymbols = peers.join(",");
+      const quotesResponse = await axios.get(
+        `https://financialmodelingprep.com/api/v3/quote/${peerSymbols}?apikey=${fmpApiKey}`
+      );
+      const peerQuotes = quotesResponse.data;
+
+      const validPeerQuotes = peerQuotes.filter((peer) => peer.pe && peer.pe > 0);
+const averagePeerPE =
+  validPeerQuotes.reduce((sum, peer) => sum + peer.pe, 0) /
+  validPeerQuotes.length;
 
       //------------------------------------------------------------------------------------
 
@@ -437,12 +471,7 @@ export default function Home() {
 
       console.log("market risk premium HOME: " + marketRiskPremium);
 
-      const outstandingShares =
-        outstandingSharesData?.[0]?.outstandingShares || null;
-      console.log("HOME OUTSTANDING SHARES: " + outstandingShares);
-      setOutstandingShares(outstandingShares);
-
-
+     
 
       //------------------------------------------------------------------------------------
 
@@ -451,6 +480,9 @@ export default function Home() {
         netIncome,
         currentEquity,
         startEquity,
+        peRatio,
+        eps,
+    averagePeerPE:null,
         depreciationAmortization:
           mostRecentCashFlow.depreciationAndAmortization || 0,
         capitalExpenditure: mostRecentCashFlow.capitalExpenditure || 0,
@@ -469,6 +501,50 @@ export default function Home() {
 
     fetchFinancialData();
   }, [ticker]);
+
+
+  //EPS
+  const eps = useMemo(() => {
+    if (!outstandingShares || !financialData.netIncome) return 0;
+    return financialData.netIncome / outstandingShares;
+  }, [outstandingShares, financialData.netIncome]);
+
+
+  //Peers 
+  useEffect(() => {
+    const fetchAveragePeerPE = async () => {
+      try {
+        const peersResponse = await fetch(
+          `https://financialmodelingprep.com/api/v4/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
+        );
+        const peersData = await peersResponse.json();
+        const peers = peersData[0]?.peersList;
+        if (!peers || peers.length === 0) return;
+  
+        const peerSymbols = peers.join(",");
+        const quotesResponse = await axios.get(
+          `https://financialmodelingprep.com/api/v3/quote/${peerSymbols}?apikey=${fmpApiKey}`
+        );
+        const peerQuotes = quotesResponse.data;
+        const validPeerQuotes = peerQuotes.filter(
+          (peer) => peer.pe && peer.pe > 0
+        );
+        const averagePeerPE =
+          validPeerQuotes.reduce((sum, peer) => sum + peer.pe, 0) /
+          validPeerQuotes.length;
+  
+        setFinancialData((prevData) => ({
+          ...prevData,
+          averagePeerPE,
+        }));
+      } catch (error) {
+        console.error("Error fetching peer data:", error);
+      }
+    };
+  
+    fetchAveragePeerPE();
+  }, [ticker, fmpApiKey]);
+
 
   // 2️⃣ Compute Cost of Equity (CAPM)
   useEffect(() => {
@@ -495,7 +571,7 @@ export default function Home() {
     financialData.beta,
     financialData.riskFreeRate,
     financialData.marketRiskPremium,
-    ticker
+    ticker,
   ]);
 
   // Compute Free Cash Flow to Equity
@@ -536,77 +612,74 @@ export default function Home() {
             />
           </div>
 
-     
- {/* Search Bar Section */}
+          {/* Search Bar Section */}
           <div className="relative w-[800px] mt-8 mb-4">
-              <input
-                ref={inputRef}
-                className="w-full h-[40px] px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none focus:border-black transition-all"
-                type="text"
-                placeholder="Enter Stock Ticker (e.g., GOOG)"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-              {errorMessage && (
-                <p
-                  ref={errorRef}
-                  className="text-red-400 text-xs font-bold mt-2"
+            <input
+              ref={inputRef}
+              className="w-full h-[40px] px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none focus:border-black transition-all"
+              type="text"
+              placeholder="Enter Stock Ticker (e.g., GOOG)"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            {errorMessage && (
+              <p ref={errorRef} className="text-red-400 text-xs font-bold mt-2">
+                {errorMessage}
+              </p>
+            )}
+
+            {/* Dropdowns - Positioned Right Under Search Bar */}
+            <div className="absolute right-0 top-full mt-4 flex items-center text-[#989898]">
+              {/* Currency Dropdown */}
+              <div className="relative">
+                <select
+                  value={selectedCurrency}
+                  onChange={handleCurrencyChange}
+                  className="w-[70px] px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-6"
+                  style={{
+                    backgroundImage: `url('/down-arrow.svg')`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "right 6px center",
+                    backgroundSize: "6px",
+                  }}
                 >
-                  {errorMessage}
-                </p>
-              )}
+                  <option value="USD">USD</option>
+                  <option disabled>EUR (Coming Soon!)</option>
+                </select>
+              </div>
 
-              {/* Dropdowns - Positioned Right Under Search Bar */}
-              <div className="absolute right-0 top-full mt-4 flex items-center text-[#989898]">
-                {/* Currency Dropdown */}
-                <div className="relative">
-                  <select
-                    value={selectedCurrency}
-                    onChange={handleCurrencyChange}
-                    className="w-[70px] px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-6"
-                    style={{
-                      backgroundImage: `url('/down-arrow.svg')`,
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right 6px center",
-                      backgroundSize: "6px",
-                    }}
-                  >
-                    <option value="USD">USD</option>
-                    <option disabled>EUR (Coming Soon!)</option>
-                  </select>
-                </div>
+              {/* Divider - Moves closer when method dropdown is shorter */}
+              <div className="h-full flex items-center text-[#989898] text-sm font-light mx-2 pl-2">
+                |
+              </div>
 
-                {/* Divider - Moves closer when method dropdown is shorter */}
-                <div className="h-full flex items-center text-[#989898] text-sm font-light mx-2 pl-2">
-                  |
-                </div>
+              {/* Method Dropdown - Auto-adjusting width based on selected option */}
+              <div className="relative flex items-center">
+                <select
+                  value={selectedMethod}
+                  onChange={handleMethodChange}
+                  className="px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-8"
+                  style={{
+                    width: "max-content", // Ensures the width is only as wide as the text
+                    minWidth: "120px", // Ensures a minimum width so UI is stable
+                  }}
+                >
+                  <option value="DCF">DISCOUNTED CASH FLOW</option>
+                  <option value="RI">RESIDUAL INCOME</option>
+                  <option value="C">CONSOLIDATED</option>
+                  <option value="Multiples">MULTIPLES</option>
+                </select>
 
-                {/* Method Dropdown - Auto-adjusting width based on selected option */}
-                <div className="relative flex items-center">
-                  <select
-                    value={selectedMethod}
-                    onChange={handleMethodChange}
-                    className="px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-8"
-                    style={{
-                      width: "max-content", // Ensures the width is only as wide as the text
-                      minWidth: "120px", // Ensures a minimum width so UI is stable
-                    }}
-                  >
-                    <option value="DCF">DISCOUNTED CASH FLOW</option>
-                    <option value="RI">RESIDUAL INCOME</option>
-                    <option value="C">CONSOLIDATED</option>
-                  </select>
-
-                  {/* Dropdown Icon (Absolutely Positioned) */}
-                  <img
-                    src="/down-arrow.svg"
-                    alt="Dropdown Arrow"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-[6px]"
-                  />
-                </div>
+                {/* Dropdown Icon (Absolutely Positioned) */}
+                <img
+                  src="/down-arrow.svg"
+                  alt="Dropdown Arrow"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 w-[6px]"
+                />
               </div>
             </div>
+          </div>
         </div>
       </div>
 

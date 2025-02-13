@@ -13,11 +13,13 @@ import axios from "axios";
 import Ticker from "../../ui/Ticker.js";
 import DiscountedCashFlow from "../../ui/DiscountedCashFlow.js";
 import DCFCalculation from "../../ui/DCFCalculation.js";
+import DCFValue from "../../ui/DCFValue";
 import ResidualCalculation from "../../ui/ResidualCalculation.js";
 import ResidualIncome from "../../ui/ResidualIncome.js";
-import ShareValue from "../../ui/ShareValue";
+import ShareValue from "../../ui/DCFValue";
 import StockInfo from "../../ui/StockInfo.js";
 import Projection from "../../ui/Projection.js";
+import Multiples from "@/app/ui/Multiples";
 import Footer from "../../ui/Footer.js";
 
 export default function StockPage() {
@@ -27,22 +29,16 @@ export default function StockPage() {
   const { ticker } = useParams();
   const { selectedMethod, setSelectedMethod } = useMethod();
 
-  console.log("Ticker:", ticker);
-
   const router = useRouter();
   const searchParams = useSearchParams();
   const homeSelectedMethod = searchParams.get("selectedMethod");
 
-
-
-    // When the query param is present, update the context:
-    useEffect(() => {
-      if (homeSelectedMethod) {
-        setSelectedMethod(homeSelectedMethod);
-      }
-    }, [homeSelectedMethod, setSelectedMethod]);
-
-
+  // When the query param is present, update the context:
+  useEffect(() => {
+    if (homeSelectedMethod) {
+      setSelectedMethod(homeSelectedMethod);
+    }
+  }, [homeSelectedMethod, setSelectedMethod]);
 
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
 
@@ -52,10 +48,14 @@ export default function StockPage() {
   const [fiveYearGrowthRate, setFiveYearGrowthRate] = useState(null);
   const [tenYearGrowthRate, setTenYearGrowthRate] = useState(null);
   const [longTermGrowthRate, setLongTermGrowthRate] = useState(null);
+
   const [financialData, setFinancialData] = useState({
     netIncome: null,
     currentEquity: 0,
     startEquity: 0,
+    peRatio: null,
+    eps: null,
+    averagePeerPE: null,
     depreciationAmortization: 0,
     capitalExpenditure: 0,
     changeInWorkingCapital: 0,
@@ -64,6 +64,7 @@ export default function StockPage() {
     riskFreeRate: null,
     marketRiskPremium: null,
     sector: null,
+    peers: null,
   });
 
   //Calculation component
@@ -252,6 +253,7 @@ export default function StockPage() {
         treasuryData,
         marketRiskData,
         outstandingSharesData,
+        peersData,
       ] = await Promise.all([
         fetchData(
           `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
@@ -277,13 +279,33 @@ export default function StockPage() {
         fetchData(
           `https://financialmodelingprep.com/api/v4/shares_float?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
+
+        fetchData(
+          `https://financialmodelingprep.com/api/v4/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
+        ),
       ]);
+
+      //------------------------------------------------------------------------------------
 
       // Determine sector and set ten-year growth rate using the sectorPerformance mapping
       const sector = profileData?.[0]?.sector || null;
 
       const startEquity = balanceSheetData[1]?.totalStockholdersEquity || 0;
       const currentEquity = balanceSheetData[0]?.totalStockholdersEquity || 0;
+
+      //------------------------------------------------------------------------------------
+
+      
+
+      // PE ratio
+      const currentPrice = stockInfo?.price || 0;
+      const peRatio = eps ? currentPrice / eps : 0;
+
+      //------------------------------------------------------------------------------------
+
+      
+
+      //------------------------------------------------------------------------------------
 
       // Compute the historical revenue growth rates if we have at least 2 years of data
       let salesGrowthToPerpetuity = null;
@@ -308,6 +330,9 @@ export default function StockPage() {
         }
       }
 
+      //------------------------------------------------------------------------------------
+
+      // Get ten year growthr rate from sector array
       const tenYearGrowthRate = sectorPerformance[sector] || "N/A";
       setTenYearGrowthRate(tenYearGrowthRate.toFixed(2));
 
@@ -317,6 +342,8 @@ export default function StockPage() {
       const netBorrowing =
         parseFloat(mostRecentCashFlow.commonStockIssued || 0) -
         parseFloat(mostRecentCashFlow.debtRepayment || 0);
+
+      //------------------------------------------------------------------------------------
 
       // Calculate five-year growth rate using ratios data
       const fiveYearGrowthRate = (() => {
@@ -335,6 +362,8 @@ export default function StockPage() {
       })();
       setFiveYearGrowthRate(fiveYearGrowthRate);
 
+      //------------------------------------------------------------------------------------
+
       // Retrieve risk-free rate and market risk premium from treasury and market data
       const riskFreeRate = parseFloat(treasuryData?.[0]?.year10) || null;
 
@@ -350,13 +379,16 @@ export default function StockPage() {
       console.log("HOME OUTSTANDING SHARES: " + outstandingShares);
       setOutstandingShares(outstandingShares);
 
+      //------------------------------------------------------------------------------------
+
       // Update the financialData state object with all fetched metrics
       setFinancialData({
         netIncome,
-
         currentEquity,
         startEquity,
-
+        peRatio,
+        eps,
+        averagePeerPE: null,
         depreciationAmortization:
           mostRecentCashFlow.depreciationAndAmortization || 0,
         capitalExpenditure: mostRecentCashFlow.capitalExpenditure || 0,
@@ -375,6 +407,54 @@ export default function StockPage() {
 
     fetchFinancialData();
   }, [ticker, fmpApiKey]);
+
+
+  //EPS
+  const eps = useMemo(() => {
+    if (!outstandingShares || !financialData.netIncome) return 0;
+    return financialData.netIncome / outstandingShares;
+  }, [outstandingShares, financialData.netIncome]);
+
+
+  //Peers 
+  useEffect(() => {
+    const fetchAveragePeerPE = async () => {
+      try {
+        const peersResponse = await fetch(
+          `https://financialmodelingprep.com/api/v4/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
+        );
+        const peersData = await peersResponse.json();
+        const peers = peersData[0]?.peersList;
+        if (!peers || peers.length === 0) return;
+  
+        const peerSymbols = peers.join(",");
+        const quotesResponse = await axios.get(
+          `https://financialmodelingprep.com/api/v3/quote/${peerSymbols}?apikey=${fmpApiKey}`
+        );
+        const peerQuotes = quotesResponse.data;
+        const validPeerQuotes = peerQuotes.filter(
+          (peer) => peer.pe && peer.pe > 0
+        );
+        const averagePeerPE =
+          validPeerQuotes.reduce((sum, peer) => sum + peer.pe, 0) /
+          validPeerQuotes.length;
+  
+        setFinancialData((prevData) => ({
+          ...prevData,
+          averagePeerPE,
+        }));
+
+        console.log("average Peer Pe: " + averagePeerPE)
+        console.log("Peers: " + peerSymbols)
+      } catch (error) {
+        console.error("Error fetching peer data:", error);
+      }
+    };
+  
+    fetchAveragePeerPE();
+  }, [ticker, fmpApiKey]);
+
+
 
   // 2️⃣ Compute Cost of Equity (CAPM)
   useEffect(() => {
@@ -500,6 +580,7 @@ export default function StockPage() {
                     <option value="DCF">DISCOUNTED CASH FLOW</option>
                     <option value="RI">RESIDUAL INCOME</option>
                     <option value="C">CONSOLIDATED</option>
+                    <option value="Multiples">MULTIPLES</option>
                   </select>
 
                   {/* Dropdown Icon (Absolutely Positioned) */}
@@ -558,8 +639,16 @@ export default function StockPage() {
                     setPresentValue={setPresentValue}
                     selectedMethod={selectedMethod}
                   />
+
+                  <DCFValue
+                    ticker={ticker}
+                    price={stockInfo.price}
+                    outStandingShares={outstandingShares}
+                    presentValue={presentValue}
+                    selectedMethod={selectedMethod}
+                  />
                 </>
-              ) : (
+              ) : selectedMethod === "RI" ? (
                 <>
                   <ResidualIncome
                     ticker={ticker}
@@ -580,15 +669,17 @@ export default function StockPage() {
                     selectedMethod={selectedMethod}
                   />
                 </>
+              ) : (
+                selectedMethod === "Multiples" && (
+                  <Multiples
+                    netIncome={financialData.netIncome}
+                    outstandingShares={outstandingShares}
+                    eps={eps}
+                    averagePeerPE={financialData.averagePeerPE}
+                  />
+                )
               )}
 
-              <ShareValue
-                ticker={ticker}
-                price={stockInfo.price}
-                outStandingShares={outstandingShares}
-                presentValue={presentValue}
-                selectedMethod={selectedMethod}
-              />
               <Projection
                 freeCashFlowEquityData={freeCashFlowEquityData}
                 fiveYearGrowthRate={fiveYearGrowthRate}

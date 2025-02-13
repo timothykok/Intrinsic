@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 let currency = "USD";
 
-export default function ShareValue({
+export default function DCFValue({
   Ticker,
   price,
   outStandingShares,

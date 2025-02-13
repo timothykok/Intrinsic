@@ -12,6 +12,7 @@ Todo:
     ✔ get current book value of equity to render @done(25-02-11 00:04)
     ☐ update the intrinsic statement for residual 
     ☐ double check projection table 
+    ☐ update intrinsic componenet for residual 
 
 
 
@@ -35,3 +36,13 @@ Todo:
       const tenYearG = tenYearGrowthRate / 100;
       const longTermG = longTermGrowthRate / 100;
       const coe = costOfEquity / 100;
+
+
+bugs:
+   ☐ search from home doesnt update method state in slug 
+
+
+  
+review: 
+  ☐ in future, get LLM to extract 10k accounting report to adjust numbers
+  ☐ might need to create financial data useContext
