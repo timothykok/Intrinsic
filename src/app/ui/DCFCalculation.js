@@ -80,7 +80,12 @@ export default function DCFCalculation({
     tenYearGrowthRate,
     longTermGrowthRate,
     costOfEquity,
+    setPresentValue
   ]);
+
+  useEffect(() => {
+    console.log("Updated PRESENT VALUE in DCFCalculation:", presentValue);
+  }, [presentValue]);
   return (
     <>
       <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8  uppercase text-sm ">

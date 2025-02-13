@@ -3,7 +3,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
+
+import { useMethod } from "../../../context/MethodContext";
 
 import gsap from "gsap";
 import axios from "axios";
@@ -23,12 +25,26 @@ export default function StockPage() {
   const [input, setInput] = useState("");
   // The ticker is obtained from the URL (the slug). No need to set it manually.
   const { ticker } = useParams();
+  const { selectedMethod, setSelectedMethod } = useMethod();
+
+  console.log("Ticker:", ticker);
 
   const router = useRouter();
-  console.log("ticker from URL:", ticker);
+  const searchParams = useSearchParams();
+  const homeSelectedMethod = searchParams.get("selectedMethod");
 
-  const [selectedMethod, setSelectedMethod] = useState("DCF"); // Default to DCF method
-  const [selectedCurrency, setSelectedCurrency] = useState("USD"); // Default to DCF method
+
+
+    // When the query param is present, update the context:
+    useEffect(() => {
+      if (homeSelectedMethod) {
+        setSelectedMethod(homeSelectedMethod);
+      }
+    }, [homeSelectedMethod, setSelectedMethod]);
+
+
+
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
 
   // States for fetched financial data
   const [stockInfo, setStockInfo] = useState(null);
@@ -422,7 +438,7 @@ export default function StockPage() {
             <img
               src="/Intrinsic..png"
               alt="Home"
-              className="w-[75px] h-[15px]"
+              className="w-[100px] h-[21px]"
             />
 
             {/* Search Bar */}
@@ -447,48 +463,53 @@ export default function StockPage() {
 
               {/* Dropdowns - Positioned Right Under Search Bar */}
               <div className="absolute right-0 top-full mt-2 flex items-center text-[#989898]">
-  {/* Currency Dropdown */}
-  <div className="relative">
-    <select
-      value={selectedCurrency}
-      onChange={handleCurrencyChange}
-      className="w-[70px] px-2 py-1 bg-white appearance-none outline-none focus:underline"
-      style={{
-        backgroundImage: `url('/Toggle-Arrow-notCollapsed.svg')`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "left 40px center",
-        backgroundSize: "6px",
-      }}
-    >
-      <option value="USD">USD</option>
-      <option disabled>EUR (Coming Soon!)</option>
-    </select>
-  </div>
+                {/* Currency Dropdown */}
+                <div className="relative">
+                  <select
+                    value={selectedCurrency}
+                    onChange={handleCurrencyChange}
+                    className="w-[70px] px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-6"
+                    style={{
+                      backgroundImage: `url('/down-arrow.svg')`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 6px center",
+                      backgroundSize: "6px",
+                    }}
+                  >
+                    <option value="USD">USD</option>
+                    <option disabled>EUR (Coming Soon!)</option>
+                  </select>
+                </div>
 
-  {/* Divider */}
-  <div className="h-full flex items-center text-[#989898] text-sm font-light mx-1">
-    |
-  </div>
+                {/* Divider - Moves closer when method dropdown is shorter */}
+                <div className="h-full flex items-center text-[#989898] text-sm font-light mx-2 pl-2">
+                  |
+                </div>
 
-  {/* Method Dropdown */}
-  <div className="relative">
-    <select
-      value={selectedMethod}
-      onChange={handleMethodChange}
-      className="w-[120px] px-2 py-1 bg-white appearance-none outline-none focus:underline"
-      style={{
-        backgroundImage: `url('/Toggle-Arrow-notCollapsed.svg')`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "right 2px center",
-        backgroundSize: "6px",
-      }}
-    >
-      <option value="DCF">DCF</option>
-      <option value="RI">Residual Income</option>
-      <option disabled>Consolidated (Coming Soon!)</option>
-    </select>
-  </div>
-</div>
+                {/* Method Dropdown - Auto-adjusting width based on selected option */}
+                <div className="relative flex items-center">
+                  <select
+                    value={selectedMethod}
+                    onChange={handleMethodChange}
+                    className="px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-8"
+                    style={{
+                      width: "max-content", // Ensures the width is only as wide as the text
+                      minWidth: "120px", // Ensures a minimum width so UI is stable
+                    }}
+                  >
+                    <option value="DCF">DISCOUNTED CASH FLOW</option>
+                    <option value="RI">RESIDUAL INCOME</option>
+                    <option value="C">CONSOLIDATED</option>
+                  </select>
+
+                  {/* Dropdown Icon (Absolutely Positioned) */}
+                  <img
+                    src="/down-arrow.svg"
+                    alt="Dropdown Arrow"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-[6px]"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -523,6 +544,7 @@ export default function StockPage() {
                     tenYearGrowthRate={tenYearGrowthRate}
                     longTermGrowthRate={longTermGrowthRate}
                     financialData={financialData}
+                    selectedMethod={selectedMethod}
                   />
                   <DCFCalculation
                     ticker={ticker}
@@ -533,6 +555,8 @@ export default function StockPage() {
                     longTermGrowthRate={longTermGrowthRate}
                     outstandingShares={outstandingShares}
                     presentValue={presentValue}
+                    setPresentValue={setPresentValue}
+                    selectedMethod={selectedMethod}
                   />
                 </>
               ) : (
@@ -542,6 +566,7 @@ export default function StockPage() {
                     netIncome={stockInfo.price}
                     costOfEquity={costOfEquity}
                     financialData={financialData}
+                    selectedMethod={selectedMethod}
                   />
                   <ResidualCalculation
                     ticker={ticker}
@@ -549,8 +574,10 @@ export default function StockPage() {
                     freeCashFlowEquityData={freeCashFlowEquityData}
                     longTermGrowthRate={longTermGrowthRate}
                     outstandingShares={outstandingShares}
+                    setPresentValue={setPresentValue}
                     presentValue={presentValue}
                     financialData={financialData}
+                    selectedMethod={selectedMethod}
                   />
                 </>
               )}
@@ -560,12 +587,14 @@ export default function StockPage() {
                 price={stockInfo.price}
                 outStandingShares={outstandingShares}
                 presentValue={presentValue}
+                selectedMethod={selectedMethod}
               />
               <Projection
                 freeCashFlowEquityData={freeCashFlowEquityData}
                 fiveYearGrowthRate={fiveYearGrowthRate}
                 tenYearGrowthRate={tenYearGrowthRate}
                 longTermGrowthRate={longTermGrowthRate}
+                selectedMethod={selectedMethod}
               />
             </div>
           )}

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const currency = "USD";
 
-export default function ResidualIncome({ ticker, financialData }) {
+export default function ResidualIncome({ ticker, financialData,  costOfEquity }) {
   const [residualIncome, setResidualIncome] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(true);
 
@@ -13,11 +13,16 @@ export default function ResidualIncome({ ticker, financialData }) {
 
     const calculateResidualIncome = () => {
       const residualIncome =
-        financialData.netIncome -
+        (financialData.netIncome -
         (financialData.currentEquity || 0) *
-          (financialData.costOfEquity / 100 || 0);
+          (financialData.costOfEquity / 100 || 0));
 
-          console.log("RESIDUAL INCOME: " + residualIncome)
+      console.log("RESIDUAL INCOME: " + residualIncome);
+      console.log("RESIDUAL INCOME - NET INCOME: " + financialData.netIncome);
+      console.log("RESIDUAL INCOME - COE : " + financialData.costOfEquity);
+      console.log(
+        "RESIDUAL INCOME - CURRENT EQUITY: " + financialData.currentEquity
+      );
       setResidualIncome(residualIncome);
     };
 
@@ -107,9 +112,9 @@ export default function ResidualIncome({ ticker, financialData }) {
                         <div className="flex items-center">
                           <span className="mr-2">PCT</span>
                           <span className="w-48">
-                            {financialData.costOfEquity !== null
+                            {costOfEquity !== null
                               ? `${parseFloat(
-                                  financialData.costOfEquity
+                                  costOfEquity
                                 ).toFixed(2)} %`
                               : "Calculating..."}
                           </span>

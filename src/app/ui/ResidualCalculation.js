@@ -10,7 +10,9 @@ export default function ResidualCalculation({
   longTermGrowthRate,     // e.g., 3 for 3%
   setPresentValue,
   presentValue,
-  outstandingShares
+  outstandingShares,
+  selectedMethod
+
 }) {
   const currency = "USD"; // Hardcoded currency symbol
 
@@ -77,6 +79,7 @@ export default function ResidualCalculation({
     financialData.currentEquity,
     costOfEquity,
     longTermGrowthRate,
+    selectedMethod
   ]);
   return (
     <>

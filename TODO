@@ -1,8 +1,8 @@
 
 Todo:
-  ☐ refactor code
+  ✔ refactor code @done(25-02-13 18:10)
   ☐ make mobile / tablet responsive 
-  ☐ re design UI - as good as ECONIC 
+  ✔ re design UI - as good as ECONIC @done(25-02-13 18:10)
   
 
   Residual Income:
@@ -16,16 +16,22 @@ Todo:
 
 
   reDesign:
-    ☐ align everything left 
-    ☐ create slug page
-    ☐ get rid of borders
-    ☐ watch for spacing 
+    ✔ align everything left @done(25-02-13 18:10)
+    ✔ create slug page @done(25-02-13 18:10)
+    ✔ get rid of borders @done(25-02-13 18:10)
+    ✔ watch for spacing @done(25-02-13 18:10)
     ☐ updated footer
     ☐ updated filter buttons 
     ☐ add fundemantal analysis 
+    ☐ make values appear right in the redesign 
+    ☐ have to pass useContext for currency also
 
 
   review: 
       ☐ review how gsap works in ticker 
       ☐ how slugs work 
-      ☐
+      ☐        // 1. Convert growth rates to decimal form if needed
+      const fiveYearG = fiveYearGrowthRate / 100;
+      const tenYearG = tenYearGrowthRate / 100;
+      const longTermG = longTermGrowthRate / 100;
+      const coe = costOfEquity / 100;
