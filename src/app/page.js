@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 
 import { useMethod } from "../context/MethodContext.js";
@@ -498,7 +498,13 @@ export default function Home() {
   }, [calculatedFreeCashFlowEquity]);
 
   return (
+    <Suspense>
+
+
+   
     <>
+
+
       <HomeNav />
       <main className="px-4">
         <div className="mb-16">
@@ -575,6 +581,9 @@ export default function Home() {
         </div>
       </main>
       <Footer />
+      
     </>
+     
+    </Suspense>
   );
 }

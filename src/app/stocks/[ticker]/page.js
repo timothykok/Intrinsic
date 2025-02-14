@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useSuspense, Suspense } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 
 import { useMethod } from "../../../context/MethodContext";
@@ -823,6 +823,10 @@ export default function StockPage() {
 if (loading) return <div>Loading...</div>;
 
   return (
+    <Suspense>
+
+
+  
     <>
       <SearchNav />
       <main>
@@ -963,5 +967,6 @@ if (loading) return <div>Loading...</div>;
       </main>
       {/* <Footer /> */}
     </>
+    </Suspense>
   );
 }
