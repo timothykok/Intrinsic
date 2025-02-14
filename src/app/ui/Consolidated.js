@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-function Consolidated({ financialData, freeCashFlowEquityData, costOfEquity, eps }) {
+export default function Consolidated({ financialData, freeCashFlowEquityData, costOfEquity, eps }) {
   const [presentValue, setPresentValue] = useState(null);
   const [multiplesPresentValue, setMultiplesPresentValue] = useState(null);
   const [residualIncomePresentValue, setResidualIncomePresentValue] = useState(null);
