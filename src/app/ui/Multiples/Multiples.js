@@ -7,6 +7,7 @@ let currency = "USD"
 export default function Multiples({
   netIncome,          // e.g., from financialData.netIncome
   financialData,  // from state
+  outstandingShares,
   eps,
   averagePeerPE
 
@@ -17,10 +18,24 @@ export default function Multiples({
 
   // Calculate intrinsic value per share using EPS * P/E Multiple
   const intrinsicValue = useMemo(() => {
-    if (!netIncome || !financialData.oustandingShares || !averagePeerPE || !eps) return null;
+    if (!netIncome || !outstandingShares || !averagePeerPE || !eps) return null;
    
+
+
+
+
+
     return parseFloat((eps * averagePeerPE).toFixed(2));
-  }, [netIncome, financialData.oustandingShares, averagePeerPE, eps]);
+
+
+    
+
+  }, [netIncome, outstandingShares, averagePeerPE, eps]);
+
+  console.log("netIncome: " + netIncome)
+  console.log("outstandingShares: " + outstandingShares)
+  console.log("averagePeerPE: " + averagePeerPE)
+  console.log("eps: " + eps)
 
   return (
     <div className="multiples-calculation max-w-[800px] mx-auto pt-12 pb-12 mt-8 uppercase text-sm text-[#626262]">

@@ -546,7 +546,7 @@ export default function SearchNav() {
                     <option value="C">CONSOLIDATED</option>
                     <option value="DCF">DISCOUNTED CASH FLOW</option>
                     <option value="RI">RESIDUAL INCOME</option>
-                    <option value="Multiples">MULTIPLES</option>
+                    <option value="M">MULTIPLES</option>
                   </select>
 
                   {/* Dropdown Icon (Absolutely Positioned) */}

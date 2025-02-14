@@ -73,6 +73,8 @@ export default function ResidualCalculation({
 
       setPresentValue(parseFloat(intrinsicValue.toFixed(2)));
       setResidualIncomePresentValue(parseFloat(intrinsicValue.toFixed(2)))
+
+      console.log("residual income present value: "+ residualIncomePresentValue)
       
     } catch (error) {
       console.log(error);

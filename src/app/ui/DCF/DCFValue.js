@@ -23,6 +23,8 @@ export default function DCFValue({
     if (presentValue && financialData.outstandingShares && price) {
       const intrinsicValue = presentValue / financialData.outstandingShares;
 
+      setDCFPresentValue(intrinsicValue)
+
       const formattedIntrinsicValue = intrinsicValue.toFixed(2);
 
       setIntrinsicValuePerShare(formattedIntrinsicValue);

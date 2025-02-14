@@ -164,6 +164,8 @@ export default function Home() {
   };
   //------------------------------------------------------------------------------------
 
+  const currentTicker = ticker || input.toUpperCase().trim();
+
   const fetchData = async (url) => {
     try {
       const response = await axios.get(url);
@@ -179,17 +181,17 @@ export default function Home() {
   // This effect fetches the basic stock info when the URL ticker changes.
   useEffect(() => {
     // If no ticker is present, do nothing.
-    if (!ticker) return;
+    if (!currentTicker) return;
 
     async function fetchStockInfo() {
       try {
         const profileResponse = await fetch(
-          `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v3/profile/${currentTicker}?apikey=${fmpApiKey}`
         );
         const profileData = await profileResponse.json();
 
         const quoteResponse = await fetch(
-          `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v3/quote/${currentTicker}?apikey=${fmpApiKey}`
         );
         const quoteData = await quoteResponse.json();
 
@@ -269,19 +271,19 @@ export default function Home() {
         peersData,
       ] = await Promise.all([
         fetchData(
-          `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v3/profile/${currentTicker}?apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${currentTicker}?apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/income-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v3/income-statement/${currentTicker}?period=annual&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/cash-flow-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v3/cash-flow-statement/${currentTicker}?period=annual&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/ratios/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v3/ratios/${currentTicker}?apikey=${fmpApiKey}`
         ),
         fetchData(
           `https://financialmodelingprep.com/api/v4/treasury?apikey=${fmpApiKey}`
@@ -290,11 +292,11 @@ export default function Home() {
           `https://financialmodelingprep.com/api/v4/market_risk_premium?apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v4/shares_float?symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v4/shares_float?symbol=${currentTicker}&apikey=${fmpApiKey}`
         ),
 
         fetchData(
-          `https://financialmodelingprep.com/api/v4/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/api/v4/stock_peers?symbol=${currentTicker}&apikey=${fmpApiKey}`
         ),
       ]);
 
@@ -498,26 +500,23 @@ export default function Home() {
   return (
     <>
       <HomeNav />
-      <main>
-        <div className="mb-64">
+      <main className="px-4">
+        <div className="mb-16">
           <Ticker />
-          <div className="spacer h-24"></div>
-          <div className="title-wrapper flex flex-col items-center py-8 px-4">
-            {/* Title Section */}
+          <div className="spacer h-6 md:h-24"></div>
+          <div className="title-wrapper flex flex-col items-center py-8">
             <div className="title-container">
-              {/* <h1 className="title text-4xl font-bold text-gray-800">Intrinsic.</h1> */}
               <img
                 src="/Intrinsic..png"
                 alt="View More"
-                className="w-[716px] h-[140px]"
+                className="w-full max-w-3xl h-auto object-contain"
               />
             </div>
-
             {/* Search Bar Section */}
-            <div className="relative w-[800px] mt-8 mb-4">
+            <div className="relative w-full max-w-3xl mt-8 mb-4">
               <input
                 ref={inputRef}
-                className="w-full h-[40px] px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none focus:border-black transition-all"
+                className="w-full h-10 px-4 border border-gray-300 rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none transition-all"
                 type="text"
                 placeholder="Enter Stock Ticker (e.g., GOOG)"
                 value={input}
@@ -525,22 +524,16 @@ export default function Home() {
                 onKeyDown={handleKeyDown}
               />
               {errorMessage && (
-                <p
-                  ref={errorRef}
-                  className="text-red-400 text-xs font-bold mt-2"
-                >
+                <p ref={errorRef} className="text-red-400 text-xs font-bold mt-2">
                   {errorMessage}
                 </p>
               )}
-
-              {/* Dropdowns - Positioned Right Under Search Bar */}
-              <div className="absolute right-0 top-full mt-4 flex items-center text-[#989898]">
-                {/* Currency Dropdown */}
+              <div className="absolute right-0 top-full mt-4 flex items-center text-gray-500 appearance-none">
                 <div className="relative">
                   <select
                     value={selectedCurrency}
                     onChange={handleCurrencyChange}
-                    className="w-[70px] px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-6"
+                    className="w-16 px-2 py-1 bg-white focus:underline font-medium pr-6 appearance-none"
                     style={{
                       backgroundImage: `url('/down-arrow.svg')`,
                       backgroundRepeat: "no-repeat",
@@ -552,35 +545,28 @@ export default function Home() {
                     <option disabled>EUR (Coming Soon!)</option>
                   </select>
                 </div>
-
-                {/* Divider - Moves closer when method dropdown is shorter */}
-                <div className="h-full flex items-center text-[#989898] text-sm font-light mx-2 pl-2">
+                <div className="h-full flex items-center text-sm font-light mx-2 pl-2 appearance-none">
                   |
                 </div>
-
-                {/* Method Dropdown - Auto-adjusting width based on selected option */}
                 <div className="relative flex items-center">
                   <select
                     value={selectedMethod}
                     onChange={handleMethodChange}
-                    className="px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-8"
+                    className="px-2 py-1 bg-white focus:underline font-medium pr-8 appearance-none "
                     style={{
-                      width: "max-content", // Ensures the width is only as wide as the text
-                      minWidth: "120px", // Ensures a minimum width so UI is stable
+                      width: "max-content",
+                      minWidth: "120px",
                     }}
                   >
                     <option value="C">CONSOLIDATED</option>
                     <option value="DCF">DISCOUNTED CASH FLOW</option>
                     <option value="RI">RESIDUAL INCOME</option>
-
-                    <option value="Multiples">MULTIPLES</option>
+                    <option value="M">MULTIPLES</option>
                   </select>
-
-                  {/* Dropdown Icon (Absolutely Positioned) */}
                   <img
                     src="/down-arrow.svg"
                     alt="Dropdown Arrow"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-[6px]"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2 "
                   />
                 </div>
               </div>
@@ -588,7 +574,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-
       <Footer />
     </>
   );

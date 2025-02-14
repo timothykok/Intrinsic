@@ -22,6 +22,7 @@ export default function ResidualValue({
   useEffect(() => {
     if (residualIncomePresentValue && outstandingShares && price) {
       const intrinsicValue = residualIncomePresentValue / outstandingShares;
+      
 
       const formattedIntrinsicValue = intrinsicValue.toFixed(2);
 

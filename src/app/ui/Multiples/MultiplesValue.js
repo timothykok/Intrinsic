@@ -33,7 +33,10 @@ export default function MultiplesValue({
     if (intrinsicValue != null && outstandingShares) {
       const calculatedPresentValue = intrinsicValue * outstandingShares;
       setPresentValue(calculatedPresentValue);
+
+    
       setMultiplesPresentValue(calculatedPresentValue);
+      console.log("set multiple pv running:" + multiplesPresentValue)
     }
   }, [intrinsicValue, outstandingShares, setPresentValue, setMultiplesPresentValue]);
 
