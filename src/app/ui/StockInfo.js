@@ -85,7 +85,7 @@ const StockInfo = forwardRef(
           
               <div className="p-4 text-[#909090] w-auto">
                 <p className="text-sm ">
-                  Estimated DCF Value of one {ticker} stock is{" "}
+                  Estimated Value of one {ticker} stock is{" "}
                   <span className="">
                     ${intrinsicValuePerShare?.toFixed(2)}
                   </span>

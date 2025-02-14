@@ -2,16 +2,15 @@ import { useEffect } from "react";
 import axios from "axios";
 
 export default function DCFCalculation({
-  Ticker,
+ 
   freeCashFlowEquityData,
-  fiveYearGrowthRate,
-  tenYearGrowthRate,
-  longTermGrowthRate,
   costOfEquity,
-  outstandingShares,
-  setOutstandingShares,
   presentValue,
   setPresentValue,
+  dcfPresentValue,
+  setDCFPresentValue,
+  selectedMethod,
+  financialData
 }) {
   const currency = "USD"; // Hardcoded currency symbol
   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
@@ -23,17 +22,17 @@ export default function DCFCalculation({
     try{
       if (
         freeCashFlowEquityData !== null &&
-        fiveYearGrowthRate !== null &&
-        tenYearGrowthRate !== null &&
-        longTermGrowthRate !== null &&
+        financialData.fiveYearGrowthRate !== null &&
+        financialData.tenYearGrowthRate !== null &&
+        financialData.longTermGrowthRate !== null &&
         costOfEquity !== null
       ) {
         let pv = 0;
     
         // 1. Convert growth rates to decimal form if needed
-        const fiveYearG = fiveYearGrowthRate / 100;
-        const tenYearG = tenYearGrowthRate / 100;
-        const longTermG = longTermGrowthRate / 100;
+        const fiveYearG = financialData.fiveYearGrowthRate / 100;
+        const tenYearG = financialData.tenYearGrowthRate / 100;
+        const longTermG = financialData.longTermGrowthRate / 100;
         const coe = costOfEquity / 100;
     
         // 2. Calculate PV of FCFE from Year 1 to Year 5
@@ -60,10 +59,7 @@ export default function DCFCalculation({
         pv += discountedPerpetuityValue;
     
         // 6. Set the final present value
-        setPresentValue(parseFloat(pv.toFixed(2)));
-
-        console.log("PRESENT VALUE: " + presentValue)
-    
+        setPresentValue(parseFloat(pv.toFixed(2)));    
 
       }
 
@@ -76,16 +72,15 @@ export default function DCFCalculation({
    
   }, [
     freeCashFlowEquityData,
-    fiveYearGrowthRate,
-    tenYearGrowthRate,
-    longTermGrowthRate,
+    financialData.fiveYearGrowthRate,
+    financialData.tenYearGrowthRate,
+    financialData.longTermGrowthRate,
     costOfEquity,
-    setPresentValue
+    setPresentValue,
+    selectedMethod
   ]);
 
-  useEffect(() => {
-    console.log("Updated PRESENT VALUE in DCFCalculation:", presentValue);
-  }, [presentValue]);
+ 
   return (
     <>
       <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8  uppercase text-sm ">
@@ -119,8 +114,8 @@ export default function DCFCalculation({
               <div className="flex items-center">
                 <span className=" mr-2">QTY</span>
                 <span className="w-48 ">
-                  {outstandingShares !== null
-                    ? outstandingShares.toLocaleString()
+                  {financialData.outstandingShares !== null
+                    ? financialData.outstandingShares.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>

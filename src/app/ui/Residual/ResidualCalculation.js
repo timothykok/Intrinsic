@@ -11,7 +11,9 @@ export default function ResidualCalculation({
   setPresentValue,
   presentValue,
   outstandingShares,
-  selectedMethod
+  selectedMethod,
+  setResidualIncomePresentValue,
+  residualIncomePresentValue
 
 }) {
   const currency = "USD"; // Hardcoded currency symbol
@@ -70,6 +72,8 @@ export default function ResidualCalculation({
         financialData.currentEquity + pvResidualIncome;
 
       setPresentValue(parseFloat(intrinsicValue.toFixed(2)));
+      setResidualIncomePresentValue(parseFloat(intrinsicValue.toFixed(2)))
+      
     } catch (error) {
       console.log(error);
     }
@@ -97,8 +101,8 @@ export default function ResidualCalculation({
               <div className="flex items-center">
                 <span className="text-gray-600 mr-2">{currency}</span>
                 <span className="w-48 text-gray-600">
-                  {presentValue !== null
-                    ? presentValue.toLocaleString()
+                  {residualIncomePresentValue !== null
+                    ? residualIncomePresentValue.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>

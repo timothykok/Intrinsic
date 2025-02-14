@@ -1,18 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
-
-import { useMethod } from "../context/MethodContext.js";
+import { useMethod } from "../../../context/MethodContext";
 
 import gsap from "gsap";
 import axios from "axios";
 
-import Ticker from "../app/ui/Ticker.js";
-import Footer from "../app/ui/Footer.js";
-import HomeNav from "@/app/ui/NavBars/SearchNav";
-
-export default function Home() {
+export default function SearchNav() {
   // This search input is now used only to trigger a new search/navigation.
   const [input, setInput] = useState("");
   // The ticker is obtained from the URL (the slug). No need to set it manually.
@@ -35,19 +31,9 @@ export default function Home() {
   // States for fetched financial data
   const [stockInfo, setStockInfo] = useState(null);
   const [freeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
-
-  // States for all present values to average out in consoli value
-  const [dcfValuePresentValue, setDCFPresentValue] = useState(null);
-  const [residualIncomePresentValue, setResidualIncomePresentValue] =
-    useState(null);
-  const [multiplesPresentValue, setMultiplesPresentValue] = useState(null);
-  const [consolidatedPresentValue, setConsolidatedPresentValue] =
-    useState(null);
-
-  const [presentValue, setPresentValue] = useState(null);
-  const [costOfEquity, setCostOfEquity] = useState(null);
-
-  //------------------------------------------------------------------------------------
+  const [fiveYearGrowthRate, setFiveYearGrowthRate] = useState(null);
+  const [tenYearGrowthRate, setTenYearGrowthRate] = useState(null);
+  const [longTermGrowthRate, setLongTermGrowthRate] = useState(null);
 
   const [financialData, setFinancialData] = useState({
     netIncome: null,
@@ -61,20 +47,16 @@ export default function Home() {
     changeInWorkingCapital: 0,
     netBorrowing: 0,
     beta: null,
-    fiveYearGrowthRate: null,
-    tenYearGrowthRate: null,
-    longTermGrowthRate: null,
-
-    outstandingShares: null,
     riskFreeRate: null,
     marketRiskPremium: null,
     sector: null,
     peers: null,
   });
-  //------------------------------------------------------------------------------------
 
   //Calculation component
-
+  const [outstandingShares, setOutstandingShares] = useState([]);
+  const [presentValue, setPresentValue] = useState(null);
+  const [costOfEquity, setCostOfEquity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -100,8 +82,6 @@ export default function Home() {
     Technology: 19.8,
     Utilities: 10.05,
   };
-
-  //------------------------------------------------------------------------------------
 
   // --- Functions for UI effects ---
 
@@ -130,7 +110,6 @@ export default function Home() {
   const handleCurrencyChange = (e) => {
     setSelectedCurrency(e.target.value);
   };
-  //------------------------------------------------------------------------------------
 
   // Function to show error message with animation
   const triggerErrorMessage = () => {
@@ -142,9 +121,6 @@ export default function Home() {
       );
     }
   };
-
-  //------------------------------------------------------------------------------------
-
   // --- Search bar handling ---
   // When a user enters a new ticker and presses Enter, navigate to the new slug page.
   const handleKeyDown = (e) => {
@@ -162,7 +138,6 @@ export default function Home() {
       setInput("");
     }
   };
-  //------------------------------------------------------------------------------------
 
   const fetchData = async (url) => {
     try {
@@ -174,7 +149,6 @@ export default function Home() {
       return null;
     }
   };
-  //------------------------------------------------------------------------------------
 
   // This effect fetches the basic stock info when the URL ticker changes.
   useEffect(() => {
@@ -251,7 +225,6 @@ export default function Home() {
     setLoading(true);
     fetchStockInfo();
   }, [ticker, fmpApiKey]);
-  //------------------------------------------------------------------------------------
 
   useEffect(() => {
     if (!ticker) return;
@@ -310,8 +283,7 @@ export default function Home() {
 
       // PE ratio
       const currentPrice = stockInfo?.price || 0;
-      const peRatioUnformatted = eps ? currentPrice / eps : 0;
-      const peRatio = peRatioUnformatted.toFixed(2);
+      const peRatio = eps ? currentPrice / eps : 0;
 
       //------------------------------------------------------------------------------------
 
@@ -363,8 +335,7 @@ export default function Home() {
 
       // Get ten year growthr rate from sector array
       const tenYearGrowthRate = sectorPerformance[sector] || "N/A";
-
-      const longTermGrowthRate = 3;
+      setTenYearGrowthRate(tenYearGrowthRate.toFixed(2));
 
       // Retrieve net income and cash flow components
       const netIncome = incomeData?.[0]?.netIncome || 0;
@@ -390,6 +361,7 @@ export default function Home() {
           return "Invalid data";
         return ((1 - payoutRatio) * avgROE * 100).toFixed(2);
       })();
+      setFiveYearGrowthRate(fiveYearGrowthRate);
 
       //------------------------------------------------------------------------------------
 
@@ -405,6 +377,8 @@ export default function Home() {
 
       const outstandingShares =
         outstandingSharesData?.[0]?.outstandingShares || null;
+      console.log("HOME OUTSTANDING SHARES: " + outstandingShares);
+      setOutstandingShares(outstandingShares);
 
       //------------------------------------------------------------------------------------
 
@@ -422,15 +396,14 @@ export default function Home() {
         changeInWorkingCapital: mostRecentCashFlow.changeInWorkingCapital || 0,
         netBorrowing,
         beta: profileData?.[0]?.beta || null,
-        fiveYearGrowthRate,
-        tenYearGrowthRate,
-        longTermGrowthRate,
-        outstandingShares,
         riskFreeRate,
         marketRiskPremium,
         sector,
         salesGrowthToPerpetuity,
       });
+
+      // Set a default long-term growth rate (here, 3%)
+      setLongTermGrowthRate(3);
     };
 
     fetchFinancialData();
@@ -438,13 +411,11 @@ export default function Home() {
 
   //EPS
   const eps = useMemo(() => {
-    if (!financialData.outstandingShares || !financialData.netIncome) return 0;
-    return financialData.netIncome / financialData.outstandingShares;
-  }, [financialData.outstandingShares, financialData.netIncome]);
+    if (!outstandingShares || !financialData.netIncome) return 0;
+    return financialData.netIncome / outstandingShares;
+  }, [outstandingShares, financialData.netIncome]);
 
-  //------------------------------------------------------------------------------------
-
-  // Compute Cost of Equity (CAPM)
+  // 2️⃣ Compute Cost of Equity (CAPM)
   useEffect(() => {
     if (
       financialData.beta == null ||
@@ -471,8 +442,6 @@ export default function Home() {
     financialData.marketRiskPremium,
   ]);
 
-  //------------------------------------------------------------------------------------
-
   // 4️⃣ Compute Free Cash Flow to Equity
   const calculatedFreeCashFlowEquity = useMemo(() => {
     const {
@@ -497,29 +466,30 @@ export default function Home() {
 
   return (
     <>
-      <HomeNav />
-      <main>
-        <div className="mb-64">
-          <Ticker />
-          <div className="spacer h-24"></div>
-          <div className="title-wrapper flex flex-col items-center py-8 px-4">
-            {/* Title Section */}
-            <div className="title-container">
-              {/* <h1 className="title text-4xl font-bold text-gray-800">Intrinsic.</h1> */}
-              <img
-                src="/Intrinsic..png"
-                alt="View More"
-                className="w-[716px] h-[140px]"
-              />
+      <div className="flex flex-row justify-between ml-[122px] mr-[122px] align-center pt-12 mb-2 items-center font-sm text-[#989898]">
+     
+          {/* Container for title and search bar */}
+          <div className="w-7xl flex align-center gap-4 mt-6">
+            {/* Title */}
+
+            <div className="pt-2">
+              <Link href="/">
+                <img
+                  src="/Intrinsic..png"
+                  alt="View More"
+                  className="w-[100px] h-[20px]"
+                  href="/"
+                />
+              </Link>
             </div>
 
-            {/* Search Bar Section */}
-            <div className="relative w-[800px] mt-8 mb-4">
+            {/* Search Bar */}
+            <div className="relative w-[450px] mb-4 text-[#989898]">
               <input
                 ref={inputRef}
-                className="w-full h-[40px] px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none focus:border-black transition-all"
+                className="w-[450px] h-[40px] px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none focus:border-black transition-all"
                 type="text"
-                placeholder="Enter Stock Ticker (e.g., GOOG)"
+                placeholder="Enter Stock Ticker (e.g., GOOG)                                                  ⌘K"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -534,7 +504,7 @@ export default function Home() {
               )}
 
               {/* Dropdowns - Positioned Right Under Search Bar */}
-              <div className="absolute right-0 top-full mt-4 flex items-center text-[#989898]">
+              <div className="absolute right-0 top-full mt-2 flex items-center text-[#989898]">
                 {/* Currency Dropdown */}
                 <div className="relative">
                   <select
@@ -564,32 +534,43 @@ export default function Home() {
                     value={selectedMethod}
                     onChange={handleMethodChange}
                     className="px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-8"
-                    style={{
-                      width: "max-content", // Ensures the width is only as wide as the text
-                      minWidth: "120px", // Ensures a minimum width so UI is stable
-                    }}
+            
+                      style={{
+                        backgroundImage: `url('/down-arrow.svg')`,
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "right 6px center",
+                        backgroundSize: "6px",
+                      }}
+                   
                   >
                     <option value="C">CONSOLIDATED</option>
                     <option value="DCF">DISCOUNTED CASH FLOW</option>
                     <option value="RI">RESIDUAL INCOME</option>
-
                     <option value="Multiples">MULTIPLES</option>
                   </select>
 
                   {/* Dropdown Icon (Absolutely Positioned) */}
-                  <img
-                    src="/down-arrow.svg"
-                    alt="Dropdown Arrow"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-[6px]"
-                  />
+             
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+   
 
-      <Footer />
+        <div className="flex gap-2 font-light text-sm text-[#949494] uppercase">
+          <div className="hover:bg-[#EEEEEE]  hover:font-sm hover:text-stone-500  p-2 rounded-md pr-4 pl-4">
+            <Link href="/"> Resources </Link>
+          </div>
+
+          <div className="hover:bg-[#EEEEEE]  hover:font-sm hover:text-stone-500  p-2 rounded-md pr-4 pl-4">
+            <Link href="/"> Watchlist </Link>
+          </div>
+
+          <div className="hover:bg-[#EEEEEE]  hover:font-sm hover:text-stone-500  p-2 rounded-md pr-4 pl-4">
+            <Link href="/"> Login </Link>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

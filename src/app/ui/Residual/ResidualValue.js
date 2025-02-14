@@ -4,11 +4,15 @@ import { useEffect, useState } from "react";
 
 let currency = "USD";
 
-export default function DCFValue({
+export default function ResidualValue({
   Ticker,
   price,
-  outStandingShares,
+  outstandingShares,
   presentValue,
+  setResidualIncomePresentValue,
+  residualIncomePresentValue,
+  selectedMethod
+  
 }) {
   const [intrinsicValuePerShare, setIntrinsicValuePerShare] = useState(null);
   const [discountPremium, setDiscountPremium] = useState(null);
@@ -16,12 +20,13 @@ export default function DCFValue({
 
   // Calculate values when dependencies change
   useEffect(() => {
-    if (presentValue && outStandingShares && price) {
-      const intrinsicValue = presentValue / outStandingShares;
+    if (residualIncomePresentValue && outstandingShares && price) {
+      const intrinsicValue = residualIncomePresentValue / outstandingShares;
 
       const formattedIntrinsicValue = intrinsicValue.toFixed(2);
 
       setIntrinsicValuePerShare(formattedIntrinsicValue);
+      
 
       const discountPremiumValue = (price / intrinsicValue - 1) * 100; // Calculate as percentage
 
@@ -34,7 +39,7 @@ export default function DCFValue({
         formattedDiscountPremium > 0 ? "overvalued" : "undervalued"
       );
     }
-  }, [presentValue, outStandingShares, price]);
+  }, [presentValue, outstandingShares, price,selectedMethod]);
 
   return (
     <>

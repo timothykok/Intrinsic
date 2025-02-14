@@ -1,4 +1,4 @@
-//home - page.js
+//stockpage - page.js
 
 "use client";
 
@@ -11,16 +11,19 @@ import gsap from "gsap";
 import axios from "axios";
 
 import Ticker from "../../ui/Ticker.js";
-import DiscountedCashFlow from "../../ui/DiscountedCashFlow.js";
-import DCFCalculation from "../../ui/DCFCalculation.js";
-import DCFValue from "../../ui/DCFValue";
-import ResidualCalculation from "../../ui/ResidualCalculation.js";
-import ResidualIncome from "../../ui/ResidualIncome.js";
-import ShareValue from "../../ui/DCFValue";
+import DiscountedCashFlow from "../../ui/DCF/DiscountedCashFlow.js";
+import DCFCalculation from "../../ui/DCF/DCFCalculation.js";
+import DCFValue from "../../ui/DCF/DCFValue";
+import ResidualCalculation from "../../ui/Residual/ResidualCalculation.js";
+import ResidualIncome from "../../ui/Residual/ResidualIncome.js";
+import ResidualValue from "@/app/ui/Residual/ResidualValue";
+import ShareValue from "../../ui/DCF/DCFValue";
 import StockInfo from "../../ui/StockInfo.js";
 import Projection from "../../ui/Projection.js";
-import Multiples from "@/app/ui/Multiples";
+import Multiples from "@/app/ui/Multiples/Multiples";
+import MultiplesValue from "@/app/ui/Multiples/MultiplesValue";
 import Footer from "../../ui/Footer.js";
+import SearchNav from "@/app/ui/NavBars/SearchNav";
 
 export default function StockPage() {
   // This search input is now used only to trigger a new search/navigation.
@@ -45,9 +48,18 @@ export default function StockPage() {
   // States for fetched financial data
   const [stockInfo, setStockInfo] = useState(null);
   const [freeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
-  const [fiveYearGrowthRate, setFiveYearGrowthRate] = useState(null);
-  const [tenYearGrowthRate, setTenYearGrowthRate] = useState(null);
-  const [longTermGrowthRate, setLongTermGrowthRate] = useState(null);
+
+
+  // States for all present values to average out in consoli value
+  const [dcfValuePresentValue, setDCFPresentValue] = useState(null);
+  const [residualIncomePresentValue, setResidualIncomePresentValue] =
+    useState(null);
+  const [multiplesPresentValue, setMultiplesPresentValue] = useState(null);
+  const [consolidatedPresentValue, setConsolidatedPresentValue] =
+    useState(null);
+  // const [outstandingShares, setOutstandingShares] = useState([]);
+  const [presentValue, setPresentValue] = useState(null);
+  const [costOfEquity, setCostOfEquity] = useState(null);
 
   const [financialData, setFinancialData] = useState({
     netIncome: null,
@@ -61,6 +73,11 @@ export default function StockPage() {
     changeInWorkingCapital: 0,
     netBorrowing: 0,
     beta: null,
+    fiveYearGrowthRate:null,
+    tenYearGrowthRate:null,
+    longTermGrowthRate:null,
+
+    outstandingShares:null,
     riskFreeRate: null,
     marketRiskPremium: null,
     sector: null,
@@ -68,9 +85,7 @@ export default function StockPage() {
   });
 
   //Calculation component
-  const [outstandingShares, setOutstandingShares] = useState([]);
-  const [presentValue, setPresentValue] = useState(null);
-  const [costOfEquity, setCostOfEquity] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -295,15 +310,31 @@ export default function StockPage() {
 
       //------------------------------------------------------------------------------------
 
-      
-
       // PE ratio
       const currentPrice = stockInfo?.price || 0;
-      const peRatio = eps ? currentPrice / eps : 0;
+      const peRatioUnformatted = eps ? currentPrice / eps : 0;
+      const peRatio = peRatioUnformatted.toFixed(2);
 
       //------------------------------------------------------------------------------------
 
-      
+      // Extract and use peers data:
+      const peers = peersData[0]?.peersList;
+      let averagePeerPE = null;
+      if (peers && peers.length > 0) {
+        const peerSymbols = peers.join(",");
+        const quotesResponse = await axios.get(
+          `https://financialmodelingprep.com/api/v3/quote/${peerSymbols}?apikey=${fmpApiKey}`
+        );
+        const peerQuotes = quotesResponse.data;
+        const validPeerQuotes = peerQuotes.filter(
+          (peer) => peer.pe && peer.pe > 0
+        );
+        if (validPeerQuotes.length > 0) {
+          averagePeerPE =
+            validPeerQuotes.reduce((sum, peer) => sum + peer.pe, 0) /
+            validPeerQuotes.length;
+        }
+      }
 
       //------------------------------------------------------------------------------------
 
@@ -334,7 +365,8 @@ export default function StockPage() {
 
       // Get ten year growthr rate from sector array
       const tenYearGrowthRate = sectorPerformance[sector] || "N/A";
-      setTenYearGrowthRate(tenYearGrowthRate.toFixed(2));
+
+      const longTermGrowthRate = 3;
 
       // Retrieve net income and cash flow components
       const netIncome = incomeData?.[0]?.netIncome || 0;
@@ -360,7 +392,10 @@ export default function StockPage() {
           return "Invalid data";
         return ((1 - payoutRatio) * avgROE * 100).toFixed(2);
       })();
-      setFiveYearGrowthRate(fiveYearGrowthRate);
+
+
+
+
 
       //------------------------------------------------------------------------------------
 
@@ -374,10 +409,8 @@ export default function StockPage() {
 
       console.log("market risk premium HOME: " + marketRiskPremium);
 
-      const outstandingShares =
-        outstandingSharesData?.[0]?.outstandingShares || null;
-      console.log("HOME OUTSTANDING SHARES: " + outstandingShares);
-      setOutstandingShares(outstandingShares);
+      const outstandingShares = outstandingSharesData?.[0]?.outstandingShares || null;
+    
 
       //------------------------------------------------------------------------------------
 
@@ -388,73 +421,34 @@ export default function StockPage() {
         startEquity,
         peRatio,
         eps,
-        averagePeerPE: null,
+        averagePeerPE,
         depreciationAmortization:
           mostRecentCashFlow.depreciationAndAmortization || 0,
         capitalExpenditure: mostRecentCashFlow.capitalExpenditure || 0,
         changeInWorkingCapital: mostRecentCashFlow.changeInWorkingCapital || 0,
         netBorrowing,
         beta: profileData?.[0]?.beta || null,
+        fiveYearGrowthRate,
+        tenYearGrowthRate,
+        longTermGrowthRate,
+        outstandingShares,
         riskFreeRate,
         marketRiskPremium,
         sector,
         salesGrowthToPerpetuity,
       });
 
-      // Set a default long-term growth rate (here, 3%)
-      setLongTermGrowthRate(3);
+    
     };
 
     fetchFinancialData();
   }, [ticker, fmpApiKey]);
 
-
   //EPS
   const eps = useMemo(() => {
-    if (!outstandingShares || !financialData.netIncome) return 0;
-    return financialData.netIncome / outstandingShares;
-  }, [outstandingShares, financialData.netIncome]);
-
-
-  //Peers 
-  useEffect(() => {
-    const fetchAveragePeerPE = async () => {
-      try {
-        const peersResponse = await fetch(
-          `https://financialmodelingprep.com/api/v4/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
-        );
-        const peersData = await peersResponse.json();
-        const peers = peersData[0]?.peersList;
-        if (!peers || peers.length === 0) return;
-  
-        const peerSymbols = peers.join(",");
-        const quotesResponse = await axios.get(
-          `https://financialmodelingprep.com/api/v3/quote/${peerSymbols}?apikey=${fmpApiKey}`
-        );
-        const peerQuotes = quotesResponse.data;
-        const validPeerQuotes = peerQuotes.filter(
-          (peer) => peer.pe && peer.pe > 0
-        );
-        const averagePeerPE =
-          validPeerQuotes.reduce((sum, peer) => sum + peer.pe, 0) /
-          validPeerQuotes.length;
-  
-        setFinancialData((prevData) => ({
-          ...prevData,
-          averagePeerPE,
-        }));
-
-        console.log("average Peer Pe: " + averagePeerPE)
-        console.log("Peers: " + peerSymbols)
-      } catch (error) {
-        console.error("Error fetching peer data:", error);
-      }
-    };
-  
-    fetchAveragePeerPE();
-  }, [ticker, fmpApiKey]);
-
-
+    if (!financialData.outstandingShares || !financialData.netIncome) return 0;
+    return financialData.netIncome / financialData.outstandingShares;
+  }, [financialData.outstandingShares, financialData.netIncome]);
 
   // 2️⃣ Compute Cost of Equity (CAPM)
   useEffect(() => {
@@ -509,188 +503,140 @@ export default function StockPage() {
 
   return (
     <>
-      <div className="mb-64 flex flex-col items-start px-8 ">
-        <Ticker />
-        <div className="spacer h-12 ml-[187px] mt-64 ">
-          {/* Container for title and search bar */}
-          <div className="w-full max-w-[900px]">
-            {/* Title */}
-            <img
-              src="/Intrinsic..png"
-              alt="Home"
-              className="w-[100px] h-[21px]"
-            />
+      <SearchNav />
+      <main>
+        <div className="mb-32 flex flex-col items-start ">
+          <div className="spacer h-12 ml-[120px] mt-4 ">
+            <div className=" w-full max-w-[1500px] text-xs"></div>
 
-            {/* Search Bar */}
-            <div className="relative w-full mt-6">
-              <input
-                ref={inputRef}
-                className="w-full h-[40px] px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none focus:border-black transition-all"
-                type="text"
-                placeholder="Enter Stock Ticker (e.g., GOOG)"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-              {errorMessage && (
-                <p
-                  ref={errorRef}
-                  className="text-red-400 text-xs font-bold mt-2"
-                >
-                  {errorMessage}
-                </p>
-              )}
+            {/* Stock Data */}
+            {stockInfo && (
+              <div className="mt-8 w-full max-w-[900px]">
+                <StockInfo
+                  ref={stockInfoRef}
+                  logoSrc={stockInfo.logoSrc}
+                  companyName={stockInfo.companyName}
+                  ticker={ticker}
+                  price={stockInfo.price}
+                  currency={stockInfo.currency}
+                  change={stockInfo.change}
+                  percentage={stockInfo.percentage}
+                  timestamp={stockInfo.timestamp}
+                  presentValue={presentValue}
+                />
 
-              {/* Dropdowns - Positioned Right Under Search Bar */}
-              <div className="absolute right-0 top-full mt-2 flex items-center text-[#989898]">
-                {/* Currency Dropdown */}
-                <div className="relative">
-                  <select
-                    value={selectedCurrency}
-                    onChange={handleCurrencyChange}
-                    className="w-[70px] px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-6"
-                    style={{
-                      backgroundImage: `url('/down-arrow.svg')`,
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right 6px center",
-                      backgroundSize: "6px",
-                    }}
-                  >
-                    <option value="USD">USD</option>
-                    <option disabled>EUR (Coming Soon!)</option>
-                  </select>
-                </div>
+                {/* Valuation Components */}
+                {selectedMethod === "DCF" ? (
+                  <>
+                    <DiscountedCashFlow
+                      ticker={ticker}
+                      setCostOfEquity={setCostOfEquity}
+                      costOfEquity={costOfEquity}
+                      freeCashFlowEquityData={freeCashFlowEquityData}
+           
+                      financialData={financialData}
+                      selectedMethod={selectedMethod}
+                    />
+                    <DCFCalculation
+                      ticker={ticker}
+                      costOfEquity={costOfEquity}
+                      freeCashFlowEquityData={freeCashFlowEquityData}
+                      financialData={financialData}
+                     
+                      presentValue={presentValue}
+                      setPresentValue={setPresentValue}
+                      dcfPresentValue={dcfValuePresentValue}
+                      setDCFPresentValue={setDCFPresentValue}
+                      selectedMethod={selectedMethod}
+                    />
 
-                {/* Divider - Moves closer when method dropdown is shorter */}
-                <div className="h-full flex items-center text-[#989898] text-sm font-light mx-2 pl-2">
-                  |
-                </div>
+                    <DCFValue
+                      ticker={ticker}
+                      price={stockInfo.price}
+                      financialData={financialData}
+                      presentValue={presentValue}
+                      dcfPresentValue={dcfValuePresentValue}
+                      setDCFPresentValue={setDCFPresentValue}
+                      selectedMethod={selectedMethod}
+                    />
+                  </>
+                ) : selectedMethod === "RI" ? (
+                  <>
+                    <ResidualIncome
+                      ticker={ticker}
+                      netIncome={stockInfo.price}
+                      costOfEquity={costOfEquity}
+                      financialData={financialData}
+                      selectedMethod={selectedMethod}
+                    />
+                    <ResidualCalculation
+                      ticker={ticker}
+                      costOfEquity={costOfEquity}
+                      freeCashFlowEquityData={freeCashFlowEquityData}
+                      longTermGrowthRate={financialData.longTermGrowthRate}
+                      outstandingShares={financialData.outstandingShares}
+                      setPresentValue={setPresentValue}
+                      presentValue={presentValue}
+                      residualIncomePresentValue={residualIncomePresentValue}
+                      setResidualIncomePresentValue={
+                        setResidualIncomePresentValue
+                      }
+                      financialData={financialData}
+                      selectedMethod={selectedMethod}
+                    />
 
-                {/* Method Dropdown - Auto-adjusting width based on selected option */}
-                <div className="relative flex items-center">
-                  <select
-                    value={selectedMethod}
-                    onChange={handleMethodChange}
-                    className="px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-8"
-                    style={{
-                      width: "max-content", // Ensures the width is only as wide as the text
-                      minWidth: "120px", // Ensures a minimum width so UI is stable
-                    }}
-                  >
-                    <option value="DCF">DISCOUNTED CASH FLOW</option>
-                    <option value="RI">RESIDUAL INCOME</option>
-                    <option value="C">CONSOLIDATED</option>
-                    <option value="Multiples">MULTIPLES</option>
-                  </select>
+                    <ResidualValue
+                      ticker={ticker}
+                      price={stockInfo.price}
+                      outstandingShares={financialData.outstandingShares}
+                      presentValue={presentValue}
+                      residualIncomePresentValue={residualIncomePresentValue}
+                      setResidualIncomePresentValue={
+                        setResidualIncomePresentValue
+                      }
+                      selectedMethod={selectedMethod}
+                    />
+                  </>
+                ) : (
+                  selectedMethod === "Multiples" && (
+                    <>
+                      <Multiples
+                        netIncome={financialData.netIncome}
+                        outstandingShares={financialData.outstandingShares}
+                        financialData={financialData}
+                        eps={eps}
+                        averagePeerPE={financialData.averagePeerPE}
+                        selectedMethod={selectedMethod}
+                      />
 
-                  {/* Dropdown Icon (Absolutely Positioned) */}
-                  <img
-                    src="/down-arrow.svg"
-                    alt="Dropdown Arrow"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-[6px]"
-                  />
-                </div>
+                      <MultiplesValue
+                        netIncome={financialData.netIncome}
+                        outstandingShares={financialData.outstandingShares}
+                        eps={eps}
+                        price={stockInfo.price}
+                        averagePeerPE={financialData.averagePeerPE}
+                        multiplesPresentValue={multiplesPresentValue}
+                        setMultiplesPresentValue={setMultiplesPresentValue}
+                        setPresentValue={setPresentValue}
+                        presentValue={presentValue}
+                        selectedMethod={selectedMethod}
+                      ></MultiplesValue>
+                    </>
+                  )
+                )}
+
+                <Projection
+                  freeCashFlowEquityData={freeCashFlowEquityData}
+                  fiveYearGrowthRate={financialData.fiveYearGrowthRate}
+                  tenYearGrowthRate={financialData.tenYearGrowthRate}
+                  longTermGrowthRate={financialData.longTermGrowthRate}
+                  selectedMethod={selectedMethod}
+                />
               </div>
-            </div>
+            )}
           </div>
-
-          <div className="mt-8 w-full max-w-[1500px] text-xs"></div>
-
-          {/* Stock Data */}
-          {stockInfo && (
-            <div className="mt-8 w-full max-w-[900px]">
-              <StockInfo
-                ref={stockInfoRef}
-                logoSrc={stockInfo.logoSrc}
-                companyName={stockInfo.companyName}
-                ticker={ticker}
-                price={stockInfo.price}
-                currency={stockInfo.currency}
-                change={stockInfo.change}
-                percentage={stockInfo.percentage}
-                timestamp={stockInfo.timestamp}
-                outStandingShares={outstandingShares}
-                presentValue={presentValue}
-              />
-
-              {/* Valuation Components */}
-              {selectedMethod === "DCF" ? (
-                <>
-                  <DiscountedCashFlow
-                    ticker={ticker}
-                    setCostOfEquity={setCostOfEquity}
-                    costOfEquity={costOfEquity}
-                    freeCashFlowEquityData={freeCashFlowEquityData}
-                    fiveYearGrowthRate={fiveYearGrowthRate}
-                    tenYearGrowthRate={tenYearGrowthRate}
-                    longTermGrowthRate={longTermGrowthRate}
-                    financialData={financialData}
-                    selectedMethod={selectedMethod}
-                  />
-                  <DCFCalculation
-                    ticker={ticker}
-                    costOfEquity={costOfEquity}
-                    freeCashFlowEquityData={freeCashFlowEquityData}
-                    fiveYearGrowthRate={fiveYearGrowthRate}
-                    tenYearGrowthRate={tenYearGrowthRate}
-                    longTermGrowthRate={longTermGrowthRate}
-                    outstandingShares={outstandingShares}
-                    presentValue={presentValue}
-                    setPresentValue={setPresentValue}
-                    selectedMethod={selectedMethod}
-                  />
-
-                  <DCFValue
-                    ticker={ticker}
-                    price={stockInfo.price}
-                    outStandingShares={outstandingShares}
-                    presentValue={presentValue}
-                    selectedMethod={selectedMethod}
-                  />
-                </>
-              ) : selectedMethod === "RI" ? (
-                <>
-                  <ResidualIncome
-                    ticker={ticker}
-                    netIncome={stockInfo.price}
-                    costOfEquity={costOfEquity}
-                    financialData={financialData}
-                    selectedMethod={selectedMethod}
-                  />
-                  <ResidualCalculation
-                    ticker={ticker}
-                    costOfEquity={costOfEquity}
-                    freeCashFlowEquityData={freeCashFlowEquityData}
-                    longTermGrowthRate={longTermGrowthRate}
-                    outstandingShares={outstandingShares}
-                    setPresentValue={setPresentValue}
-                    presentValue={presentValue}
-                    financialData={financialData}
-                    selectedMethod={selectedMethod}
-                  />
-                </>
-              ) : (
-                selectedMethod === "Multiples" && (
-                  <Multiples
-                    netIncome={financialData.netIncome}
-                    outstandingShares={outstandingShares}
-                    eps={eps}
-                    averagePeerPE={financialData.averagePeerPE}
-                  />
-                )
-              )}
-
-              <Projection
-                freeCashFlowEquityData={freeCashFlowEquityData}
-                fiveYearGrowthRate={fiveYearGrowthRate}
-                tenYearGrowthRate={tenYearGrowthRate}
-                longTermGrowthRate={longTermGrowthRate}
-                selectedMethod={selectedMethod}
-              />
-            </div>
-          )}
         </div>
-      </div>
+      </main>
       {/* <Footer /> */}
     </>
   );

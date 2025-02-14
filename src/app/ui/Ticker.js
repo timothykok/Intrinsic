@@ -74,7 +74,7 @@ export default function Ticker() {
 
 
     return (
-      <div className="ticker-wrapper overflow-hidden py-2 w-auto font-bold text-sm">
+      <div className="ticker-wrapper overflow-hidden py-2 w-auto font-bold text-sm mt-12">
         <div className="ticker-content flex animate-ticker-scroll whitespace-nowrap gap-8">
           {stocks.map((stock, index) => (
             <div

@@ -7,19 +7,11 @@ const currency = "USD";
 
 
 export default function DiscountedCashFlow({
-  Ticker,
-  setFreeCashFlowEquityData,
-  freeCashFlowEquityData,
-  setFiveYearGrowthRate,
-  fiveYearGrowthRate,
-  setTenYearGrowthRate,
-  tenYearGrowthRate,
-  setCostOfEquity,
+
   costOfEquity,
-  setLongTermGrowthRate,
-  longTermGrowthRate,
+  freeCashFlowEquityData,
   financialData,
-  setFinancialData,
+
 }) {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isCostOfEquityCollapsed, setIsCostOfEquityCollapsed] = useState(true);
@@ -159,10 +151,10 @@ export default function DiscountedCashFlow({
               <div className="flex items-center">
                 <span className="  mr-[11px]">PCT</span>
                 <span className=" w-48 ">
-                  {fiveYearGrowthRate !== "Invalid data" &&
-                  fiveYearGrowthRate !== "Insufficient data"
-                    ? `${fiveYearGrowthRate}%`
-                    : fiveYearGrowthRate}
+                  {financialData.fiveYearGrowthRate !== "Invalid data" &&
+                  financialData.fiveYearGrowthRate !== "Insufficient data"
+                    ? `${financialData.fiveYearGrowthRate}%`
+                    : financialData.fiveYearGrowthRate}
                 </span>
               </div>
             </span>
@@ -177,10 +169,10 @@ export default function DiscountedCashFlow({
               <div className="flex items-center">
                 <span className="  mr-[11px]">PCT</span>
                 <span className=" w-48 ">
-                  {tenYearGrowthRate !== "Invalid data" &&
-                  tenYearGrowthRate !== "Insufficient data"
-                    ? `${tenYearGrowthRate} %`
-                    : tenYearGrowthRate}
+                  {financialData.tenYearGrowthRate !== "Invalid data" &&
+                  financialData.tenYearGrowthRate !== "Insufficient data"
+                    ? `${financialData.tenYearGrowthRate} %`
+                    : financialData.tenYearGrowthRate}
                 </span>
               </div>
             </span>
@@ -194,7 +186,7 @@ export default function DiscountedCashFlow({
             <span className="text-right">
               <div className="flex items-center">
                 <span className="  mr-[11px]">PCT</span>
-                <span className=" w-48 ">{longTermGrowthRate} %</span>
+                <span className=" w-48 ">{financialData.longTermGrowthRate} %</span>
               </div>
             </span>
           </div>

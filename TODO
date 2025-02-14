@@ -46,3 +46,8 @@ bugs:
 review: 
   ☐ in future, get LLM to extract 10k accounting report to adjust numbers
   ☐ might need to create financial data useContext
+
+
+
+  refactor: 
+    ☐ move fetchPeers average into financial data fetch to reduce api calls

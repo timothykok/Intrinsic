@@ -1,5 +1,5 @@
 import "./globals.css";
-import Nav from "./ui/Nav";
+import SearchNav from "./ui/NavBars/SearchNav";
 
 import { MethodProvider } from "../context/MethodContext.js"; 
 
@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
         style={{ fontFamily: '"Montserrat", sans-serif' }}
       >
         <MethodProvider>
-          <Nav />
+          {/* <SearchNav /> */}
           {children}
         </MethodProvider>
       </body>

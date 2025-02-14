@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const currency = "USD";
 
-export default function ResidualIncome({ ticker, financialData,  costOfEquity }) {
+export default function ResidualIncome({ ticker, financialData,  costOfEquity,selectedMethod }) {
   const [residualIncome, setResidualIncome] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(true);
 
@@ -17,17 +17,12 @@ export default function ResidualIncome({ ticker, financialData,  costOfEquity })
         (financialData.currentEquity || 0) *
           (financialData.costOfEquity / 100 || 0));
 
-      console.log("RESIDUAL INCOME: " + residualIncome);
-      console.log("RESIDUAL INCOME - NET INCOME: " + financialData.netIncome);
-      console.log("RESIDUAL INCOME - COE : " + financialData.costOfEquity);
-      console.log(
-        "RESIDUAL INCOME - CURRENT EQUITY: " + financialData.currentEquity
-      );
+    
       setResidualIncome(residualIncome);
     };
 
     calculateResidualIncome();
-  }, [ticker, financialData]);
+  }, [ticker, financialData, selectedMethod]);
 
   return (
     <>
