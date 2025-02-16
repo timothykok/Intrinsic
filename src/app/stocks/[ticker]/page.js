@@ -320,6 +320,8 @@ export default function StockPage() {
 
       // Extract and use peers data:
       const peers = peersData[0]?.peersList;
+
+      console.log("PEERS: " + peers)
       let averagePeerPE = null;
       if (peers && peers.length > 0) {
         const peerSymbols = peers.join(",");

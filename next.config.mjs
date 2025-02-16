@@ -5,6 +5,7 @@ const nextConfig = {
       {
         source: '/api/proxy',
         destination: '/api/proxy',
+        
       },
     ];
   },
