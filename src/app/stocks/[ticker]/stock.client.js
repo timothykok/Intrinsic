@@ -52,9 +52,9 @@ export default function StockPage() {
   const [freeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
 
   // States for all present values to average out in consoli value
-  const [dcfValuePresentValue, setDCFPresentValue] = useState(0);
+  const [dcfValuePresentValue, setDCFPresentValue] = useState(null);
   const [residualIncomePresentValue, setResidualIncomePresentValue] =
-    useState(0);
+    useState(null);
   const [multiplesPresentValue, setMultiplesPresentValue] = useState(0);
   const [consolidatedPresentValue, setConsolidatedPresentValue] =
     useState(0);
@@ -498,328 +498,227 @@ export default function StockPage() {
   useEffect(() => {
     setFreeCashFlowEquityData(calculatedFreeCashFlowEquity);
   }, [calculatedFreeCashFlowEquity]);
+//--------------------------
+// DCF PRESENT VALUE
+//--------------------------
+function calculateDCFPresentValue() {
+  console.log("----- DCF Calculation Start -----");
+  console.log("freeCashFlowEquityData:", freeCashFlowEquityData);
+  console.log("financialData.fiveYearGrowthRate:", financialData.fiveYearGrowthRate);
+  console.log("financialData.tenYearGrowthRate:", financialData.tenYearGrowthRate);
+  console.log("financialData.longTermGrowthRate:", financialData.longTermGrowthRate);
+  console.log("costOfEquity:", costOfEquity);
 
-  //------------------------------------------------------------------------------------
-  //PRESENT VALUE OF DCF
-  // Calculate PV of FCFE
-
-
-  function calculateDCFPresentValue(){
-    console.log("calculate DCFPresentValue Function running")
-    try {
-      if (
-        freeCashFlowEquityData !== null &&
-        financialData.fiveYearGrowthRate !== null &&
-        financialData.tenYearGrowthRate !== null &&
-        financialData.longTermGrowthRate !== null &&
-        costOfEquity !== null
-      ) {
-        let pv = 0;
-
-        // 1. Convert growth rates to decimal form if needed
-        const fiveYearG = financialData.fiveYearGrowthRate / 100;
-        const tenYearG = financialData.tenYearGrowthRate / 100;
-        const longTermG = financialData.longTermGrowthRate / 100;
-        const coe = costOfEquity / 100;
-
-        // 2. Calculate PV of FCFE from Year 1 to Year 5
-        for (let t = 1; t <= 5; t++) {
-          const projectedFCFE =
-            freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
-          const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
-          pv += discountedFCFE;
-        }
-
-        // 3. Calculate PV of FCFE from Year 6 to Year 10
-        let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // Start from Year 5 FCFE
-        for (let t = 6; t <= 10; t++) {
-          fcfeYearN *= 1 + tenYearG; // Grow each year separately
-          const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
-          pv += discountedFCFE;
-        }
-
-        // 4. Calculate Perpetuity Value at Year 11
-        const fcfeYear10 = fcfeYearN; // Already grown to Year 10
-        const perpetuityValue =
-          (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
-        const discountedPerpetuityValue =
-          perpetuityValue / Math.pow(1 + coe, 10); // Discount to Year 0
-
-        // 5. Add discounted perpetuity to PV
-        pv += discountedPerpetuityValue;
-
-        // 6. Set the final present value
-        setPresentValue(parseFloat(pv.toFixed(2)));
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  useEffect(() => {
-    
-    try {
-      if (
-        freeCashFlowEquityData !== null &&
-        financialData.fiveYearGrowthRate !== null &&
-        financialData.tenYearGrowthRate !== null &&
-        financialData.longTermGrowthRate !== null &&
-        costOfEquity !== null
-      ) {
-        let pv = 0;
-
-        // 1. Convert growth rates to decimal form if needed
-        const fiveYearG = financialData.fiveYearGrowthRate / 100;
-        const tenYearG = financialData.tenYearGrowthRate / 100;
-        const longTermG = financialData.longTermGrowthRate / 100;
-        const coe = costOfEquity / 100;
-
-        // 2. Calculate PV of FCFE from Year 1 to Year 5
-        for (let t = 1; t <= 5; t++) {
-          const projectedFCFE =
-            freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
-          const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
-          pv += discountedFCFE;
-        }
-
-        // 3. Calculate PV of FCFE from Year 6 to Year 10
-        let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // Start from Year 5 FCFE
-        for (let t = 6; t <= 10; t++) {
-          fcfeYearN *= 1 + tenYearG; // Grow each year separately
-          const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
-          pv += discountedFCFE;
-        }
-
-        // 4. Calculate Perpetuity Value at Year 11
-        const fcfeYear10 = fcfeYearN; // Already grown to Year 10
-        const perpetuityValue =
-          (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
-        const discountedPerpetuityValue =
-          perpetuityValue / Math.pow(1 + coe, 10); // Discount to Year 0
-
-        // 5. Add discounted perpetuity to PV
-        pv += discountedPerpetuityValue;
-
-        // 6. Set the final present value
-        setPresentValue(parseFloat(pv.toFixed(2)));
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }, [
-    freeCashFlowEquityData,
-    financialData.fiveYearGrowthRate,
-    financialData.tenYearGrowthRate,
-    financialData.longTermGrowthRate,
-    costOfEquity,
-    setPresentValue,
-    selectedMethod,
-    ticker
-  ]);
-  //------------------------------------------------------------------------------------
-
-  //MULTIPLES PRESENT VALUE
-
-
-
-  let multiplesPresentValueCalculated = null;
-
-  function calculateMultiplesPresentValue(){
-    multiplesPresentValueCalculated = eps * financialData.averagePeerPE;
-
-    setMultiplesPresentValue(multiplesPresentValueCalculated);
-    console.log("set multiple pv running:" + multiplesPresentValue);
-  }
-
-
-  // setting Present Value
-  useEffect(() => {
-   
-    multiplesPresentValueCalculated = eps * financialData.averagePeerPE;
-
-    setMultiplesPresentValue(multiplesPresentValueCalculated);
-    console.log("set multiple pv running:" + multiplesPresentValue);
-  }, [
-    financialData.outstandingShares,
-    setPresentValue,
-    setMultiplesPresentValue,
-  ]);
-
-  //------------------------------------------------------------------------------------
-  //RESIDUAL PRESENT VALUE
-
-
-  function calculateResidualPresentValue(){
-
-    console.log("calculate Residual Present Value Function running")
-    try {
-      // Ensure required data is available.
-      // (Remove balanceSheetData check because we are using currentEquity and netIncome)
-      if (
-        !ticker ||
-        financialData.netIncome === null ||
-        financialData.currentEquity === null ||
-        costOfEquity === null ||
-        financialData.longTermGrowthRate === null
-      )
-        return;
-
-      // Convert percentages to decimals
-      const coeDecimal = costOfEquity / 100; // e.g., 10% becomes 0.10
-      const g = financialData.longTermGrowthRate / 100; // e.g., 3% becomes 0.03
-
-      // Calculate the starting residual income (for the most recent year)
-      // Residual Income = Net Income - (Current Equity * Cost of Equity)
-      const startingRI =
-        financialData.netIncome - financialData.currentEquity * coeDecimal;
-
-      // Choose a forecast period—for example, 5 years.
-      const forecastYears = 5;
-      let pvResidualIncome = 0;
-
-      // Forecast and discount residual incomes over the forecast period.
-      for (let t = 1; t <= forecastYears; t++) {
-        // Forecast residual income for year t.
-        // Here we assume residual income grows at rate "g" each year.
-        const RI_t = startingRI * Math.pow(1 + g, t);
-        // Discount to present value.
-        const discountedRI = RI_t / Math.pow(1 + coeDecimal, t);
-        pvResidualIncome += discountedRI;
-      }
-
-      // Calculate terminal value at the end of the forecast period.
-      // Using a perpetuity formula:
-      // Terminal Value = (Residual Income in Year (forecastYears) * (1 + g)) / (coeDecimal - g)
-      const RI_final = startingRI * Math.pow(1 + g, forecastYears);
-      const terminalValue = (RI_final * (1 + g)) / (coeDecimal - g);
-      const discountedTerminalValue =
-        terminalValue / Math.pow(1 + coeDecimal, forecastYears);
-
-      pvResidualIncome += discountedTerminalValue;
-
-      // According to the Residual Income Model, the total intrinsic value is:
-      // Intrinsic Value = Current Book Value of Equity + PV of Residual Incomes
-      residualIncomePresentValue =
-        financialData.currentEquity + pvResidualIncome;
-
-      setResidualIncomePresentValue(
-        parseFloat(residualIncomePresentValue.toFixed(2))
-      );
-
-      console.log(
-        "residual income present value: " + residualIncomePresentValue
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  // Calculate present value based on Residual Income Model
-  useEffect(() => {
-    
-    try {
-      // Ensure required data is available.
-      // (Remove balanceSheetData check because we are using currentEquity and netIncome)
-      if (
-        !ticker ||
-        financialData.netIncome === null ||
-        financialData.currentEquity === null ||
-        costOfEquity === null ||
-        financialData.longTermGrowthRate === null
-      )
-        return;
-
-      // Convert percentages to decimals
-      const coeDecimal = costOfEquity / 100; // e.g., 10% becomes 0.10
-      const g = longTermGrowthRate / 100; // e.g., 3% becomes 0.03
-
-      // Calculate the starting residual income (for the most recent year)
-      // Residual Income = Net Income - (Current Equity * Cost of Equity)
-      const startingRI =
-        financialData.netIncome - financialData.currentEquity * coeDecimal;
-
-      // Choose a forecast period—for example, 5 years.
-      const forecastYears = 5;
-      let pvResidualIncome = 0;
-
-      // Forecast and discount residual incomes over the forecast period.
-      for (let t = 1; t <= forecastYears; t++) {
-        // Forecast residual income for year t.
-        // Here we assume residual income grows at rate "g" each year.
-        const RI_t = startingRI * Math.pow(1 + g, t);
-        // Discount to present value.
-        const discountedRI = RI_t / Math.pow(1 + coeDecimal, t);
-        pvResidualIncome += discountedRI;
-      }
-
-      // Calculate terminal value at the end of the forecast period.
-      // Using a perpetuity formula:
-      // Terminal Value = (Residual Income in Year (forecastYears) * (1 + g)) / (coeDecimal - g)
-      const RI_final = startingRI * Math.pow(1 + g, forecastYears);
-      const terminalValue = (RI_final * (1 + g)) / (coeDecimal - g);
-      const discountedTerminalValue =
-        terminalValue / Math.pow(1 + coeDecimal, forecastYears);
-
-      pvResidualIncome += discountedTerminalValue;
-
-      // According to the Residual Income Model, the total intrinsic value is:
-      // Intrinsic Value = Current Book Value of Equity + PV of Residual Incomes
-      residualIncomePresentValue =
-        financialData.currentEquity + pvResidualIncome;
-
-      setResidualIncomePresentValue(
-        parseFloat(residualIncomePresentValue.toFixed(2))
-      );
-
-      console.log(
-        "residual income present value: " + residualIncomePresentValue
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }, [
-    ticker,
-    financialData.netIncome,
-    financialData.currentEquity,
-    costOfEquity,
-    financialData.longTermGrowthRate,
-    selectedMethod,
-  ]);
-
-  //------------------------------------------------------------------------------------
-  //CONSOLIDATED PRESENT VALUE
-
-  useEffect(() => {
-
-    calculateResidualPresentValue()
-    calculateDCFPresentValue()
-    calculateMultiplesPresentValue()
-
+  try {
     if (
-      multiplesPresentValue &&
-      dcfValuePresentValue &&
-      residualIncomePresentValue
+      freeCashFlowEquityData !== null &&
+      financialData.fiveYearGrowthRate !== null &&
+      financialData.tenYearGrowthRate !== null &&
+      financialData.longTermGrowthRate !== null &&
+      costOfEquity !== null
     ) {
-      const newConsolidatedValue =
-        (multiplesPresentValue +
-          dcfValuePresentValue +
-          residualIncomePresentValue) /
-        3;
-      setConsolidatedPresentValue(newConsolidatedValue);
+      let pv = 0;
+      // Convert growth rates to decimal form
+      const fiveYearG = financialData.fiveYearGrowthRate / 100;
+      const tenYearG = financialData.tenYearGrowthRate / 100;
+      const longTermG = financialData.longTermGrowthRate / 100;
+      const coe = costOfEquity / 100;
+
+      console.log("Converted Values - fiveYearG:", fiveYearG, "tenYearG:", tenYearG, "longTermG:", longTermG, "coe:", coe);
+
+      // Calculate PV of FCFE from Year 1 to Year 5
+      for (let t = 1; t <= 5; t++) {
+        const projectedFCFE = freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
+        const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
+        console.log(`Year ${t} - projectedFCFE: ${projectedFCFE}, discountedFCFE: ${discountedFCFE}`);
+        pv += discountedFCFE;
+      }
+
+      // Calculate PV of FCFE from Year 6 to Year 10
+      let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // start from Year 5 FCFE
+      console.log("Initial fcfeYearN (end of Year 5):", fcfeYearN);
+      for (let t = 6; t <= 10; t++) {
+        fcfeYearN *= 1 + tenYearG; // grow each year
+        const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
+        console.log(`Year ${t} - fcfeYearN: ${fcfeYearN}, discountedFCFE: ${discountedFCFE}`);
+        pv += discountedFCFE;
+      }
+
+      // Calculate Perpetuity Value at Year 11
+      const fcfeYear10 = fcfeYearN; // already grown to Year 10
+      const perpetuityValue = (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
+      const discountedPerpetuityValue = perpetuityValue / Math.pow(1 + coe, 10);
+      console.log("Perpetuity Value:", perpetuityValue, "Discounted Perpetuity Value:", discountedPerpetuityValue);
+
+      // Add discounted perpetuity to PV
+      pv += discountedPerpetuityValue;
+      console.log("Final DCF Present Value:", parseFloat(pv.toFixed(2)));
+      setDCFPresentValue(parseFloat(pv.toFixed(2)));
+    } else {
+      console.log("Missing required data for DCF calculation.");
     }
-  }, [multiplesPresentValue, dcfValuePresentValue, residualIncomePresentValue, ticker]);
+  } catch (error) {
+    console.log("Error in calculateDCFPresentValue:", error);
+  }
+}
 
-  console.log("Selected Method FROM STOCK PAGE: ", selectedMethod);
+// Also log in the DCF useEffect
+useEffect(() => {
+  try {
+    if (
+      freeCashFlowEquityData !== null &&
+      financialData.fiveYearGrowthRate !== null &&
+      financialData.tenYearGrowthRate !== null &&
+      financialData.longTermGrowthRate !== null &&
+      costOfEquity !== null
+    ) {
+      calculateDCFPresentValue();
+    } else {
+      console.log("DCF useEffect: Some values are missing.");
+    }
+  } catch (error) {
+    console.log("Error in DCF useEffect:", error);
+  }
+}, [
+  freeCashFlowEquityData,
+  financialData.fiveYearGrowthRate,
+  financialData.tenYearGrowthRate,
+  financialData.longTermGrowthRate,
+  costOfEquity,
+  selectedMethod,
+  ticker,
+]);
 
-  useEffect(() => {
-    console.log("DCF Present Value:", dcfValuePresentValue);
-    console.log("Residual Income Present Value:", residualIncomePresentValue);
-    console.log("Multiples Present Value:", multiplesPresentValue);
-}, [dcfValuePresentValue, residualIncomePresentValue, multiplesPresentValue]);
+//--------------------------
+// MULTIPLES PRESENT VALUE
+//--------------------------
+let multiplesPresentValueCalculated = null;
 
-  useEffect(() => {
-    console.log("selectedMethod updated:", selectedMethod);
-  }, [selectedMethod]);
+function calculateMultiplesPresentValue() {
+  console.log("----- Multiples Calculation Start -----");
+  console.log("eps:", eps, "financialData.averagePeerPE:", financialData.averagePeerPE);
+  multiplesPresentValueCalculated = eps * financialData.averagePeerPE;
+  console.log("Calculated Multiples Present Value:", multiplesPresentValueCalculated);
+  setMultiplesPresentValue(multiplesPresentValueCalculated);
+}
+
+useEffect(() => {
+  console.log("Multiples useEffect running...");
+  calculateMultiplesPresentValue();
+}, [financialData.outstandingShares, setPresentValue, setMultiplesPresentValue]);
+
+//--------------------------
+// RESIDUAL INCOME PRESENT VALUE
+//--------------------------
+function calculateResidualPresentValue() {
+  console.log("----- Residual Income Calculation Start -----");
+  console.log("ticker:", ticker);
+  console.log("financialData.netIncome:", financialData.netIncome);
+  console.log("financialData.currentEquity:", financialData.currentEquity);
+  console.log("costOfEquity:", costOfEquity);
+  console.log("financialData.longTermGrowthRate:", financialData.longTermGrowthRate);
+
+  try {
+    if (
+      !ticker ||
+      financialData.netIncome === null ||
+      financialData.currentEquity === null ||
+      costOfEquity === null ||
+      financialData.longTermGrowthRate === null
+    )
+      return console.log("Residual Income: Missing required values.");
+
+    const coeDecimal = costOfEquity / 100;
+    const g = financialData.longTermGrowthRate / 100;
+    const startingRI = financialData.netIncome - financialData.currentEquity * coeDecimal;
+    console.log("Starting Residual Income (startingRI):", startingRI);
+
+    const forecastYears = 5;
+    let pvResidualIncome = 0;
+    for (let t = 1; t <= forecastYears; t++) {
+      const RI_t = startingRI * Math.pow(1 + g, t);
+      const discountedRI = RI_t / Math.pow(1 + coeDecimal, t);
+      console.log(`Year ${t} - RI_t: ${RI_t}, discountedRI: ${discountedRI}`);
+      pvResidualIncome += discountedRI;
+    }
+
+    const RI_final = startingRI * Math.pow(1 + g, forecastYears);
+    const terminalValue = (RI_final * (1 + g)) / (coeDecimal - g);
+    const discountedTerminalValue = terminalValue / Math.pow(1 + coeDecimal, forecastYears);
+    console.log("Terminal Value:", terminalValue, "Discounted Terminal Value:", discountedTerminalValue);
+
+    pvResidualIncome += discountedTerminalValue;
+    const totalResidualValue = financialData.currentEquity + pvResidualIncome;
+    console.log("Final Residual Income Present Value:", parseFloat(totalResidualValue.toFixed(2)));
+    setResidualIncomePresentValue(parseFloat(totalResidualValue.toFixed(2)));
+  } catch (error) {
+    console.log("Error in calculateResidualPresentValue:", error);
+  }
+}
+
+useEffect(() => {
+  try {
+    if (
+      !ticker ||
+      financialData.netIncome === null ||
+      financialData.currentEquity === null ||
+      costOfEquity === null ||
+      financialData.longTermGrowthRate === null
+    ) {
+      console.log("Residual Income useEffect: Missing required values.");
+      return;
+    }
+    calculateResidualPresentValue();
+  } catch (error) {
+    console.log("Error in Residual Income useEffect:", error);
+  }
+}, [
+  ticker,
+  financialData.netIncome,
+  financialData.currentEquity,
+  costOfEquity,
+  financialData.longTermGrowthRate,
+  selectedMethod,
+]);
+
+//--------------------------
+// CONSOLIDATED PRESENT VALUE
+//--------------------------
+useEffect(() => {
+  console.log("----- Consolidated Calculation Start -----");
+  console.log("Multiples Present Value:", multiplesPresentValue);
+  console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
+  console.log("Residual Income Present Value:", residualIncomePresentValue);
+
+  // Call all the individual calculation functions
+  calculateResidualPresentValue();
+  calculateDCFPresentValue();
+  calculateMultiplesPresentValue();
+
+  // Check explicitly for null values, so that a result of 0 is accepted
+  if (
+    multiplesPresentValue != null &&
+    dcfValuePresentValue != null && 
+    residualIncomePresentValue != null
+  ) {
+    const newConsolidatedValue =
+      (multiplesPresentValue + dcfValuePresentValue + residualIncomePresentValue) / 3;
+    console.log("New Consolidated Present Value:", newConsolidatedValue);
+    setConsolidatedPresentValue(newConsolidatedValue);
+  } else {
+    console.log("Consolidated calculation: One or more values are missing or zero.");
+  }
+}, [multiplesPresentValue, dcfValuePresentValue, residualIncomePresentValue, ticker]);
+
+// Log the updated values whenever they change
+useEffect(() => {
+  console.log("Updated Values:");
+  console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
+  console.log("Residual Income Present Value:", residualIncomePresentValue);
+  console.log("Multiples Present Value:", multiplesPresentValue);
+  console.log("New Consolidated Present Value 2:", consolidatedPresentValue);
+  console.log("Selected Method:", selectedMethod);
+}, [dcfValuePresentValue, residualIncomePresentValue, multiplesPresentValue, selectedMethod, ]);
 
   
 
@@ -949,6 +848,12 @@ if (loading) return <div>Loading...</div>;
                   <>
                     <Consolidated
                     financialData={financialData}
+
+                    multiplesPresentValue={multiplesPresentValue}
+                    dcfPresentValue={dcfValuePresentValue}
+                    residualIncomePresentValue={residualIncomePresentValue}
+                    consolidatedPresentValue={consolidatedPresentValue}
+
                     freeCashFlowEquityData={freeCashFlowEquityData}
                     costOfEquity={costOfEquity}
                     eps={eps}
