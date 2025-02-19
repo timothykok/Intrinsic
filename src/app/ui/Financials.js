@@ -6,7 +6,7 @@ function YearlyPerformanceDots({ label, dataPoints }) {
 
     <div className="flex items-center justify-between my-2 text-[#909090]">
       {/* Metric Label with increased right margin and adjusted font */}
-      <span className="mr-8 text-xs font-medium">{label}</span>
+      <span className="mr-8 text-xs font-semi-bold">{label}</span>
       {/* Render dots with more spacing */}
 
 
@@ -15,7 +15,7 @@ function YearlyPerformanceDots({ label, dataPoints }) {
       <div className="flex space-x-2 min-w-8">
         {dataPoints.map((dp, index) => {
           // For the first year, no comparison so use neutral color
-          let color = "bg-gray-300";
+          let color = "bg-white";
           if (index > 0) {
             const previousValue = dataPoints[index - 1].value;
             color = dp.value > previousValue ? "bg-[#63D385]" : "bg-[#FF5757]";
@@ -78,6 +78,8 @@ export default function Financials({ financialData }) {
           <YearlyPerformanceDots label="ROIC" dataPoints={roicHistory} />
         )}
       </div>
+
+      
     </div>
   );
 }

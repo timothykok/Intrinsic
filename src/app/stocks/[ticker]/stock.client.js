@@ -1007,7 +1007,7 @@ export default function StockPage() {
               </div>
             </div>
 
-            <div className="right mt-80 pt-16 ml-24 ">
+            <div className="right  mt-80 pt-16 ml-16 ">
               <Financials financialData={financialData} />
             </div>
           </div>
