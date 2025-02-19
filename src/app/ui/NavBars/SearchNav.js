@@ -557,7 +557,7 @@ export default function SearchNav() {
           </div>
    
 
-        <div className="flex gap-2 font-light text-sm text-[#949494] uppercase">
+        <div className="flex gap-2 font-light text-xs text-[#949494] uppercase">
           <div className="hover:bg-[#EEEEEE]  hover:font-sm hover:text-stone-500  p-2 rounded-md pr-4 pl-4">
             <Link href="/"> Resources </Link>
           </div>
