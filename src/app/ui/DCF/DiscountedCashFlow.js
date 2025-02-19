@@ -1,17 +1,11 @@
 "use client";
-
-import { useEffect, useState, useMemo } from "react";
-import axios from "axios";
-
-const currency = "USD";
-
+import { useEffect, useState } from "react";
 
 export default function DiscountedCashFlow({
-
   costOfEquity,
   freeCashFlowEquityData,
   financialData,
-
+  currency
 }) {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isCostOfEquityCollapsed, setIsCostOfEquityCollapsed] = useState(true);
@@ -24,18 +18,15 @@ export default function DiscountedCashFlow({
     setIsCostOfEquityCollapsed((prevState) => !prevState);
   };
 
- 
-
-
-
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8  uppercase text-sm ">
-        <p className=" text-[#626262] font-bold">Financials</p>
+      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 uppercase text-sm">
+        <p className="text-[#626262] font-bold">Financials</p>
         <hr className="my-4 border-zinc-200 mt-4 mb-4" />
 
-        <div className="space-y-5  font-medium text-[#909090]">
-          <div className="flex justify-between items-center min-w-s">
+        <div className="space-y-5 font-medium text-[#909090]">
+          {/* Row with responsive flex-direction */}
+          <div className="flex flex-col sm:flex-row justify-between items-center">
             {/* Group the arrow toggle and title together */}
             <div className="flex items-center">
               <span className="cursor-pointer" onClick={toggleCollapse}>
@@ -53,14 +44,14 @@ export default function DiscountedCashFlow({
                   />
                 )}
               </span>
-              <span className="  ml-4 w-80 ">Free Cash Flow to Equity</span>
+              <span className="ml-4 w-full sm:w-80">Free Cash Flow to Equity</span>
             </div>
 
             {/* Currency and value on the right */}
-            <span className="text-right">
-              <div className="flex items-center">
-                <span className="  mr-2">{currency}</span>
-                <span className=" w-48 ">
+            <span className="text-right mt-2 sm:mt-0">
+              <div className="flex items-center justify-end">
+                <span className="mr-2">{currency}</span>
+                <span className="w-full sm:w-48">
                   {freeCashFlowEquityData !== null
                     ? freeCashFlowEquityData.toLocaleString()
                     : "Calculating..."}
@@ -71,12 +62,13 @@ export default function DiscountedCashFlow({
 
           {!isCollapsed && (
             <div className="pl-8 space-y-5">
-              <div className="flex justify-between items-center">
-                <span className="  ml-4 w-80">Net Income</span>
-                <span className="text-right">
-                  <div className="flex items-center">
-                    <span className="  mr-2">{currency}</span>
-                    <span className=" w-48 ">
+              {/* Each inner row becomes stacked on mobile */}
+              <div className="flex flex-col sm:flex-row justify-between items-center">
+                <span className="ml-4 w-full sm:w-80">Net Income</span>
+                <span className="text-right mt-2 sm:mt-0">
+                  <div className="flex items-center justify-end">
+                    <span className="mr-2">{currency}</span>
+                    <span className="w-full sm:w-48">
                       {financialData.netIncome !== null
                         ? financialData.netIncome.toLocaleString()
                         : "Calculating..."}
@@ -85,12 +77,14 @@ export default function DiscountedCashFlow({
                 </span>
               </div>
 
-              <div className="flex justify-between items-center mb-6">
-                <span className="  ml-4 w-80">Depreciation & Amortization</span>
-                <span className="text-right">
-                  <div className="flex items-center">
-                    <span className="  mr-2">{currency}</span>
-                    <span className=" w-48 ">
+              <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+                <span className="ml-4 w-full sm:w-80">
+                  Depreciation & Amortization
+                </span>
+                <span className="text-right mt-2 sm:mt-0">
+                  <div className="flex items-center justify-end">
+                    <span className="mr-2">{currency}</span>
+                    <span className="w-full sm:w-48">
                       {financialData.depreciationAmortization !== null
                         ? financialData.depreciationAmortization.toLocaleString()
                         : "Calculating..."}
@@ -99,12 +93,12 @@ export default function DiscountedCashFlow({
                 </span>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className="  ml-4 w-80">Capital Expenditure</span>
-                <span className="text-right">
-                  <div className="flex items-center">
-                    <span className="  mr-2">{currency}</span>
-                    <span className=" w-48 ">
+              <div className="flex flex-col sm:flex-row justify-between items-center">
+                <span className="ml-4 w-full sm:w-80">Capital Expenditure</span>
+                <span className="text-right mt-2 sm:mt-0">
+                  <div className="flex items-center justify-end">
+                    <span className="mr-2">{currency}</span>
+                    <span className="w-full sm:w-48">
                       {financialData.capitalExpenditure !== null
                         ? financialData.capitalExpenditure.toLocaleString()
                         : "Calculating..."}
@@ -113,12 +107,12 @@ export default function DiscountedCashFlow({
                 </span>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className="  ml-4 w-80">Change In Working Capital</span>
-                <span className="text-right">
-                  <div className="flex items-center">
-                    <span className="  mr-2">{currency}</span>
-                    <span className=" w-48 ">
+              <div className="flex flex-col sm:flex-row justify-between items-center">
+                <span className="ml-4 w-full sm:w-80">Change In Working Capital</span>
+                <span className="text-right mt-2 sm:mt-0">
+                  <div className="flex items-center justify-end">
+                    <span className="mr-2">{currency}</span>
+                    <span className="w-full sm:w-48">
                       {financialData.changeInWorkingCapital !== null
                         ? financialData.changeInWorkingCapital.toLocaleString()
                         : "Calculating..."}
@@ -127,12 +121,12 @@ export default function DiscountedCashFlow({
                 </span>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className="  ml-4 w-80">Net Borrowing</span>
-                <span className="text-right">
-                  <div className="flex items-center">
-                    <span className="  mr-2">{currency}</span>
-                    <span className=" w-48 ">
+              <div className="flex flex-col sm:flex-row justify-between items-center">
+                <span className="ml-4 w-full sm:w-80">Net Borrowing</span>
+                <span className="text-right mt-2 sm:mt-0">
+                  <div className="flex items-center justify-end">
+                    <span className="mr-2">{currency}</span>
+                    <span className="w-full sm:w-48">
                       {financialData.netBorrowing !== null
                         ? financialData.netBorrowing.toLocaleString()
                         : "Calculating..."}
@@ -143,14 +137,15 @@ export default function DiscountedCashFlow({
             </div>
           )}
 
-          <div className="flex justify-between items-center">
-            <span className="  ml-6 w-80">
+          {/* Cash Flow Growth Rate (Year 1-5) */}
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <span className="ml-6 w-full sm:w-80">
               Cash Flow Growth Rate (Year 1-5)
             </span>
-            <span className="text-right">
-              <div className="flex items-center">
-                <span className="  mr-[11px]">PCT</span>
-                <span className=" w-48 ">
+            <span className="text-right mt-2 sm:mt-0">
+              <div className="flex items-center justify-end">
+                <span className="mr-[11px]">PCT</span>
+                <span className="w-full sm:w-48">
                   {financialData.fiveYearGrowthRate !== "Invalid data" &&
                   financialData.fiveYearGrowthRate !== "Insufficient data"
                     ? `${financialData.fiveYearGrowthRate}%`
@@ -161,14 +156,14 @@ export default function DiscountedCashFlow({
           </div>
 
           {/* Cash Flow Growth Rate (Year 6-10) */}
-          <div className="flex justify-between items-center">
-            <span className="  ml-6 w-80 ">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <span className="ml-6 w-full sm:w-80">
               Cash Flow Growth Rate (Year 6-10)
             </span>
-            <span className="text-right">
-              <div className="flex items-center">
-                <span className="  mr-[11px]">PCT</span>
-                <span className=" w-48 ">
+            <span className="text-right mt-2 sm:mt-0">
+              <div className="flex items-center justify-end">
+                <span className="mr-[11px]">PCT</span>
+                <span className="w-full sm:w-48">
                   {financialData.tenYearGrowthRate !== "Invalid data" &&
                   financialData.tenYearGrowthRate !== "Insufficient data"
                     ? `${financialData.tenYearGrowthRate} %`
@@ -178,22 +173,23 @@ export default function DiscountedCashFlow({
             </span>
           </div>
 
-          {/* Cash Flow Growth Rate (Year 10-∞) */}
-          <div className="flex justify-between items-center h-6">
-            <span className="  ml-6 w-auto">
+          {/* Cash Flow Growth Rate (Long Term) */}
+          <div className="flex flex-col sm:flex-row justify-between items-center h-6">
+            <span className="ml-6 w-full sm:w-auto">
               Cash Flow Growth Rate (Long Term)
             </span>
-            <span className="text-right">
-              <div className="flex items-center">
-                <span className="  mr-[11px]">PCT</span>
-                <span className=" w-48 ">{financialData.longTermGrowthRate} %</span>
+            <span className="text-right mt-2 sm:mt-0">
+              <div className="flex items-center justify-end">
+                <span className="mr-[11px]">PCT</span>
+                <span className="w-full sm:w-48">
+                  {financialData.longTermGrowthRate} %
+                </span>
               </div>
             </span>
           </div>
 
           {/* Cost of Equity Section */}
-          <div className="flex justify-between items-center">
-            {/* Group the arrow toggle and title together */}
+          <div className="flex flex-col sm:flex-row justify-between items-center">
             <div className="flex items-center">
               <span
                 className="cursor-pointer"
@@ -213,14 +209,12 @@ export default function DiscountedCashFlow({
                   />
                 )}
               </span>
-              <span className="  ml-4 w-80">Cost Of Equity</span>
+              <span className="ml-4 w-full sm:w-80">Cost Of Equity</span>
             </div>
-
-            {/* Percentage and value on the right */}
-            <span className="text-right">
-              <div className="flex items-center">
-                <span className="  mr-[11px]">PCT</span>
-                <span className=" w-48 ">
+            <span className="text-right mt-2 sm:mt-0">
+              <div className="flex items-center justify-end">
+                <span className="mr-[11px]">PCT</span>
+                <span className="w-full sm:w-48">
                   {costOfEquity !== null && costOfEquity !== undefined
                     ? `${costOfEquity} %`
                     : "Calculating..."}
@@ -229,16 +223,15 @@ export default function DiscountedCashFlow({
             </span>
           </div>
 
-          {/* Sub-labels (Beta, Risk Free Rate, Market Risk Premium) */}
+          {/* Sub-labels for Cost of Equity */}
           {!isCostOfEquityCollapsed && (
             <div className="pl-8 space-y-5">
-              {/* Beta */}
-              <div className="flex justify-between items-center">
-                <span className="  ml-4 w-80">Beta</span>
-                <span className="text-right">
-                  <div className="flex items-center">
-                    <span className="  mr-[13px]">VAL</span>
-                    <span className=" w-48 ">
+              <div className="flex flex-col sm:flex-row justify-between items-center">
+                <span className="ml-4 w-full sm:w-80">Beta</span>
+                <span className="text-right mt-2 sm:mt-0">
+                  <div className="flex items-center justify-end">
+                    <span className="mr-[13px]">VAL</span>
+                    <span className="w-full sm:w-48">
                       {financialData.beta !== null && !isNaN(financialData.beta)
                         ? financialData.beta
                         : "Loading..."}
@@ -246,14 +239,12 @@ export default function DiscountedCashFlow({
                   </div>
                 </span>
               </div>
-
-              {/* Risk Free Rate */}
-              <div className="flex justify-between items-center">
-                <span className="  ml-4 w-80">Risk Free Rate</span>
-                <span className="text-right">
-                  <div className="flex items-center">
-                    <span className="  mr-[11px]">PCT</span>
-                    <span className=" w-48 ">
+              <div className="flex flex-col sm:flex-row justify-between items-center">
+                <span className="ml-4 w-full sm:w-80">Risk Free Rate</span>
+                <span className="text-right mt-2 sm:mt-0">
+                  <div className="flex items-center justify-end">
+                    <span className="mr-[11px]">PCT</span>
+                    <span className="w-full sm:w-48">
                       {financialData.riskFreeRate !== null &&
                       !isNaN(financialData.riskFreeRate)
                         ? `${financialData.riskFreeRate.toFixed(2)} %`
@@ -262,14 +253,12 @@ export default function DiscountedCashFlow({
                   </div>
                 </span>
               </div>
-
-              {/* Market Risk Premium */}
-              <div className="flex justify-between items-center">
-                <span className="  ml-4 w-80">Market Risk Premium</span>
-                <span className="text-right">
-                  <div className="flex items-center">
-                    <span className="  mr-[11px]">PCT</span>
-                    <span className=" w-48 ">
+              <div className="flex flex-col sm:flex-row justify-between items-center">
+                <span className="ml-4 w-full sm:w-80">Market Risk Premium</span>
+                <span className="text-right mt-2 sm:mt-0">
+                  <div className="flex items-center justify-end">
+                    <span className="mr-[11px]">PCT</span>
+                    <span className="w-full sm:w-48">
                       {financialData.marketRiskPremium !== null &&
                       !isNaN(financialData.marketRiskPremium)
                         ? `${financialData.marketRiskPremium} %`

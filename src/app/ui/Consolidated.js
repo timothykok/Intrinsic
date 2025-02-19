@@ -1,117 +1,129 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Consolidated({
   financialData,
-  freeCashFlowEquityData,
-  costOfEquity,
-  eps,
-  multiplesPresentValue,
   dcfPresentValue,
   residualIncomePresentValue,
+  multiplesPresentValue,
   consolidatedPresentValue,
+  setPresentValue,
+  presentValue,
+  selectedMethod
 }) {
-  console.log(" COMPONENT DCF Present Value (presentValue):", dcfPresentValue);
-  console.log("COMPONENT Residual Income Present Value:", residualIncomePresentValue);
-  console.log("COMPONENT Multiples Present Value:", multiplesPresentValue);
-  console.log("COMPONENT New Consolidated Present Value 2:", consolidatedPresentValue);
-  console.log("COMPONENT OUTSTANDING SHARES:", financialData.outstandingShares);
+  // Format numerical values if available
+  const formattedDCF =
+    dcfPresentValue !== null ? parseFloat(dcfPresentValue.toFixed(2)) : null;
+  const formattedMultiples =
+    multiplesPresentValue !== null ? parseFloat(multiplesPresentValue.toFixed(2)) : null;
+  const formattedResidual =
+    residualIncomePresentValue !== null ? parseFloat(residualIncomePresentValue.toFixed(2)) : null;
+  const formattedConsolidated =
+    consolidatedPresentValue !== null ? parseFloat(consolidatedPresentValue.toFixed(2)) : null;
 
-  // Ensure numerical values are formatted correctly
-  const formattedDCF = dcfPresentValue !== null ? parseFloat(dcfPresentValue.toFixed(2)) : null;
-  const formattedMultiples = multiplesPresentValue !== null ? parseFloat(multiplesPresentValue.toFixed(2)) : null;
-  const formattedResidual = residualIncomePresentValue !== null ? parseFloat(residualIncomePresentValue.toFixed(2)) : null;
-  const formattedConsolidated = consolidatedPresentValue !== null ? parseFloat(consolidatedPresentValue.toFixed(2)) : null;
+  const outstandingShares = financialData.outstandingShares;
+
+  // Calculate intrinsic value per share for each method
+  const intrinsicValuePerShareDCF =
+    formattedDCF && outstandingShares ? parseFloat((formattedDCF / outstandingShares).toFixed(2)) : null;
+  const intrinsicValuePerShareResidual =
+    formattedResidual && outstandingShares ? parseFloat((formattedResidual / outstandingShares).toFixed(2)) : null;
   
-  const formattedShares = financialData.outstandingShares !== null 
-    ? parseFloat(financialData.outstandingShares.toFixed(2)) 
-    : null;
 
-  // Calculate intrinsic value per share for each valuation method
-  const intrinsicValuePerShareDCF = formattedDCF && formattedShares 
-    ? parseFloat((formattedDCF / formattedShares).toFixed(2)) 
-    : null;
+  // Consolidated intrinsic value per share: average of the methods
 
-  const intrinsicValuePerShareMultiples = formattedMultiples && formattedShares 
-    ? parseFloat((formattedMultiples / formattedShares).toFixed(2)) 
-    : null;
+console.log("Intrinsic Value Per Share DCF: " + intrinsicValuePerShareDCF)
+console.log("Intrinsic Value Per Share Residual:" + intrinsicValuePerShareResidual)
+console.log("Intrinsic Value Per Share Multiples: " + formattedMultiples)
 
-  const intrinsicValuePerShareResidual = formattedResidual && formattedShares 
-    ? parseFloat((formattedResidual / formattedShares).toFixed(2)) 
-    : null;
+  const intrinsicValuePerShareConsolidated =
+    intrinsicValuePerShareDCF && intrinsicValuePerShareResidual && formattedMultiples
+      ? parseFloat(
+          (
+            (intrinsicValuePerShareDCF +
+              intrinsicValuePerShareResidual +
+              formattedMultiples) /
+            3
+          ).toFixed(2)
+        )
+      : null;
 
-  const intrinsicValuePerShareConsolidated = formattedConsolidated && formattedShares 
-    ? parseFloat((formattedConsolidated / formattedShares).toFixed(2)) 
-    : null;
+  // Update the presentValue state (you might want to wrap this in an effect to avoid state updates during render)
+  useEffect(() => {
+    if (intrinsicValuePerShareConsolidated !== null) {
+      setPresentValue(intrinsicValuePerShareConsolidated);
+    }
+  }, [intrinsicValuePerShareConsolidated, setPresentValue]);
 
   return (
-    <div>
-      <h2>
-        Consolidated Valuation Results{" "}
-        {formattedConsolidated !== null
-          ? `$${formattedConsolidated}`
-          : "Calculating..."}
-      </h2>
+    <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 uppercase">
+      <p className="text-sm text-[#626262] font-bold">Consolidated Valuation Results</p>
+      <hr className="my-4 border-zinc-200" />
 
-      <p> -------------------------------------------------------------</p>
-      <p>
-        DCF Present Value:{" "}
-        {formattedDCF !== null ? `$${formattedDCF}` : "Calculating..."}
-      </p>
-      <p>
-        Multiples Present Value:{" "}
-        {formattedMultiples !== null
-          ? `$${formattedMultiples}`
-          : "Calculating..."}
-      </p>
-      <p>
-        Residual Income Present Value:{" "}
-        {formattedResidual !== null
-          ? `$${formattedResidual}`
-          : "Calculating..."}
-      </p>
-      <p> -------------------------------------------------------------</p>
-      
-      <p>
-        Outstanding Shares:{" "}
-        {formattedShares !== null
-          ? `${formattedShares}`
-          : "Calculating..."}
-      </p>
-
-      <p> -------------------------------------------------------------</p>
-    
-      <h3>Intrinsic Value Per Share</h3>
-      <p>
-        DCF Method:{" "}
-        {intrinsicValuePerShareDCF !== null
-          ? `$${intrinsicValuePerShareDCF}`
-          : "Calculating..."}
-      </p>
-      <p> -------------------------------------------------------------</p>
-
-      <p>
-        Multiples Method:{" "}
-        {intrinsicValuePerShareMultiples !== null
-          ? `$${intrinsicValuePerShareMultiples}`
-          : "Calculating..."}
-      </p>
-      <p> -------------------------------------------------------------</p>
-
-      <p>
-        Residual Income Method:{" "}
-        {intrinsicValuePerShareResidual !== null
-          ? `$${intrinsicValuePerShareResidual}`
-          : "Calculating..."}
-      </p>
-      <p> -------------------------------------------------------------</p>
-
-      <p>
-        Consolidated Valuation:{" "}
-        {intrinsicValuePerShareConsolidated !== null
-          ? `$${intrinsicValuePerShareConsolidated}`
-          : "Calculating..."}
-      </p>
+      <div className="space-y-5 text-sm font-medium text-[#909090]">
+        {/* DCF Present Value */}
+        <div className="flex justify-between items-center">
+          <span className="ml-6 w-80">DCF Present Value</span>
+          <span className="text-right flex items-center">
+            <span className="mr-2">USD</span>
+            <span className="w-48">
+              {formattedDCF !== null ? formattedDCF.toLocaleString() : "Calculating..."}
+            </span>
+          </span>
+        </div>
+        {/* Residual Income Present Value */}
+        <div className="flex justify-between items-center">
+          <span className="ml-6 w-80">Residual Income Present Value</span>
+          <span className="text-right flex items-center">
+            <span className="mr-2">USD</span>
+            <span className="w-48">
+              {formattedResidual !== null ? formattedResidual.toLocaleString() : "Calculating..."}
+            </span>
+          </span>
+        </div>
+        {/* Multiples Present Value */}
+        <div className="flex justify-between items-center">
+          <span className="ml-6 w-80">Multiples Present Value</span>
+          <span className="text-right flex items-center">
+            <span className="mr-2">USD</span>
+            <span className="w-48">
+              {formattedMultiples !== null ? formattedMultiples.toLocaleString() : "Calculating..."}
+            </span>
+          </span>
+        </div>
+        {/* Consolidated Present Value */}
+        <div className="flex justify-between items-center">
+          <span className="ml-6 w-80">Consolidated Present Value</span>
+          <span className="text-right flex items-center">
+            <span className="mr-2">USD</span>
+            <span className="w-48">
+              {formattedConsolidated !== null ? formattedConsolidated.toLocaleString() : "Calculating..."}
+            </span>
+          </span>
+        </div>
+        {/* Outstanding Shares */}
+        <div className="flex justify-between items-center">
+          <span className="ml-6 w-80">Outstanding Shares</span>
+          <span className="text-right flex items-center">
+            <span className="mr-2">QTY</span>
+            <span className="w-48">
+              {outstandingShares !== null ? outstandingShares.toLocaleString() : "Calculating..."}
+            </span>
+          </span>
+        </div>
+        {/* Intrinsic Value Per Share (Consolidated) */}
+        <div className="flex justify-between items-center">
+          <span className="ml-6 w-80">Intrinsic Value Per Share</span>
+          <span className="text-right flex items-center">
+            <span className="mr-2">USD</span>
+            <span className="w-48">
+              {intrinsicValuePerShareConsolidated !== null
+                ? intrinsicValuePerShareConsolidated.toLocaleString()
+                : "Calculating..."}
+            </span>
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

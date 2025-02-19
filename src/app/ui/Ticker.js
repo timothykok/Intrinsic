@@ -48,7 +48,7 @@ export default function Ticker() {
       gsap.to(stockRefs.current[index], {
         scale: 1.2, // Slightly enlarge
   
-        duration: 0.2,
+        duration: 0.1,
       });
     };
   
@@ -56,7 +56,7 @@ export default function Ticker() {
       gsap.to(stockRefs.current[index], {
         scale: 1, // Return to normal
         boxShadow: "none",
-        duration: 0.2,
+        duration: 0.1,
       });
     };
 

@@ -2,7 +2,14 @@
 
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useSuspense, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useSuspense,
+  Suspense,
+} from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 
 import { useMethod } from "../../../context/MethodContext";
@@ -25,7 +32,7 @@ import MultiplesValue from "@/app/ui/Multiples/MultiplesValue";
 import Footer from "../../ui/Footer.js";
 import SearchNav from "@/app/ui/NavBars/SearchNav";
 import Consolidated from "@/app/ui/Consolidated";
-
+import Financials from "@/app/ui/Financials";
 
 export default function StockPage() {
   // This search input is now used only to trigger a new search/navigation.
@@ -56,8 +63,7 @@ export default function StockPage() {
   const [residualIncomePresentValue, setResidualIncomePresentValue] =
     useState(null);
   const [multiplesPresentValue, setMultiplesPresentValue] = useState(0);
-  const [consolidatedPresentValue, setConsolidatedPresentValue] =
-    useState(0);
+  const [consolidatedPresentValue, setConsolidatedPresentValue] = useState(0);
   // const [outstandingShares, setOutstandingShares] = useState([]);
   const [presentValue, setPresentValue] = useState(null);
   const [costOfEquity, setCostOfEquity] = useState(null);
@@ -83,6 +89,10 @@ export default function StockPage() {
     marketRiskPremium: null,
     sector: null,
     peers: null,
+
+    last5Income: [],
+    last5CashFlow: [],
+    last5Ratios: [],
   });
 
   //Calculation component
@@ -263,6 +273,7 @@ export default function StockPage() {
     const fetchFinancialData = async () => {
       const [
         profileData,
+        quoteData,
         balanceSheetData,
         incomeData,
         cashFlowData,
@@ -274,6 +285,9 @@ export default function StockPage() {
       ] = await Promise.all([
         fetchData(
           `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
+        ),
+        fetchData(
+          `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${fmpApiKey}`
         ),
         fetchData(
           `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${ticker}?apikey=${fmpApiKey}`
@@ -304,6 +318,48 @@ export default function StockPage() {
 
       //------------------------------------------------------------------------------------
 
+      //EPS
+      const eps = quoteData[0].eps;
+
+      //------------------------------------------------------------------------------------
+      // 5 YEAR HISTORICAL DATA EXTRACTION
+
+      const last5Income = (incomeData?.slice(0, 6) || []).reverse();
+      const last5CashFlow = (cashFlowData?.slice(0, 6) || []).reverse();
+      const last5Ratios = (ratioData?.slice(0, 6) || []).reverse();
+
+      const salesHistory = last5Income.map((item) => ({
+        year: item.date?.slice(0, 5), // e.g. "2022"
+        value: item.revenue,
+      }));
+
+      const netIncomeHistory = last5Income.map((item) => ({
+        year: item.date?.slice(0, 5),
+        value: item.netIncome,
+      }));
+
+      const epsHistory = last5Income.map((item) => ({
+        year: item.date?.slice(0, 5),
+        value: item.eps, // or item.epsDiluted
+      }));
+
+      const cfoHistory = last5CashFlow.map((item) => ({
+        year: item.date?.slice(0, 5),
+        value: item.netCashProvidedByOperatingActivities,
+      }));
+
+      const roeHistory = last5Ratios.map((item) => ({
+        year: item.date?.slice(0, 5),
+        value: item.returnOnEquity, // FMP typically uses decimal form, e.g. 0.15 => 15%
+      }));
+
+      const roicHistory = last5Ratios.map((item) => ({
+        year: item.date?.slice(0, 5),
+        value: item.returnOnInvestedCapital, // property name may vary
+      }));
+
+      //------------------------------------------------------------------------------------
+
       // Determine sector and set ten-year growth rate using the sectorPerformance mapping
       const sector = profileData?.[0]?.sector || null;
 
@@ -322,7 +378,7 @@ export default function StockPage() {
       // Extract and use peers data:
       const peers = peersData[0]?.peersList;
 
-      console.log("PEERS: " + peers)
+      console.log("PEERS: " + peers);
       let averagePeerPE = null;
       if (peers && peers.length > 0) {
         const peerSymbols = peers.join(",");
@@ -436,6 +492,13 @@ export default function StockPage() {
         marketRiskPremium,
         sector,
         salesGrowthToPerpetuity,
+
+        salesHistory,
+        netIncomeHistory,
+        epsHistory,
+        cfoHistory,
+        roeHistory,
+        roicHistory,
       });
     };
 
@@ -443,12 +506,8 @@ export default function StockPage() {
   }, [ticker, fmpApiKey]);
 
   //------------------------------------------------------------------------------------
-  //EPS
-  const eps = useMemo(() => {
-    if (!financialData.outstandingShares || !financialData.netIncome) return 0;
-    return financialData.netIncome / financialData.outstandingShares;
-  }, [financialData.outstandingShares, financialData.netIncome]);
 
+  const eps = financialData.eps || 0;
   // 2️⃣ Compute Cost of Equity (CAPM)
   useEffect(() => {
     if (
@@ -498,385 +557,463 @@ export default function StockPage() {
   useEffect(() => {
     setFreeCashFlowEquityData(calculatedFreeCashFlowEquity);
   }, [calculatedFreeCashFlowEquity]);
-//--------------------------
-// DCF PRESENT VALUE
-//--------------------------
-function calculateDCFPresentValue() {
-  console.log("----- DCF Calculation Start -----");
-  console.log("freeCashFlowEquityData:", freeCashFlowEquityData);
-  console.log("financialData.fiveYearGrowthRate:", financialData.fiveYearGrowthRate);
-  console.log("financialData.tenYearGrowthRate:", financialData.tenYearGrowthRate);
-  console.log("financialData.longTermGrowthRate:", financialData.longTermGrowthRate);
-  console.log("costOfEquity:", costOfEquity);
+  //--------------------------
+  // DCF PRESENT VALUE
+  //--------------------------
+  function calculateDCFPresentValue() {
+    console.log("----- DCF Calculation Start -----");
+    console.log("freeCashFlowEquityData:", freeCashFlowEquityData);
+    console.log(
+      "financialData.fiveYearGrowthRate:",
+      financialData.fiveYearGrowthRate
+    );
+    console.log(
+      "financialData.tenYearGrowthRate:",
+      financialData.tenYearGrowthRate
+    );
+    console.log(
+      "financialData.longTermGrowthRate:",
+      financialData.longTermGrowthRate
+    );
+    console.log("costOfEquity:", costOfEquity);
 
-  try {
-    if (
-      freeCashFlowEquityData !== null &&
-      financialData.fiveYearGrowthRate !== null &&
-      financialData.tenYearGrowthRate !== null &&
-      financialData.longTermGrowthRate !== null &&
-      costOfEquity !== null
-    ) {
-      let pv = 0;
-      // Convert growth rates to decimal form
-      const fiveYearG = financialData.fiveYearGrowthRate / 100;
-      const tenYearG = financialData.tenYearGrowthRate / 100;
-      const longTermG = financialData.longTermGrowthRate / 100;
-      const coe = costOfEquity / 100;
+    try {
+      if (
+        freeCashFlowEquityData !== null &&
+        financialData.fiveYearGrowthRate !== null &&
+        financialData.tenYearGrowthRate !== null &&
+        financialData.longTermGrowthRate !== null &&
+        costOfEquity !== null
+      ) {
+        let pv = 0;
+        // Convert growth rates to decimal form
+        const fiveYearG = financialData.fiveYearGrowthRate / 100;
+        const tenYearG = financialData.tenYearGrowthRate / 100;
+        const longTermG = financialData.longTermGrowthRate / 100;
+        const coe = costOfEquity / 100;
 
-      console.log("Converted Values - fiveYearG:", fiveYearG, "tenYearG:", tenYearG, "longTermG:", longTermG, "coe:", coe);
+        console.log(
+          "Converted Values - fiveYearG:",
+          fiveYearG,
+          "tenYearG:",
+          tenYearG,
+          "longTermG:",
+          longTermG,
+          "coe:",
+          coe
+        );
 
-      // Calculate PV of FCFE from Year 1 to Year 5
-      for (let t = 1; t <= 5; t++) {
-        const projectedFCFE = freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
-        const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
-        console.log(`Year ${t} - projectedFCFE: ${projectedFCFE}, discountedFCFE: ${discountedFCFE}`);
-        pv += discountedFCFE;
+        // Calculate PV of FCFE from Year 1 to Year 5
+        for (let t = 1; t <= 5; t++) {
+          const projectedFCFE =
+            freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
+          const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
+          console.log(
+            `Year ${t} - projectedFCFE: ${projectedFCFE}, discountedFCFE: ${discountedFCFE}`
+          );
+          pv += discountedFCFE;
+        }
+
+        // Calculate PV of FCFE from Year 6 to Year 10
+        let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // start from Year 5 FCFE
+        console.log("Initial fcfeYearN (end of Year 5):", fcfeYearN);
+        for (let t = 6; t <= 10; t++) {
+          fcfeYearN *= 1 + tenYearG; // grow each year
+          const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
+          console.log(
+            `Year ${t} - fcfeYearN: ${fcfeYearN}, discountedFCFE: ${discountedFCFE}`
+          );
+          pv += discountedFCFE;
+        }
+
+        // Calculate Perpetuity Value at Year 11
+        const fcfeYear10 = fcfeYearN; // already grown to Year 10
+        const perpetuityValue =
+          (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
+        const discountedPerpetuityValue =
+          perpetuityValue / Math.pow(1 + coe, 10);
+        console.log(
+          "Perpetuity Value:",
+          perpetuityValue,
+          "Discounted Perpetuity Value:",
+          discountedPerpetuityValue
+        );
+
+        // Add discounted perpetuity to PV
+        pv += discountedPerpetuityValue;
+        console.log("Final DCF Present Value:", parseFloat(pv.toFixed(2)));
+        setDCFPresentValue(parseFloat(pv.toFixed(2)));
+      } else {
+        console.log("Missing required data for DCF calculation.");
+      }
+    } catch (error) {
+      console.log("Error in calculateDCFPresentValue:", error);
+    }
+  }
+
+  // Also log in the DCF useEffect
+  useEffect(() => {
+    try {
+      if (
+        freeCashFlowEquityData !== null &&
+        financialData.fiveYearGrowthRate !== null &&
+        financialData.tenYearGrowthRate !== null &&
+        financialData.longTermGrowthRate !== null &&
+        costOfEquity !== null
+      ) {
+        calculateDCFPresentValue();
+      } else {
+        console.log("DCF useEffect: Some values are missing.");
+      }
+    } catch (error) {
+      console.log("Error in DCF useEffect:", error);
+    }
+  }, [
+    freeCashFlowEquityData,
+    financialData.fiveYearGrowthRate,
+    financialData.tenYearGrowthRate,
+    financialData.longTermGrowthRate,
+    costOfEquity,
+    selectedMethod,
+    ticker,
+  ]);
+
+  //--------------------------
+  // MULTIPLES PRESENT VALUE
+  //--------------------------
+  let multiplesPresentValueCalculated = null;
+
+  function calculateMultiplesPresentValue() {
+    console.log("----- Multiples Calculation Start -----");
+    console.log(
+      "eps:",
+      eps,
+      "financialData.averagePeerPE:",
+      financialData.averagePeerPE
+    );
+    multiplesPresentValueCalculated = eps * financialData.averagePeerPE;
+    console.log(
+      "Calculated Multiples Present Value:",
+      multiplesPresentValueCalculated
+    );
+    setMultiplesPresentValue(multiplesPresentValueCalculated);
+  }
+
+  useEffect(() => {
+    console.log("Multiples useEffect running...");
+    calculateMultiplesPresentValue();
+  }, [
+    financialData.outstandingShares,
+    setPresentValue,
+    setMultiplesPresentValue,
+  ]);
+
+  //--------------------------
+  // RESIDUAL INCOME PRESENT VALUE
+  //--------------------------
+  function calculateResidualPresentValue() {
+    console.log("----- Residual Income Calculation Start -----");
+    console.log("ticker:", ticker);
+    console.log("financialData.netIncome:", financialData.netIncome);
+    console.log("financialData.currentEquity:", financialData.currentEquity);
+    console.log("costOfEquity:", costOfEquity);
+    console.log(
+      "financialData.longTermGrowthRate:",
+      financialData.longTermGrowthRate
+    );
+
+    try {
+      if (
+        !ticker ||
+        financialData.netIncome === null ||
+        financialData.currentEquity === null ||
+        costOfEquity === null ||
+        financialData.longTermGrowthRate === null
+      )
+        return console.log("Residual Income: Missing required values.");
+
+      const coeDecimal = costOfEquity / 100;
+      const g = financialData.longTermGrowthRate / 100;
+      const startingRI =
+        financialData.netIncome - financialData.currentEquity * coeDecimal;
+      console.log("Starting Residual Income (startingRI):", startingRI);
+
+      const forecastYears = 5;
+      let pvResidualIncome = 0;
+      for (let t = 1; t <= forecastYears; t++) {
+        const RI_t = startingRI * Math.pow(1 + g, t);
+        const discountedRI = RI_t / Math.pow(1 + coeDecimal, t);
+        console.log(`Year ${t} - RI_t: ${RI_t}, discountedRI: ${discountedRI}`);
+        pvResidualIncome += discountedRI;
       }
 
-      // Calculate PV of FCFE from Year 6 to Year 10
-      let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // start from Year 5 FCFE
-      console.log("Initial fcfeYearN (end of Year 5):", fcfeYearN);
-      for (let t = 6; t <= 10; t++) {
-        fcfeYearN *= 1 + tenYearG; // grow each year
-        const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
-        console.log(`Year ${t} - fcfeYearN: ${fcfeYearN}, discountedFCFE: ${discountedFCFE}`);
-        pv += discountedFCFE;
+      const RI_final = startingRI * Math.pow(1 + g, forecastYears);
+      const terminalValue = (RI_final * (1 + g)) / (coeDecimal - g);
+      const discountedTerminalValue =
+        terminalValue / Math.pow(1 + coeDecimal, forecastYears);
+      console.log(
+        "Terminal Value:",
+        terminalValue,
+        "Discounted Terminal Value:",
+        discountedTerminalValue
+      );
+
+      pvResidualIncome += discountedTerminalValue;
+      const totalResidualValue = financialData.currentEquity + pvResidualIncome;
+      console.log(
+        "Final Residual Income Present Value:",
+        parseFloat(totalResidualValue.toFixed(2))
+      );
+      setResidualIncomePresentValue(parseFloat(totalResidualValue.toFixed(2)));
+    } catch (error) {
+      console.log("Error in calculateResidualPresentValue:", error);
+    }
+  }
+
+  useEffect(() => {
+    try {
+      if (
+        !ticker ||
+        financialData.netIncome === null ||
+        financialData.currentEquity === null ||
+        costOfEquity === null ||
+        financialData.longTermGrowthRate === null
+      ) {
+        console.log("Residual Income useEffect: Missing required values.");
+        return;
       }
-
-      // Calculate Perpetuity Value at Year 11
-      const fcfeYear10 = fcfeYearN; // already grown to Year 10
-      const perpetuityValue = (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
-      const discountedPerpetuityValue = perpetuityValue / Math.pow(1 + coe, 10);
-      console.log("Perpetuity Value:", perpetuityValue, "Discounted Perpetuity Value:", discountedPerpetuityValue);
-
-      // Add discounted perpetuity to PV
-      pv += discountedPerpetuityValue;
-      console.log("Final DCF Present Value:", parseFloat(pv.toFixed(2)));
-      setDCFPresentValue(parseFloat(pv.toFixed(2)));
-    } else {
-      console.log("Missing required data for DCF calculation.");
+      calculateResidualPresentValue();
+    } catch (error) {
+      console.log("Error in Residual Income useEffect:", error);
     }
-  } catch (error) {
-    console.log("Error in calculateDCFPresentValue:", error);
-  }
-}
+  }, [
+    ticker,
+    financialData.netIncome,
+    financialData.currentEquity,
+    costOfEquity,
+    financialData.longTermGrowthRate,
+    selectedMethod,
+  ]);
 
-// Also log in the DCF useEffect
-useEffect(() => {
-  try {
-    if (
-      freeCashFlowEquityData !== null &&
-      financialData.fiveYearGrowthRate !== null &&
-      financialData.tenYearGrowthRate !== null &&
-      financialData.longTermGrowthRate !== null &&
-      costOfEquity !== null
-    ) {
-      calculateDCFPresentValue();
-    } else {
-      console.log("DCF useEffect: Some values are missing.");
-    }
-  } catch (error) {
-    console.log("Error in DCF useEffect:", error);
-  }
-}, [
-  freeCashFlowEquityData,
-  financialData.fiveYearGrowthRate,
-  financialData.tenYearGrowthRate,
-  financialData.longTermGrowthRate,
-  costOfEquity,
-  selectedMethod,
-  ticker,
-]);
+  //--------------------------
+  // CONSOLIDATED PRESENT VALUE
+  //--------------------------
+  useEffect(() => {
+    console.log("----- Consolidated Calculation Start -----");
+    console.log("Multiples Present Value:", multiplesPresentValue);
+    console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
+    console.log("Residual Income Present Value:", residualIncomePresentValue);
 
-//--------------------------
-// MULTIPLES PRESENT VALUE
-//--------------------------
-let multiplesPresentValueCalculated = null;
-
-function calculateMultiplesPresentValue() {
-  console.log("----- Multiples Calculation Start -----");
-  console.log("eps:", eps, "financialData.averagePeerPE:", financialData.averagePeerPE);
-  multiplesPresentValueCalculated = eps * financialData.averagePeerPE;
-  console.log("Calculated Multiples Present Value:", multiplesPresentValueCalculated);
-  setMultiplesPresentValue(multiplesPresentValueCalculated);
-}
-
-useEffect(() => {
-  console.log("Multiples useEffect running...");
-  calculateMultiplesPresentValue();
-}, [financialData.outstandingShares, setPresentValue, setMultiplesPresentValue]);
-
-//--------------------------
-// RESIDUAL INCOME PRESENT VALUE
-//--------------------------
-function calculateResidualPresentValue() {
-  console.log("----- Residual Income Calculation Start -----");
-  console.log("ticker:", ticker);
-  console.log("financialData.netIncome:", financialData.netIncome);
-  console.log("financialData.currentEquity:", financialData.currentEquity);
-  console.log("costOfEquity:", costOfEquity);
-  console.log("financialData.longTermGrowthRate:", financialData.longTermGrowthRate);
-
-  try {
-    if (
-      !ticker ||
-      financialData.netIncome === null ||
-      financialData.currentEquity === null ||
-      costOfEquity === null ||
-      financialData.longTermGrowthRate === null
-    )
-      return console.log("Residual Income: Missing required values.");
-
-    const coeDecimal = costOfEquity / 100;
-    const g = financialData.longTermGrowthRate / 100;
-    const startingRI = financialData.netIncome - financialData.currentEquity * coeDecimal;
-    console.log("Starting Residual Income (startingRI):", startingRI);
-
-    const forecastYears = 5;
-    let pvResidualIncome = 0;
-    for (let t = 1; t <= forecastYears; t++) {
-      const RI_t = startingRI * Math.pow(1 + g, t);
-      const discountedRI = RI_t / Math.pow(1 + coeDecimal, t);
-      console.log(`Year ${t} - RI_t: ${RI_t}, discountedRI: ${discountedRI}`);
-      pvResidualIncome += discountedRI;
-    }
-
-    const RI_final = startingRI * Math.pow(1 + g, forecastYears);
-    const terminalValue = (RI_final * (1 + g)) / (coeDecimal - g);
-    const discountedTerminalValue = terminalValue / Math.pow(1 + coeDecimal, forecastYears);
-    console.log("Terminal Value:", terminalValue, "Discounted Terminal Value:", discountedTerminalValue);
-
-    pvResidualIncome += discountedTerminalValue;
-    const totalResidualValue = financialData.currentEquity + pvResidualIncome;
-    console.log("Final Residual Income Present Value:", parseFloat(totalResidualValue.toFixed(2)));
-    setResidualIncomePresentValue(parseFloat(totalResidualValue.toFixed(2)));
-  } catch (error) {
-    console.log("Error in calculateResidualPresentValue:", error);
-  }
-}
-
-useEffect(() => {
-  try {
-    if (
-      !ticker ||
-      financialData.netIncome === null ||
-      financialData.currentEquity === null ||
-      costOfEquity === null ||
-      financialData.longTermGrowthRate === null
-    ) {
-      console.log("Residual Income useEffect: Missing required values.");
-      return;
-    }
+    // Call all the individual calculation functions
     calculateResidualPresentValue();
-  } catch (error) {
-    console.log("Error in Residual Income useEffect:", error);
-  }
-}, [
-  ticker,
-  financialData.netIncome,
-  financialData.currentEquity,
-  costOfEquity,
-  financialData.longTermGrowthRate,
-  selectedMethod,
-]);
+    calculateDCFPresentValue();
+    calculateMultiplesPresentValue();
 
-//--------------------------
-// CONSOLIDATED PRESENT VALUE
-//--------------------------
-useEffect(() => {
-  console.log("----- Consolidated Calculation Start -----");
-  console.log("Multiples Present Value:", multiplesPresentValue);
-  console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
-  console.log("Residual Income Present Value:", residualIncomePresentValue);
+    if (
+      multiplesPresentValue &&
+      dcfValuePresentValue &&
+      residualIncomePresentValue
+    ) {
+      const newConsolidatedValue =
+        multiplesPresentValue +
+        dcfValuePresentValue +
+        residualIncomePresentValue;
+      console.log("Consolidated Present Value:", newConsolidatedValue);
+      setConsolidatedPresentValue(newConsolidatedValue);
+    } else {
+      console.log(
+        "Consolidated calculation: One or more values are missing or zero."
+      );
+    }
+  }, [
+    ticker,
+    multiplesPresentValue,
+    dcfValuePresentValue,
+    residualIncomePresentValue,
+    selectedMethod,
+    selectedCurrency,
+  ]);
 
-  // Call all the individual calculation functions
-  calculateResidualPresentValue();
-  calculateDCFPresentValue();
-  calculateMultiplesPresentValue();
+  // Log the updated values whenever they change
+  useEffect(() => {
+    console.log("Updated Values:");
+    console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
+    console.log("Residual Income Present Value:", residualIncomePresentValue);
+    console.log("Multiples Present Value:", multiplesPresentValue);
+    console.log("New Consolidated Present Value 2:", consolidatedPresentValue);
+    console.log("Selected Method:", selectedMethod);
+  }, [
+    dcfValuePresentValue,
+    residualIncomePresentValue,
+    multiplesPresentValue,
+    selectedMethod,
+  ]);
 
-  // Check explicitly for null values, so that a result of 0 is accepted
-  if (
-    multiplesPresentValue != null &&
-    dcfValuePresentValue != null && 
-    residualIncomePresentValue != null
-  ) {
-    const newConsolidatedValue =
-      (multiplesPresentValue + dcfValuePresentValue + residualIncomePresentValue) / 3;
-    console.log("New Consolidated Present Value:", newConsolidatedValue);
-    setConsolidatedPresentValue(newConsolidatedValue);
-  } else {
-    console.log("Consolidated calculation: One or more values are missing or zero.");
-  }
-}, [multiplesPresentValue, dcfValuePresentValue, residualIncomePresentValue, ticker]);
-
-// Log the updated values whenever they change
-useEffect(() => {
-  console.log("Updated Values:");
-  console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
-  console.log("Residual Income Present Value:", residualIncomePresentValue);
-  console.log("Multiples Present Value:", multiplesPresentValue);
-  console.log("New Consolidated Present Value 2:", consolidatedPresentValue);
-  console.log("Selected Method:", selectedMethod);
-}, [dcfValuePresentValue, residualIncomePresentValue, multiplesPresentValue, selectedMethod, ]);
-
-  
-
-if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
 
   return (
-    
-
-
-  
     <>
       <SearchNav />
       <main>
-      <Suspense fallback={<div>Loading stock data...</div>}>
-        <div className="mb-32 flex flex-col items-start">
-          <div className="spacer h-12 ml-[120px] mt-4">
-            <div className="w-full max-w-[1500px] text-xs"></div>
+        <Suspense fallback={<div>Loading stock data...</div>}>
+          <div className="flex flex-row">
+            <div className="left">
+              <div className="mb-32 flex flex-col items-start">
+                <div className="spacer h-12 ml-[120px] mt-4">
+                  <div className="w-full max-w-[1500px] text-xs"></div>
 
-            {/* Stock Data */}
-            {stockInfo && (
-              <div className="mt-8 w-full max-w-[900px]">
-                <StockInfo
-                  ref={stockInfoRef}
-                  logoSrc={stockInfo.logoSrc}
-                  companyName={stockInfo.companyName}
-                  ticker={ticker}
-                  price={stockInfo.price}
-                  currency={stockInfo.currency}
-                  change={stockInfo.change}
-                  percentage={stockInfo.percentage}
-                  timestamp={stockInfo.timestamp}
-                  presentValue={presentValue}
-                />
+                  {/* Stock Data */}
+                  {stockInfo && (
+                    <div className="mt-8 w-full max-w-[900px]">
+                      <StockInfo
+                        ref={stockInfoRef}
+                        logoSrc={stockInfo.logoSrc}
+                        companyName={stockInfo.companyName}
+                        ticker={ticker}
+                        price={stockInfo.price}
+                        currency={stockInfo.currency}
+                        change={stockInfo.change}
+                        percentage={stockInfo.percentage}
+                        timestamp={stockInfo.timestamp}
+                        presentValue={presentValue}
+                      />
 
-                {/* Valuation Components */}
-                {selectedMethod === "DCF" ? (
-                  <>
-                    <DiscountedCashFlow
-                      ticker={ticker}
-                      setCostOfEquity={setCostOfEquity}
-                      costOfEquity={costOfEquity}
-                      freeCashFlowEquityData={freeCashFlowEquityData}
-                      financialData={financialData}
-                      selectedMethod={selectedMethod}
-                    />
-                    <DCFCalculation
-                      ticker={ticker}
-                      costOfEquity={costOfEquity}
-                      freeCashFlowEquityData={freeCashFlowEquityData}
-                      financialData={financialData}
-                      presentValue={presentValue}
-                      setPresentValue={setPresentValue}
-                      dcfPresentValue={dcfValuePresentValue}
-                      setDCFPresentValue={setDCFPresentValue}
-                      selectedMethod={selectedMethod}
-                    />
-                    <DCFValue
-                      ticker={ticker}
-                      price={stockInfo.price}
-                      financialData={financialData}
-                      presentValue={presentValue}
-                      dcfPresentValue={dcfValuePresentValue}
-                      setDCFPresentValue={setDCFPresentValue}
-                      selectedMethod={selectedMethod}
-                    />
-                  </>
-                ) : selectedMethod === "RI" ? (
-                  <>
-                    <ResidualIncome
-                      ticker={ticker}
-                      netIncome={stockInfo.price}
-                      costOfEquity={costOfEquity}
-                      financialData={financialData}
-                      selectedMethod={selectedMethod}
-                    />
-                    <ResidualCalculation
-                      ticker={ticker}
-                      costOfEquity={costOfEquity}
-                      freeCashFlowEquityData={freeCashFlowEquityData}
-                      longTermGrowthRate={financialData.longTermGrowthRate}
-                      outstandingShares={financialData.outstandingShares}
-                      setPresentValue={setPresentValue}
-                      presentValue={presentValue}
-                      residualIncomePresentValue={residualIncomePresentValue}
-                      setResidualIncomePresentValue={
-                        setResidualIncomePresentValue
-                      }
-                      financialData={financialData}
-                      selectedMethod={selectedMethod}
-                    />
-                    <ResidualValue
-                      ticker={ticker}
-                      price={stockInfo.price}
-                      outstandingShares={financialData.outstandingShares}
-                      presentValue={presentValue}
-                      residualIncomePresentValue={residualIncomePresentValue}
-                      setResidualIncomePresentValue={
-                        setResidualIncomePresentValue
-                      }
-                      selectedMethod={selectedMethod}
-                    />
-                  </>
-                ) : selectedMethod === "M" ? (
-                  <>
-                    <Multiples
-                      netIncome={financialData.netIncome}
-                      outstandingShares={financialData.outstandingShares}
-                      financialData={financialData}
-                      eps={eps}
-                      averagePeerPE={financialData.averagePeerPE}
-                      selectedMethod={selectedMethod}
-                    />
-                    <MultiplesValue
-                      netIncome={financialData.netIncome}
-                      outstandingShares={financialData.outstandingShares}
-                      eps={eps}
-                      price={stockInfo.price}
-                      averagePeerPE={financialData.averagePeerPE}
-                      multiplesPresentValue={multiplesPresentValue}
-                      setMultiplesPresentValue={setMultiplesPresentValue}
-                      setPresentValue={setPresentValue}
-                      presentValue={presentValue}
-                      selectedMethod={selectedMethod}
-                    />
-                  </>
-                ) : selectedMethod === "C" ? (
-                  <>
-                    <Consolidated
-                    financialData={financialData}
+                      {/* Valuation Components */}
+                      {selectedMethod === "DCF" ? (
+                        <>
+                          <DiscountedCashFlow
+                            ticker={ticker}
+                            setCostOfEquity={setCostOfEquity}
+                            costOfEquity={costOfEquity}
+                            freeCashFlowEquityData={freeCashFlowEquityData}
+                            financialData={financialData}
+                            selectedMethod={selectedMethod}
+                          />
+                          <DCFCalculation
+                            ticker={ticker}
+                            costOfEquity={costOfEquity}
+                            freeCashFlowEquityData={freeCashFlowEquityData}
+                            financialData={financialData}
+                            presentValue={presentValue}
+                            setPresentValue={setPresentValue}
+                            dcfPresentValue={dcfValuePresentValue}
+                            setDCFPresentValue={setDCFPresentValue}
+                            selectedMethod={selectedMethod}
+                          />
+                          <DCFValue
+                            ticker={ticker}
+                            price={stockInfo.price}
+                            financialData={financialData}
+                            presentValue={presentValue}
+                            dcfPresentValue={dcfValuePresentValue}
+                            setDCFPresentValue={setDCFPresentValue}
+                            selectedMethod={selectedMethod}
+                          />
+                        </>
+                      ) : selectedMethod === "RI" ? (
+                        <>
+                          <ResidualIncome
+                            ticker={ticker}
+                            netIncome={stockInfo.price}
+                            costOfEquity={costOfEquity}
+                            financialData={financialData}
+                            selectedMethod={selectedMethod}
+                          />
+                          <ResidualCalculation
+                            ticker={ticker}
+                            costOfEquity={costOfEquity}
+                            freeCashFlowEquityData={freeCashFlowEquityData}
+                            longTermGrowthRate={
+                              financialData.longTermGrowthRate
+                            }
+                            outstandingShares={financialData.outstandingShares}
+                            setPresentValue={setPresentValue}
+                            presentValue={presentValue}
+                            residualIncomePresentValue={
+                              residualIncomePresentValue
+                            }
+                            setResidualIncomePresentValue={
+                              setResidualIncomePresentValue
+                            }
+                            financialData={financialData}
+                            selectedMethod={selectedMethod}
+                          />
+                          <ResidualValue
+                            ticker={ticker}
+                            price={stockInfo.price}
+                            outstandingShares={financialData.outstandingShares}
+                            presentValue={presentValue}
+                            residualIncomePresentValue={
+                              residualIncomePresentValue
+                            }
+                            setResidualIncomePresentValue={
+                              setResidualIncomePresentValue
+                            }
+                            selectedMethod={selectedMethod}
+                          />
+                        </>
+                      ) : selectedMethod === "M" ? (
+                        <>
+                          <Multiples
+                            netIncome={financialData.netIncome}
+                            outstandingShares={financialData.outstandingShares}
+                            financialData={financialData}
+                            eps={eps}
+                            averagePeerPE={financialData.averagePeerPE}
+                            selectedMethod={selectedMethod}
+                          />
+                          <MultiplesValue
+                            netIncome={financialData.netIncome}
+                            outstandingShares={financialData.outstandingShares}
+                            eps={eps}
+                            price={stockInfo.price}
+                            averagePeerPE={financialData.averagePeerPE}
+                            multiplesPresentValue={multiplesPresentValue}
+                            setMultiplesPresentValue={setMultiplesPresentValue}
+                            setPresentValue={setPresentValue}
+                            presentValue={presentValue}
+                            selectedMethod={selectedMethod}
+                          />
+                        </>
+                      ) : selectedMethod === "C" ? (
+                        <>
+                          <Consolidated
+                            financialData={financialData}
+                            multiplesPresentValue={multiplesPresentValue}
+                            dcfPresentValue={dcfValuePresentValue}
+                            residualIncomePresentValue={
+                              residualIncomePresentValue
+                            }
+                            consolidatedPresentValue={consolidatedPresentValue}
+                            freeCashFlowEquityData={freeCashFlowEquityData}
+                            costOfEquity={costOfEquity}
+                            eps={eps}
+                            presentValue={presentValue}
+                            setPresentValue={setPresentValue}
+                          />
+                        </>
+                      ) : null}
 
-                    multiplesPresentValue={multiplesPresentValue}
-                    dcfPresentValue={dcfValuePresentValue}
-                    residualIncomePresentValue={residualIncomePresentValue}
-                    consolidatedPresentValue={consolidatedPresentValue}
-
-                    freeCashFlowEquityData={freeCashFlowEquityData}
-                    costOfEquity={costOfEquity}
-                    eps={eps}
-                     
-                    />
-                  </>
-                ) : null}
-
-                <Projection
-                  freeCashFlowEquityData={freeCashFlowEquityData}
-                  fiveYearGrowthRate={financialData.fiveYearGrowthRate}
-                  tenYearGrowthRate={financialData.tenYearGrowthRate}
-                  longTermGrowthRate={financialData.longTermGrowthRate}
-                  selectedMethod={selectedMethod}
-                />
+                      <Projection
+                        freeCashFlowEquityData={freeCashFlowEquityData}
+                        fiveYearGrowthRate={financialData.fiveYearGrowthRate}
+                        tenYearGrowthRate={financialData.tenYearGrowthRate}
+                        longTermGrowthRate={financialData.longTermGrowthRate}
+                        selectedMethod={selectedMethod}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
+
+            <div className="right mt-80 pt-16 ml-24 ">
+              <Financials financialData={financialData} />
+            </div>
           </div>
-        </div>
         </Suspense>
       </main>
       {/* <Footer /> */}
     </>
-   
   );
 }

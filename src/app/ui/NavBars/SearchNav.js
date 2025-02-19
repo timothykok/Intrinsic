@@ -13,7 +13,7 @@ export default function SearchNav() {
   const [input, setInput] = useState("");
   // The ticker is obtained from the URL (the slug). No need to set it manually.
   const { ticker } = useParams();
-  const { selectedMethod, setSelectedMethod } = useMethod();
+  const { selectedMethod, setSelectedMethod } = useMethod("C");
 
   const router = useRouter();
   const searchParams = useSearchParams();
