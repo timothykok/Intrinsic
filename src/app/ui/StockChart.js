@@ -1,4 +1,3 @@
-// File: ./ui/TradingViewWidget.js
 import { useEffect, useRef } from "react";
 
 export default function StockChart({ ticker }) {
@@ -7,52 +6,63 @@ export default function StockChart({ ticker }) {
   useEffect(() => {
     if (!ticker) return; // Prevent running for an empty ticker
 
-    // Remove previous widget (if any) before adding a new one
+    // Clear any previous widget instance
     containerRef.current.innerHTML = "";
 
+    // Append custom styles
     const style = document.createElement("style");
     style.innerHTML = `
       #tradingview-widget-container * {
-        font-family: "Verlag", sans-serif !important;
+        font-family: "Montserrat", sans-serif !important;
         font-weight: 300 !important;
       }
     `;
     document.head.appendChild(style);
 
+    // Create and configure the advanced chart script element with studies
     const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/tv.js";
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.type = "text/javascript";
     script.async = true;
-    script.onload = () => {
-      if (window.TradingView) {
-        new window.TradingView.widget({
-          autosize: true,
-          symbol: ticker, // Use the dynamic ticker value
-          interval: "D", // Daily interval
-          timezone: "Etc/UTC",
-          theme: "light",
-          style: "1", // Line chart
-          locale: "en",
-          toolbar_bg: "#f1f3f6",
-          enable_publishing: false,
-          hide_top_toolbar: true,
-          save_image: false,
-          container_id: "tradingview-widget-container",
-        });
-      }
-    };
+    script.innerHTML = `
+      {
+        "autosize": true,
+        "symbol": "${ticker}",
+        "interval": "D",
+        "timezone": "Etc/UTC",
+        "theme": "light",
+        "style": "1",
+        "locale": "en",
+        "hide_side_toolbar": false,
+        "allow_symbol_change": true,
+        "calendar": false,
+        "studies": [
+          "STD;SMA",
+          "STD;EMA"
+        ],
+        "support_host": "https://www.tradingview.com"
+      }`;
 
+    // Append the script to our container
     containerRef.current.appendChild(script);
-  }, [ticker]); // Re-run effect when `ticker` changes
+  }, [ticker]);
 
   return (
     <div
       id="tradingview-widget-container"
       ref={containerRef}
-
-      className="h-[450px] w-[800px] m-auto mt-12 mb-12 border border-solid rounded-lg shadow-xs z-100"
-    
-
-
-    />
+      className="tradingview-widget-container m-auto mt-12 mb-12 border border-solid rounded-lg shadow-xs z-100"
+      style={{ height: "500px", width: "100%" }} // Increased overall height
+    >
+      <div
+        className="tradingview-widget-container__widget"
+        style={{ height: "calc(100% - 32px)", width: "100%" }} // Adjust inner widget height as needed
+      ></div>
+      <div className="tradingview-widget-copyright">
+        <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">
+          <span className="blue-text">Track all markets on TradingView</span>
+        </a>
+      </div>
+    </div>
   );
 }
