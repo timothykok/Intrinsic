@@ -80,6 +80,12 @@ export default function StockPage() {
     changeInWorkingCapital: 0,
     netBorrowing: 0,
     beta: null,
+
+    currentRatio:0,
+    debtToEbitda:0,
+    debtServicingRatio:0,
+
+
     fiveYearGrowthRate: null,
     tenYearGrowthRate: null,
     longTermGrowthRate: null,
@@ -358,6 +364,14 @@ export default function StockPage() {
         value: item.returnOnInvestedCapital, // property name may vary
       }));
 
+
+
+
+      const currentRatio = ratioData[0]?.currentRatio || 0;
+      const longTermDebt = ratioData[0]?.totalDebtToCapitalization || 0;
+      const debtRatio = ratioData[0]?.debtRatio || 0;
+
+
       //------------------------------------------------------------------------------------
 
       // Determine sector and set ten-year growth rate using the sectorPerformance mapping
@@ -484,6 +498,13 @@ export default function StockPage() {
         changeInWorkingCapital: mostRecentCashFlow.changeInWorkingCapital || 0,
         netBorrowing,
         beta: profileData?.[0]?.beta || null,
+
+
+currentRatio,
+    debtToEbitda,
+    debtServicingRatio,
+
+
         fiveYearGrowthRate,
         tenYearGrowthRate,
         longTermGrowthRate,

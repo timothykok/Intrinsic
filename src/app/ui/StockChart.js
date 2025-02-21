@@ -21,7 +21,8 @@ export default function StockChart({ ticker }) {
 
     // Create and configure the advanced chart script element with studies
     const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.src =
+      "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = "text/javascript";
     script.async = true;
     script.innerHTML = `
@@ -48,21 +49,33 @@ export default function StockChart({ ticker }) {
   }, [ticker]);
 
   return (
-    <div
-      id="tradingview-widget-container"
-      ref={containerRef}
-      className="tradingview-widget-container m-auto mt-12 mb-12 border border-solid rounded-lg shadow-xs z-100"
-      style={{ height: "500px", width: "100%" }} // Increased overall height
-    >
+    <>
+      <div className="h-[450px]">
+
+
       <div
-        className="tradingview-widget-container__widget"
-        style={{ height: "calc(100% - 32px)", width: "100%" }} // Adjust inner widget height as needed
-      ></div>
-      <div className="tradingview-widget-copyright">
-        <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">
-          <span className="blue-text">Track all markets on TradingView</span>
-        </a>
+        id="tradingview-widget-container"
+        ref={containerRef}
+        className="tradingview-widget-container m-auto mt-12 mb-12 border border-solid rounded-lg shadow-xs z-100"
+        style={{ height: "100%", width: "100%" }} // Increased overall height
+      >
+        <div
+          className="tradingview-widget-container__widget"
+          style={{ height: "100%", width: "100%" }} // Adjust inner widget height as needed
+        ></div>
+        <div className="tradingview-widget-copyright">
+          <a
+            href="https://www.tradingview.com/"
+            rel="noopener nofollow"
+            target="_blank"
+          >
+            <span className="blue-text">Track all markets on TradingView</span>
+          </a>
+        </div>
       </div>
-    </div>
+      </div>
+
+      
+    </>
   );
 }
