@@ -790,7 +790,7 @@ export default function Home() {
     <Suspense>
       <>
         <HomeNav />
-        <main className="px-4 sm:mb-128">
+        <main className="px-4 mb-16 sm:mb-32 md:mb-128">
           <div className="mb-16">
             <Ticker />
             <div className="spacer h-6 md:h-24"></div>
@@ -799,7 +799,7 @@ export default function Home() {
                 <img
                   src="/Intrinsic..png"
                   alt="View More"
-                  className="w-full md:w-full sm:w-64  max-w-3xl h-auto object-contain mb-8"
+                  className="w-full sm:w-[80%] md:w-full max-w-3xl h-auto object-contain mb-8"
                 />
               </div>
               {/* Search Bar Section */}
@@ -814,14 +814,11 @@ export default function Home() {
                   onKeyDown={handleKeyDown}
                 />
                 {errorMessage && (
-                  <p
-                    ref={errorRef}
-                    className="text-red-400 text-xs font-bold mt-2"
-                  >
+                  <p ref={errorRef} className="text-red-400 text-xs font-bold mt-2">
                     {errorMessage}
                   </p>
                 )}
-                <div className="absolute right-0 top-full mt-4 flex items-center text-gray-500 appearance-none">
+                <div className="absolute right-0 top-full mt-4 flex items-center text-gray-500">
                   <div className="relative">
                     <select
                       value={selectedCurrency}
@@ -838,14 +835,14 @@ export default function Home() {
                       <option disabled>EUR (Coming Soon!)</option>
                     </select>
                   </div>
-                  <div className="h-full flex items-center text-sm font-light mx-2 pl-2 appearance-none">
+                  <div className="h-full flex items-center text-sm font-light mx-2 pl-2">
                     |
                   </div>
                   <div className="relative flex items-center">
                     <select
                       value={selectedMethod}
                       onChange={handleMethodChange}
-                      className="px-2 py-1 bg-white focus:underline font-medium pr-8 appearance-none "
+                      className="px-2 py-1 bg-white focus:underline font-medium pr-8 appearance-none"
                       style={{
                         width: "max-content",
                         minWidth: "120px",
@@ -859,7 +856,7 @@ export default function Home() {
                     <img
                       src="/down-arrow.svg"
                       alt="Dropdown Arrow"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2 "
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2"
                     />
                   </div>
                 </div>

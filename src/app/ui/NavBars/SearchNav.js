@@ -15,6 +15,8 @@ export default function SearchNav() {
   const { ticker } = useParams();
   const { selectedMethod, setSelectedMethod } = useMethod("C");
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const homeSelectedMethod = searchParams.get("selectedMethod");
@@ -466,96 +468,165 @@ export default function SearchNav() {
 
   return (
     <>
-      <div className="flex flex-row justify-between ml-[122px] mr-[122px] align-center pt-12 mb-2 items-center font-sm text-[#989898]">
-     
-          {/* Container for title and search bar */}
-          <div className="w-7xl flex align-center gap-4 mt-6">
-            {/* Title */}
-
-            <div className="pt-2">
-              <Link href="/">
-                <img
-                  src="/Intrinsic..png"
-                  alt="View More"
-                  className="w-[100px] h-[20px]"
-                  href="/"
-                />
-              </Link>
-            </div>
-
-            {/* Search Bar */}
-            <div className="relative w-[450px] mb-4 text-[#989898]">
-              <input
-                ref={inputRef}
-                className="w-[450px] h-[40px] px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none focus:border-black transition-all"
-                type="text"
-                placeholder="Enter Stock Ticker (e.g., GOOG)                                                  ⌘K"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
+      {/* Mobile Navigation Header */}
+      <div className="flex justify-between items-center gap-24 p-8 pt-12 lg:hidden ">
+        <div className="w-full align-center justify-center flex-col">
+          <div>
+            <Link href="/">
+              <img
+                src="/Intrinsic..png"
+                alt="Intrinsic Logo"
+                className="w-[100px] h-[20px]"
               />
-              {errorMessage && (
-                <p
-                  ref={errorRef}
-                  className="text-red-400 text-xs font-bold mt-2"
+            </Link>
+          </div>
+          <div>
+          <p>
+          search bar
+        </p>
+          </div>
+       
+        </div>
+
+       
+
+        <div>
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {/* Hamburger Icon */}
+            <svg
+              className="w-6 h-6 text-gray-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Slide-Out Mobile Menu */}
+      <div
+        className={`fixed top-0 right-0 h-full w-64 bg-gray-100 z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
+          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="p-4">
+          <button onClick={() => setIsMobileMenuOpen(false)} className="mb-4">
+            {/* Close Icon */}
+            <svg
+              className="w-6 h-6 text-gray-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+            <div className="py-2">Resources</div>
+          </Link>
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+            <div className="py-2">Watchlist</div>
+          </Link>
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+            <div className="py-2">Login</div>
+          </Link>
+        </div>
+      </div>
+
+      <div className="flex flex-row justify-between ml-[122px] mr-[122px] align-center pt-12 mb-2 items-center font-sm text-[#989898]  ">
+        {/* Container for title and search bar */}
+        <div className="w-7xl flex align-center gap-4 mt-6">
+          {/* Title */}
+
+          <div className="pt-2">
+            <Link href="/">
+              <img
+                src="/Intrinsic..png"
+                alt="View More"
+                className="w-[100px] h-[20px]"
+                href="/"
+              />
+            </Link>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative w-[450px] mb-4 text-[#989898] lg-hidden ">
+            <input
+              ref={inputRef}
+              className="w-[450px] h-[40px] px-4 border border-[#E5E5E5] rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none focus:border-black transition-all "
+              type="text"
+              placeholder="Enter Stock Ticker (e.g., GOOG)                                                  ⌘K"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            {errorMessage && (
+              <p ref={errorRef} className="text-red-400 text-xs font-bold mt-2">
+                {errorMessage}
+              </p>
+            )}
+
+            {/* Dropdowns - Positioned Right Under Search Bar */}
+            <div className="absolute right-0 top-full mt-2 flex items-center text-[#989898]">
+              {/* Currency Dropdown */}
+              <div className="relative">
+                <select
+                  value={selectedCurrency}
+                  onChange={handleCurrencyChange}
+                  className="w-[70px] px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-6"
+                  style={{
+                    backgroundImage: `url('/down-arrow.svg')`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "right 6px center",
+                    backgroundSize: "6px",
+                  }}
                 >
-                  {errorMessage}
-                </p>
-              )}
+                  <option value="USD">USD</option>
+                  <option disabled>EUR (Coming Soon!)</option>
+                </select>
+              </div>
 
-              {/* Dropdowns - Positioned Right Under Search Bar */}
-              <div className="absolute right-0 top-full mt-2 flex items-center text-[#989898]">
-                {/* Currency Dropdown */}
-                <div className="relative">
-                  <select
-                    value={selectedCurrency}
-                    onChange={handleCurrencyChange}
-                    className="w-[70px] px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-6"
-                    style={{
-                      backgroundImage: `url('/down-arrow.svg')`,
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right 6px center",
-                      backgroundSize: "6px",
-                    }}
-                  >
-                    <option value="USD">USD</option>
-                    <option disabled>EUR (Coming Soon!)</option>
-                  </select>
-                </div>
+              {/* Divider - Moves closer when method dropdown is shorter */}
+              <div className="h-full flex items-center text-[#989898] text-sm font-light mx-2 pl-2">
+                |
+              </div>
 
-                {/* Divider - Moves closer when method dropdown is shorter */}
-                <div className="h-full flex items-center text-[#989898] text-sm font-light mx-2 pl-2">
-                  |
-                </div>
+              {/* Method Dropdown - Auto-adjusting width based on selected option */}
+              <div className="relative flex items-center">
+                <select
+                  value={selectedMethod}
+                  onChange={handleMethodChange}
+                  className="px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-8"
+                  style={{
+                    backgroundImage: `url('/down-arrow.svg')`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "right 6px center",
+                    backgroundSize: "6px",
+                  }}
+                >
+                  <option value="C">CONSOLIDATED</option>
+                  <option value="DCF">DISCOUNTED CASH FLOW</option>
+                  <option value="RI">RESIDUAL INCOME</option>
+                  <option value="M">MULTIPLES</option>
+                </select>
 
-                {/* Method Dropdown - Auto-adjusting width based on selected option */}
-                <div className="relative flex items-center">
-                  <select
-                    value={selectedMethod}
-                    onChange={handleMethodChange}
-                    className="px-2 py-1 bg-white appearance-none outline-none focus:underline font-medium pr-8"
-            
-                      style={{
-                        backgroundImage: `url('/down-arrow.svg')`,
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "right 6px center",
-                        backgroundSize: "6px",
-                      }}
-                   
-                  >
-                    <option value="C">CONSOLIDATED</option>
-                    <option value="DCF">DISCOUNTED CASH FLOW</option>
-                    <option value="RI">RESIDUAL INCOME</option>
-                    <option value="M">MULTIPLES</option>
-                  </select>
-
-                  {/* Dropdown Icon (Absolutely Positioned) */}
-             
-                </div>
+                {/* Dropdown Icon (Absolutely Positioned) */}
               </div>
             </div>
           </div>
-   
+        </div>
 
         <div className="flex gap-2 font-light text-xs text-[#949494] uppercase">
           <div className="hover:bg-[#EEEEEE]  hover:font-sm hover:text-stone-500  p-2 rounded-md pr-4 pl-4">

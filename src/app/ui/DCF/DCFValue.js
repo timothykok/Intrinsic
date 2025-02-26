@@ -9,6 +9,7 @@ export default function DCFValue({
   price,
   financialData,
   presentValue,
+  setPresentValue,
   dcfValuePresentValue,
   setDCFPresentValue,
   selectedMethod
@@ -24,10 +25,13 @@ export default function DCFValue({
       const intrinsicValue = presentValue / financialData.outstandingShares;
 
       setDCFPresentValue(intrinsicValue)
+     
+
 
       const formattedIntrinsicValue = intrinsicValue.toFixed(2);
 
       setIntrinsicValuePerShare(formattedIntrinsicValue);
+      setPresentValue(formattedIntrinsicValue)
 
 
       const discountPremiumValue = (price / intrinsicValue - 1) * 100; // Calculate as percentage

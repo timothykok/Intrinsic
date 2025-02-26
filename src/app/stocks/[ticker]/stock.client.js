@@ -379,7 +379,9 @@ export default function StockPage() {
 
       const ebitda = incomeData[0]?.ebitda;
 
-      const debtToEbitdaRatio = totalDebt/ebitda;
+      const debtToEbitda = totalDebt/ebitda;
+
+      const debtServicingRatio = "working on it"
 
 
 
@@ -928,6 +930,7 @@ currentRatio,
                             freeCashFlowEquityData={freeCashFlowEquityData}
                             financialData={financialData}
                             selectedMethod={selectedMethod}
+
                           />
                           <DCFCalculation
                             ticker={ticker}
@@ -945,6 +948,7 @@ currentRatio,
                             price={stockInfo.price}
                             financialData={financialData}
                             presentValue={presentValue}
+                            setPresentValue={setPresentValue}
                             dcfPresentValue={dcfValuePresentValue}
                             setDCFPresentValue={setDCFPresentValue}
                             selectedMethod={selectedMethod}
