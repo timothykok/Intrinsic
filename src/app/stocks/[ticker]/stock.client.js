@@ -366,10 +366,29 @@ export default function StockPage() {
 
 
 
-
+      //Current Ratio
       const currentRatio = ratioData[0]?.currentRatio || 0;
-      const longTermDebt = ratioData[0]?.totalDebtToCapitalization || 0;
-      const debtRatio = ratioData[0]?.debtRatio || 0;
+
+
+
+      //Debt to Ebitda Ratio
+      const shortTermDebt = balanceSheetData[0]?.shortTermDebt;
+      const longTermDebt = balanceSheetData[0]?.longTermDebt;
+
+      const totalDebt = shortTermDebt + longTermDebt;
+
+      const ebitda = incomeData[0]?.ebitda;
+
+      const debtToEbitdaRatio = totalDebt/ebitda;
+
+
+
+      // Debt Servicing Ratio 
+
+      const operatingIncome = incomeData[0]?.operatingIncome;
+      
+
+
 
 
       //------------------------------------------------------------------------------------

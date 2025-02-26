@@ -166,7 +166,6 @@ export default function Home() {
 
   const currentTicker = ticker || input.toUpperCase().trim();
 
-
   const fetchData = async (url) => {
     try {
       const response = await axios.get(url);
@@ -319,7 +318,7 @@ export default function Home() {
       // Extract and use peers data:
       const peers = peersData[0]?.peersList;
 
-      console.log("PEERS: " + peers)
+      console.log("PEERS: " + peers);
       let averagePeerPE = null;
       if (peers && peers.length > 0) {
         const peerSymbols = peers.join(",");
@@ -495,318 +494,381 @@ export default function Home() {
   useEffect(() => {
     setFreeCashFlowEquityData(calculatedFreeCashFlowEquity);
   }, [calculatedFreeCashFlowEquity]);
-//--------------------------
-// DCF PRESENT VALUE
-//--------------------------
-function calculateDCFPresentValue() {
-  console.log("----- DCF Calculation Start -----");
-  console.log("freeCashFlowEquityData:", freeCashFlowEquityData);
-  console.log("financialData.fiveYearGrowthRate:", financialData.fiveYearGrowthRate);
-  console.log("financialData.tenYearGrowthRate:", financialData.tenYearGrowthRate);
-  console.log("financialData.longTermGrowthRate:", financialData.longTermGrowthRate);
-  console.log("costOfEquity:", costOfEquity);
+  //--------------------------
+  // DCF PRESENT VALUE
+  //--------------------------
+  function calculateDCFPresentValue() {
+    console.log("----- DCF Calculation Start -----");
+    console.log("freeCashFlowEquityData:", freeCashFlowEquityData);
+    console.log(
+      "financialData.fiveYearGrowthRate:",
+      financialData.fiveYearGrowthRate
+    );
+    console.log(
+      "financialData.tenYearGrowthRate:",
+      financialData.tenYearGrowthRate
+    );
+    console.log(
+      "financialData.longTermGrowthRate:",
+      financialData.longTermGrowthRate
+    );
+    console.log("costOfEquity:", costOfEquity);
 
-  try {
-    if (
-      freeCashFlowEquityData !== null &&
-      financialData.fiveYearGrowthRate !== null &&
-      financialData.tenYearGrowthRate !== null &&
-      financialData.longTermGrowthRate !== null &&
-      costOfEquity !== null
-    ) {
-      let pv = 0;
-      // Convert growth rates to decimal form
-      const fiveYearG = financialData.fiveYearGrowthRate / 100;
-      const tenYearG = financialData.tenYearGrowthRate / 100;
-      const longTermG = financialData.longTermGrowthRate / 100;
-      const coe = costOfEquity / 100;
+    try {
+      if (
+        freeCashFlowEquityData !== null &&
+        financialData.fiveYearGrowthRate !== null &&
+        financialData.tenYearGrowthRate !== null &&
+        financialData.longTermGrowthRate !== null &&
+        costOfEquity !== null
+      ) {
+        let pv = 0;
+        // Convert growth rates to decimal form
+        const fiveYearG = financialData.fiveYearGrowthRate / 100;
+        const tenYearG = financialData.tenYearGrowthRate / 100;
+        const longTermG = financialData.longTermGrowthRate / 100;
+        const coe = costOfEquity / 100;
 
-      console.log("Converted Values - fiveYearG:", fiveYearG, "tenYearG:", tenYearG, "longTermG:", longTermG, "coe:", coe);
+        console.log(
+          "Converted Values - fiveYearG:",
+          fiveYearG,
+          "tenYearG:",
+          tenYearG,
+          "longTermG:",
+          longTermG,
+          "coe:",
+          coe
+        );
 
-      // Calculate PV of FCFE from Year 1 to Year 5
-      for (let t = 1; t <= 5; t++) {
-        const projectedFCFE = freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
-        const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
-        console.log(`Year ${t} - projectedFCFE: ${projectedFCFE}, discountedFCFE: ${discountedFCFE}`);
-        pv += discountedFCFE;
+        // Calculate PV of FCFE from Year 1 to Year 5
+        for (let t = 1; t <= 5; t++) {
+          const projectedFCFE =
+            freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
+          const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
+          console.log(
+            `Year ${t} - projectedFCFE: ${projectedFCFE}, discountedFCFE: ${discountedFCFE}`
+          );
+          pv += discountedFCFE;
+        }
+
+        // Calculate PV of FCFE from Year 6 to Year 10
+        let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // start from Year 5 FCFE
+        console.log("Initial fcfeYearN (end of Year 5):", fcfeYearN);
+        for (let t = 6; t <= 10; t++) {
+          fcfeYearN *= 1 + tenYearG; // grow each year
+          const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
+          console.log(
+            `Year ${t} - fcfeYearN: ${fcfeYearN}, discountedFCFE: ${discountedFCFE}`
+          );
+          pv += discountedFCFE;
+        }
+
+        // Calculate Perpetuity Value at Year 11
+        const fcfeYear10 = fcfeYearN; // already grown to Year 10
+        const perpetuityValue =
+          (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
+        const discountedPerpetuityValue =
+          perpetuityValue / Math.pow(1 + coe, 10);
+        console.log(
+          "Perpetuity Value:",
+          perpetuityValue,
+          "Discounted Perpetuity Value:",
+          discountedPerpetuityValue
+        );
+
+        // Add discounted perpetuity to PV
+        pv += discountedPerpetuityValue;
+        console.log("Final DCF Present Value:", parseFloat(pv.toFixed(2)));
+        setDCFPresentValue(parseFloat(pv.toFixed(2)));
+      } else {
+        console.log("Missing required data for DCF calculation.");
+      }
+    } catch (error) {
+      console.log("Error in calculateDCFPresentValue:", error);
+    }
+  }
+
+  // Also log in the DCF useEffect
+  useEffect(() => {
+    try {
+      if (
+        freeCashFlowEquityData !== null &&
+        financialData.fiveYearGrowthRate !== null &&
+        financialData.tenYearGrowthRate !== null &&
+        financialData.longTermGrowthRate !== null &&
+        costOfEquity !== null
+      ) {
+        calculateDCFPresentValue();
+      } else {
+        console.log("DCF useEffect: Some values are missing.");
+      }
+    } catch (error) {
+      console.log("Error in DCF useEffect:", error);
+    }
+  }, [
+    freeCashFlowEquityData,
+    financialData.fiveYearGrowthRate,
+    financialData.tenYearGrowthRate,
+    financialData.longTermGrowthRate,
+    costOfEquity,
+    selectedMethod,
+    ticker,
+  ]);
+
+  //--------------------------
+  // MULTIPLES PRESENT VALUE
+  //--------------------------
+  let multiplesPresentValueCalculated = null;
+
+  function calculateMultiplesPresentValue() {
+    console.log("----- Multiples Calculation Start -----");
+    console.log(
+      "eps:",
+      eps,
+      "financialData.averagePeerPE:",
+      financialData.averagePeerPE
+    );
+    multiplesPresentValueCalculated = eps * financialData.averagePeerPE;
+    console.log(
+      "Calculated Multiples Present Value:",
+      multiplesPresentValueCalculated
+    );
+    setMultiplesPresentValue(multiplesPresentValueCalculated);
+  }
+
+  useEffect(() => {
+    console.log("Multiples useEffect running...");
+    calculateMultiplesPresentValue();
+  }, [
+    financialData.outstandingShares,
+    setPresentValue,
+    setMultiplesPresentValue,
+  ]);
+
+  //--------------------------
+  // RESIDUAL INCOME PRESENT VALUE
+  //--------------------------
+  function calculateResidualPresentValue() {
+    console.log("----- Residual Income Calculation Start -----");
+    console.log("ticker:", ticker);
+    console.log("financialData.netIncome:", financialData.netIncome);
+    console.log("financialData.currentEquity:", financialData.currentEquity);
+    console.log("costOfEquity:", costOfEquity);
+    console.log(
+      "financialData.longTermGrowthRate:",
+      financialData.longTermGrowthRate
+    );
+
+    try {
+      if (
+        !ticker ||
+        financialData.netIncome === null ||
+        financialData.currentEquity === null ||
+        costOfEquity === null ||
+        financialData.longTermGrowthRate === null
+      )
+        return console.log("Residual Income: Missing required values.");
+
+      const coeDecimal = costOfEquity / 100;
+      const g = financialData.longTermGrowthRate / 100;
+      const startingRI =
+        financialData.netIncome - financialData.currentEquity * coeDecimal;
+      console.log("Starting Residual Income (startingRI):", startingRI);
+
+      const forecastYears = 5;
+      let pvResidualIncome = 0;
+      for (let t = 1; t <= forecastYears; t++) {
+        const RI_t = startingRI * Math.pow(1 + g, t);
+        const discountedRI = RI_t / Math.pow(1 + coeDecimal, t);
+        console.log(`Year ${t} - RI_t: ${RI_t}, discountedRI: ${discountedRI}`);
+        pvResidualIncome += discountedRI;
       }
 
-      // Calculate PV of FCFE from Year 6 to Year 10
-      let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // start from Year 5 FCFE
-      console.log("Initial fcfeYearN (end of Year 5):", fcfeYearN);
-      for (let t = 6; t <= 10; t++) {
-        fcfeYearN *= 1 + tenYearG; // grow each year
-        const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
-        console.log(`Year ${t} - fcfeYearN: ${fcfeYearN}, discountedFCFE: ${discountedFCFE}`);
-        pv += discountedFCFE;
+      const RI_final = startingRI * Math.pow(1 + g, forecastYears);
+      const terminalValue = (RI_final * (1 + g)) / (coeDecimal - g);
+      const discountedTerminalValue =
+        terminalValue / Math.pow(1 + coeDecimal, forecastYears);
+      console.log(
+        "Terminal Value:",
+        terminalValue,
+        "Discounted Terminal Value:",
+        discountedTerminalValue
+      );
+
+      pvResidualIncome += discountedTerminalValue;
+      const totalResidualValue = financialData.currentEquity + pvResidualIncome;
+      console.log(
+        "Final Residual Income Present Value:",
+        parseFloat(totalResidualValue.toFixed(2))
+      );
+      setResidualIncomePresentValue(parseFloat(totalResidualValue.toFixed(2)));
+    } catch (error) {
+      console.log("Error in calculateResidualPresentValue:", error);
+    }
+  }
+
+  useEffect(() => {
+    try {
+      if (
+        !ticker ||
+        financialData.netIncome === null ||
+        financialData.currentEquity === null ||
+        costOfEquity === null ||
+        financialData.longTermGrowthRate === null
+      ) {
+        console.log("Residual Income useEffect: Missing required values.");
+        return;
       }
-
-      // Calculate Perpetuity Value at Year 11
-      const fcfeYear10 = fcfeYearN; // already grown to Year 10
-      const perpetuityValue = (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
-      const discountedPerpetuityValue = perpetuityValue / Math.pow(1 + coe, 10);
-      console.log("Perpetuity Value:", perpetuityValue, "Discounted Perpetuity Value:", discountedPerpetuityValue);
-
-      // Add discounted perpetuity to PV
-      pv += discountedPerpetuityValue;
-      console.log("Final DCF Present Value:", parseFloat(pv.toFixed(2)));
-      setDCFPresentValue(parseFloat(pv.toFixed(2)));
-    } else {
-      console.log("Missing required data for DCF calculation.");
+      calculateResidualPresentValue();
+    } catch (error) {
+      console.log("Error in Residual Income useEffect:", error);
     }
-  } catch (error) {
-    console.log("Error in calculateDCFPresentValue:", error);
-  }
-}
+  }, [
+    ticker,
+    financialData.netIncome,
+    financialData.currentEquity,
+    costOfEquity,
+    financialData.longTermGrowthRate,
+    selectedMethod,
+  ]);
 
-// Also log in the DCF useEffect
-useEffect(() => {
-  try {
-    if (
-      freeCashFlowEquityData !== null &&
-      financialData.fiveYearGrowthRate !== null &&
-      financialData.tenYearGrowthRate !== null &&
-      financialData.longTermGrowthRate !== null &&
-      costOfEquity !== null
-    ) {
-      calculateDCFPresentValue();
-    } else {
-      console.log("DCF useEffect: Some values are missing.");
-    }
-  } catch (error) {
-    console.log("Error in DCF useEffect:", error);
-  }
-}, [
-  freeCashFlowEquityData,
-  financialData.fiveYearGrowthRate,
-  financialData.tenYearGrowthRate,
-  financialData.longTermGrowthRate,
-  costOfEquity,
-  selectedMethod,
-  ticker,
-]);
+  //--------------------------
+  // CONSOLIDATED PRESENT VALUE
+  //--------------------------
+  useEffect(() => {
+    console.log("----- Consolidated Calculation Start -----");
+    console.log("Multiples Present Value:", multiplesPresentValue);
+    console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
+    console.log("Residual Income Present Value:", residualIncomePresentValue);
 
-//--------------------------
-// MULTIPLES PRESENT VALUE
-//--------------------------
-let multiplesPresentValueCalculated = null;
-
-function calculateMultiplesPresentValue() {
-  console.log("----- Multiples Calculation Start -----");
-  console.log("eps:", eps, "financialData.averagePeerPE:", financialData.averagePeerPE);
-  multiplesPresentValueCalculated = eps * financialData.averagePeerPE;
-  console.log("Calculated Multiples Present Value:", multiplesPresentValueCalculated);
-  setMultiplesPresentValue(multiplesPresentValueCalculated);
-}
-
-useEffect(() => {
-  console.log("Multiples useEffect running...");
-  calculateMultiplesPresentValue();
-}, [financialData.outstandingShares, setPresentValue, setMultiplesPresentValue]);
-
-//--------------------------
-// RESIDUAL INCOME PRESENT VALUE
-//--------------------------
-function calculateResidualPresentValue() {
-  console.log("----- Residual Income Calculation Start -----");
-  console.log("ticker:", ticker);
-  console.log("financialData.netIncome:", financialData.netIncome);
-  console.log("financialData.currentEquity:", financialData.currentEquity);
-  console.log("costOfEquity:", costOfEquity);
-  console.log("financialData.longTermGrowthRate:", financialData.longTermGrowthRate);
-
-  try {
-    if (
-      !ticker ||
-      financialData.netIncome === null ||
-      financialData.currentEquity === null ||
-      costOfEquity === null ||
-      financialData.longTermGrowthRate === null
-    )
-      return console.log("Residual Income: Missing required values.");
-
-    const coeDecimal = costOfEquity / 100;
-    const g = financialData.longTermGrowthRate / 100;
-    const startingRI = financialData.netIncome - financialData.currentEquity * coeDecimal;
-    console.log("Starting Residual Income (startingRI):", startingRI);
-
-    const forecastYears = 5;
-    let pvResidualIncome = 0;
-    for (let t = 1; t <= forecastYears; t++) {
-      const RI_t = startingRI * Math.pow(1 + g, t);
-      const discountedRI = RI_t / Math.pow(1 + coeDecimal, t);
-      console.log(`Year ${t} - RI_t: ${RI_t}, discountedRI: ${discountedRI}`);
-      pvResidualIncome += discountedRI;
-    }
-
-    const RI_final = startingRI * Math.pow(1 + g, forecastYears);
-    const terminalValue = (RI_final * (1 + g)) / (coeDecimal - g);
-    const discountedTerminalValue = terminalValue / Math.pow(1 + coeDecimal, forecastYears);
-    console.log("Terminal Value:", terminalValue, "Discounted Terminal Value:", discountedTerminalValue);
-
-    pvResidualIncome += discountedTerminalValue;
-    const totalResidualValue = financialData.currentEquity + pvResidualIncome;
-    console.log("Final Residual Income Present Value:", parseFloat(totalResidualValue.toFixed(2)));
-    setResidualIncomePresentValue(parseFloat(totalResidualValue.toFixed(2)));
-  } catch (error) {
-    console.log("Error in calculateResidualPresentValue:", error);
-  }
-}
-
-useEffect(() => {
-  try {
-    if (
-      !ticker ||
-      financialData.netIncome === null ||
-      financialData.currentEquity === null ||
-      costOfEquity === null ||
-      financialData.longTermGrowthRate === null
-    ) {
-      console.log("Residual Income useEffect: Missing required values.");
-      return;
-    }
+    // Call all the individual calculation functions
     calculateResidualPresentValue();
-  } catch (error) {
-    console.log("Error in Residual Income useEffect:", error);
-  }
-}, [
-  ticker,
-  financialData.netIncome,
-  financialData.currentEquity,
-  costOfEquity,
-  financialData.longTermGrowthRate,
-  selectedMethod,
-]);
+    calculateDCFPresentValue();
+    calculateMultiplesPresentValue();
 
-//--------------------------
-// CONSOLIDATED PRESENT VALUE
-//--------------------------
-useEffect(() => {
-  console.log("----- Consolidated Calculation Start -----");
-  console.log("Multiples Present Value:", multiplesPresentValue);
-  console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
-  console.log("Residual Income Present Value:", residualIncomePresentValue);
+    // Check explicitly for null values, so that a result of 0 is accepted
+    if (
+      multiplesPresentValue != null &&
+      dcfValuePresentValue != null &&
+      residualIncomePresentValue != null
+    ) {
+      const newConsolidatedValue =
+        (multiplesPresentValue +
+          dcfValuePresentValue +
+          residualIncomePresentValue) /
+        3;
+      console.log("New Consolidated Present Value:", newConsolidatedValue);
+      setConsolidatedPresentValue(newConsolidatedValue);
+    } else {
+      console.log(
+        "Consolidated calculation: One or more values are missing or zero."
+      );
+    }
+  }, [
+    multiplesPresentValue,
+    dcfValuePresentValue,
+    residualIncomePresentValue,
+    ticker,
+  ]);
 
-  // Call all the individual calculation functions
-  calculateResidualPresentValue();
-  calculateDCFPresentValue();
-  calculateMultiplesPresentValue();
-
-  // Check explicitly for null values, so that a result of 0 is accepted
-  if (
-    multiplesPresentValue != null &&
-    dcfValuePresentValue != null && 
-    residualIncomePresentValue != null
-  ) {
-    const newConsolidatedValue =
-      (multiplesPresentValue + dcfValuePresentValue + residualIncomePresentValue) / 3;
-    console.log("New Consolidated Present Value:", newConsolidatedValue);
-    setConsolidatedPresentValue(newConsolidatedValue);
-  } else {
-    console.log("Consolidated calculation: One or more values are missing or zero.");
-  }
-}, [multiplesPresentValue, dcfValuePresentValue, residualIncomePresentValue, ticker]);
-
-// Log the updated values whenever they change
-useEffect(() => {
-  console.log("Updated Values:");
-  console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
-  console.log("Residual Income Present Value:", residualIncomePresentValue);
-  console.log("Multiples Present Value:", multiplesPresentValue);
-  console.log("New Consolidated Present Value 2:", consolidatedPresentValue);
-  console.log("Selected Method:", selectedMethod);
-}, [dcfValuePresentValue, residualIncomePresentValue, multiplesPresentValue, selectedMethod, ]);
-
-  
-
+  // Log the updated values whenever they change
+  useEffect(() => {
+    console.log("Updated Values:");
+    console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
+    console.log("Residual Income Present Value:", residualIncomePresentValue);
+    console.log("Multiples Present Value:", multiplesPresentValue);
+    console.log("New Consolidated Present Value 2:", consolidatedPresentValue);
+    console.log("Selected Method:", selectedMethod);
+  }, [
+    dcfValuePresentValue,
+    residualIncomePresentValue,
+    multiplesPresentValue,
+    selectedMethod,
+  ]);
 
   return (
     <Suspense>
-
-
-   
-    <>
-
-
-      <HomeNav />
-      <main className="px-4">
-        <div className="mb-16">
-          <Ticker />
-          <div className="spacer h-6 md:h-24"></div>
-          <div className="title-wrapper flex flex-col items-center py-8">
-            <div className="title-container">
-              <img
-                src="/Intrinsic..png"
-                alt="View More"
-                className="w-full max-w-3xl h-auto object-contain"
-              />
-            </div>
-            {/* Search Bar Section */}
-            <div className="relative w-full max-w-3xl mt-8 mb-4">
-              <input
-                ref={inputRef}
-                className="w-full h-10 px-4 border border-gray-300 rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none transition-all"
-                type="text"
-                placeholder="Enter Stock Ticker (e.g., GOOG)"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-              {errorMessage && (
-                <p ref={errorRef} className="text-red-400 text-xs font-bold mt-2">
-                  {errorMessage}
-                </p>
-              )}
-              <div className="absolute right-0 top-full mt-4 flex items-center text-gray-500 appearance-none">
-                <div className="relative">
-                  <select
-                    value={selectedCurrency}
-                    onChange={handleCurrencyChange}
-                    className="w-16 px-2 py-1 bg-white focus:underline font-medium pr-6 appearance-none"
-                    style={{
-                      backgroundImage: `url('/down-arrow.svg')`,
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right 6px center",
-                      backgroundSize: "6px",
-                    }}
+      <>
+        <HomeNav />
+        <main className="px-4 sm:mb-128">
+          <div className="mb-16">
+            <Ticker />
+            <div className="spacer h-6 md:h-24"></div>
+            <div className="title-wrapper flex flex-col items-center py-8">
+              <div className="title-container">
+                <img
+                  src="/Intrinsic..png"
+                  alt="View More"
+                  className="w-full md:w-full sm:w-64  max-w-3xl h-auto object-contain mb-8"
+                />
+              </div>
+              {/* Search Bar Section */}
+              <div className="relative w-full max-w-3xl mt-8 mb-4">
+                <input
+                  ref={inputRef}
+                  className="w-full h-10 px-4 border border-gray-300 rounded-lg placeholder-gray-600 shadow-sm focus:ring-4 focus:ring-black outline-none transition-all"
+                  type="text"
+                  placeholder="Enter Stock Ticker (e.g., GOOG)"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+                {errorMessage && (
+                  <p
+                    ref={errorRef}
+                    className="text-red-400 text-xs font-bold mt-2"
                   >
-                    <option value="USD">USD</option>
-                    <option disabled>EUR (Coming Soon!)</option>
-                  </select>
-                </div>
-                <div className="h-full flex items-center text-sm font-light mx-2 pl-2 appearance-none">
-                  |
-                </div>
-                <div className="relative flex items-center">
-                  <select
-                    value={selectedMethod}
-                    onChange={handleMethodChange}
-                    className="px-2 py-1 bg-white focus:underline font-medium pr-8 appearance-none "
-                    style={{
-                      width: "max-content",
-                      minWidth: "120px",
-                    }}
-                  >
-                    <option value="C">CONSOLIDATED</option>
-                    <option value="DCF">DISCOUNTED CASH FLOW</option>
-                    <option value="RI">RESIDUAL INCOME</option>
-                    <option value="M">MULTIPLES</option>
-                  </select>
-                  <img
-                    src="/down-arrow.svg"
-                    alt="Dropdown Arrow"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2 "
-                  />
+                    {errorMessage}
+                  </p>
+                )}
+                <div className="absolute right-0 top-full mt-4 flex items-center text-gray-500 appearance-none">
+                  <div className="relative">
+                    <select
+                      value={selectedCurrency}
+                      onChange={handleCurrencyChange}
+                      className="w-16 px-2 py-1 bg-white focus:underline font-medium pr-6 appearance-none"
+                      style={{
+                        backgroundImage: `url('/down-arrow.svg')`,
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "right 6px center",
+                        backgroundSize: "6px",
+                      }}
+                    >
+                      <option value="USD">USD</option>
+                      <option disabled>EUR (Coming Soon!)</option>
+                    </select>
+                  </div>
+                  <div className="h-full flex items-center text-sm font-light mx-2 pl-2 appearance-none">
+                    |
+                  </div>
+                  <div className="relative flex items-center">
+                    <select
+                      value={selectedMethod}
+                      onChange={handleMethodChange}
+                      className="px-2 py-1 bg-white focus:underline font-medium pr-8 appearance-none "
+                      style={{
+                        width: "max-content",
+                        minWidth: "120px",
+                      }}
+                    >
+                      <option value="C">CONSOLIDATED</option>
+                      <option value="DCF">DISCOUNTED CASH FLOW</option>
+                      <option value="RI">RESIDUAL INCOME</option>
+                      <option value="M">MULTIPLES</option>
+                    </select>
+                    <img
+                      src="/down-arrow.svg"
+                      alt="Dropdown Arrow"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2 "
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
-      <Footer />
-      
-    </>
-     
+        </main>
+        <Footer />
+      </>
     </Suspense>
   );
 }

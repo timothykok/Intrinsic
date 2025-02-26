@@ -1,7 +1,7 @@
 import "./globals.css";
 import SearchNav from "./ui/NavBars/SearchNav";
 
-import { MethodProvider } from "../context/MethodContext.js"; 
+import { MethodProvider } from "../context/MethodContext.js";
 
 export const metadata = {
   title: "Intrinsic",
@@ -11,6 +11,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
       <body
         className="antialiased font-light"
         style={{ fontFamily: '"Montserrat", sans-serif' }}
