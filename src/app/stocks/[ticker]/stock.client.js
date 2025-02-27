@@ -41,6 +41,8 @@ export default function StockPage() {
   const { ticker } = useParams();
   const { selectedMethod, setSelectedMethod } = useMethod("C");
 
+  
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const homeSelectedMethod = searchParams.get("selectedMethod");
@@ -905,6 +907,7 @@ currentRatio,
     multiplesPresentValue,
     dcfValuePresentValue,
     residualIncomePresentValue,
+    consolidatedPresentValue,
     selectedMethod,
     selectedCurrency,
   ]);

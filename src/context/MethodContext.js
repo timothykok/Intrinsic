@@ -5,7 +5,7 @@ import { createContext, useContext, useState } from "react";
 const MethodContext = createContext();
 
 export function MethodProvider({ children }) {
-  const [selectedMethod, setSelectedMethod] = useState("");
+  const [selectedMethod, setSelectedMethod] = useState("C");
   return (
     <MethodContext.Provider value={{ selectedMethod, setSelectedMethod }}>
       {children}
