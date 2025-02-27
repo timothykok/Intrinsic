@@ -39,7 +39,7 @@ export default function StockPage() {
   const [input, setInput] = useState("");
   // The ticker is obtained from the URL (the slug). No need to set it manually.
   const { ticker } = useParams();
-  const { selectedMethod, setSelectedMethod } = useMethod();
+  const { selectedMethod, setSelectedMethod } = useMethod("C");
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,12 +47,20 @@ export default function StockPage() {
 
   // When the query param is present, update the context:
   useEffect(() => {
-    if (homeSelectedMethod) {
+    if (homeSelectedMethod && !selectedMethod) {
       setSelectedMethod(homeSelectedMethod);
     }
-  }, [homeSelectedMethod, setSelectedMethod]);
+  }, [homeSelectedMethod, selectedMethod]);
+
+
+
+
 
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
+
+
+
+
 
   // States for fetched financial data
   const [stockInfo, setStockInfo] = useState(null);
@@ -62,8 +70,8 @@ export default function StockPage() {
   const [dcfValuePresentValue, setDCFPresentValue] = useState(null);
   const [residualIncomePresentValue, setResidualIncomePresentValue] =
     useState(null);
-  const [multiplesPresentValue, setMultiplesPresentValue] = useState(0);
-  const [consolidatedPresentValue, setConsolidatedPresentValue] = useState(0);
+  const [multiplesPresentValue, setMultiplesPresentValue] = useState(null);
+  const [consolidatedPresentValue, setConsolidatedPresentValue] = useState(null);
   // const [outstandingShares, setOutstandingShares] = useState([]);
   const [presentValue, setPresentValue] = useState(null);
   const [costOfEquity, setCostOfEquity] = useState(null);
@@ -151,12 +159,24 @@ export default function StockPage() {
   };
 
   const handleMethodChange = (e) => {
-    setSelectedMethod(e.target.value);
+    const newMethod = e.target.value;
+    if (newMethod === "C") {
+      // Temporarily set the method to DCF first.
+      setSelectedMethod("DCF");
+      // After a short delay, switch to Consolidated.
+      setTimeout(() => {
+        setSelectedMethod("C");
+      }, 50);
+    } else {
+      setSelectedMethod(newMethod);
+    }
   };
 
   const handleCurrencyChange = (e) => {
     setSelectedCurrency(e.target.value);
   };
+
+
 
   // Function to show error message with animation
   const triggerErrorMessage = () => {
@@ -185,6 +205,21 @@ export default function StockPage() {
       setInput("");
     }
   };
+
+  //on mount render to DCF and then to C
+  useEffect(()=> {
+    if (selectedMethod === "C"){
+      // Temporarily set the method to DCF first.
+      setSelectedMethod("DCF");
+      console.log("DCF Switch: " + selectedMethod)
+      // After a short delay, switch to Consolidated.
+      setTimeout(() => {
+        setSelectedMethod("C");
+        console.log("Consolidated switch back: " + selectedMethod)
+      }, 50);
+    }
+
+   }, [])
 
   const fetchData = async (url) => {
     try {
@@ -685,6 +720,7 @@ currentRatio,
         pv += discountedPerpetuityValue;
         console.log("Final DCF Present Value:", parseFloat(pv.toFixed(2)));
         setDCFPresentValue(parseFloat(pv.toFixed(2)));
+
       } else {
         console.log("Missing required data for DCF calculation.");
       }
@@ -852,20 +888,17 @@ currentRatio,
     calculateMultiplesPresentValue();
 
     if (
-      multiplesPresentValue &&
-      dcfValuePresentValue &&
-      residualIncomePresentValue
+      multiplesPresentValue !== null &&
+      dcfValuePresentValue !== null &&
+      residualIncomePresentValue !== null
     ) {
       const newConsolidatedValue =
         multiplesPresentValue +
         dcfValuePresentValue +
         residualIncomePresentValue;
-      console.log("Consolidated Present Value:", newConsolidatedValue);
       setConsolidatedPresentValue(newConsolidatedValue);
     } else {
-      console.log(
-        "Consolidated calculation: One or more values are missing or zero."
-      );
+      console.log("Consolidated calculation: One or more values are missing.");
     }
   }, [
     ticker,
@@ -930,6 +963,8 @@ currentRatio,
                             freeCashFlowEquityData={freeCashFlowEquityData}
                             financialData={financialData}
                             selectedMethod={selectedMethod}
+                           
+                            selectedCurrency={selectedCurrency}
 
                           />
                           <DCFCalculation
@@ -949,7 +984,7 @@ currentRatio,
                             financialData={financialData}
                             presentValue={presentValue}
                             setPresentValue={setPresentValue}
-                            dcfPresentValue={dcfValuePresentValue}
+                            dcfValuePresentValue ={dcfValuePresentValue}
                             setDCFPresentValue={setDCFPresentValue}
                             selectedMethod={selectedMethod}
                           />

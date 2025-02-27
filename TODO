@@ -40,6 +40,7 @@ Todo:
 
 bugs:
    ✔ search from home doesnt update method state in slug @done(25-02-14 23:36)
+   ☐ pass valuation props up to stock info 
 
 
 

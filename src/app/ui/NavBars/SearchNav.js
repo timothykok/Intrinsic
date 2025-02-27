@@ -23,10 +23,10 @@ export default function SearchNav() {
 
   // When the query param is present, update the context:
   useEffect(() => {
-    if (homeSelectedMethod) {
+    if (homeSelectedMethod && !selectedMethod) {
       setSelectedMethod(homeSelectedMethod);
     }
-  }, [homeSelectedMethod, setSelectedMethod]);
+  }, []);
 
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
 
@@ -594,7 +594,7 @@ export default function SearchNav() {
                   }}
                 >
                   <option value="USD">USD</option>
-                  <option disabled>EUR (Coming Soon!)</option>
+                  <option disabled>AUD (Coming Soon!)</option>
                 </select>
               </div>
 

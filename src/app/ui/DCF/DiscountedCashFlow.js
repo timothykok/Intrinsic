@@ -5,7 +5,7 @@ export default function DiscountedCashFlow({
   costOfEquity,
   freeCashFlowEquityData,
   financialData,
-  currency,
+ 
 }) {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isCostOfEquityCollapsed, setIsCostOfEquityCollapsed] = useState(true);
@@ -13,6 +13,9 @@ export default function DiscountedCashFlow({
   const toggleCollapse = () => {
     setIsCollapsed((prevState) => !prevState);
   };
+
+  const currency = "USD"; // Hardcoded currency symbol
+
 
   const toggleCostOfEquityCollapse = () => {
     setIsCostOfEquityCollapsed((prevState) => !prevState);
@@ -165,7 +168,7 @@ export default function DiscountedCashFlow({
           </div>
   
           <div className="ml-2 flex justify-between items-center">
-            <span className="ml-4 w-80">Cash Flow Growth Rate (Long Term)</span>
+            <span className="ml-4 w-96">Cash Flow Growth Rate (Long Term)</span>
             <span className="text-right">
               <div className="flex items-center">
                 <span className="mr-2">PCT</span>

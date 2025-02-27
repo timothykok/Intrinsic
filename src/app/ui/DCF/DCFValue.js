@@ -21,19 +21,33 @@ export default function DCFValue({
 
   // Calculate values when dependencies change
   useEffect(() => {
-    if (presentValue && financialData.outstandingShares && price) {
-      const intrinsicValue = presentValue / financialData.outstandingShares;
 
-      setDCFPresentValue(intrinsicValue)
+
+      console.log("DCFValue present value " + dcfValuePresentValue)
+      console.log("Outstanding " +  financialData.outstandingShares)
+   
+      const intrinsicValue = dcfValuePresentValue / financialData.outstandingShares;
+
+
+
+
+
+      console.log("intrinsic value " + intrinsicValue)
+      const formattedIntrinsicValue = intrinsicValue.toFixed(2);
+  
      
 
 
-      const formattedIntrinsicValue = intrinsicValue.toFixed(2);
-
       setIntrinsicValuePerShare(formattedIntrinsicValue);
+
       setPresentValue(formattedIntrinsicValue)
 
+      console.log("formatted Intrinsic value " + formattedIntrinsicValue)
 
+   
+
+
+    
       const discountPremiumValue = (price / intrinsicValue - 1) * 100; // Calculate as percentage
 
       const formattedDiscountPremium = discountPremiumValue.toFixed(2);
@@ -44,7 +58,8 @@ export default function DCFValue({
       setUnderOverValue(
         formattedDiscountPremium > 0 ? "overvalued" : "undervalued"
       );
-    }
+
+
   }, [presentValue, financialData, price, selectedMethod]);
 
   return (
@@ -93,7 +108,7 @@ export default function DCFValue({
             </span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className=" mr-[11px]">PCT</span>
+                <span className=" mr-[10px]">PCT</span>
                 <span className="w-48 ">
                   {discountPremium !== null
                     ? discountPremium.toLocaleString()

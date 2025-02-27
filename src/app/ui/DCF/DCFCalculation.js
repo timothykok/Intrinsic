@@ -97,8 +97,8 @@ export default function DCFCalculation({
               <div className="flex items-center">
                 <span className=" mr-2">{currency}</span>
                 <span className="w-48 ">
-                  {presentValue !== null
-                    ? presentValue.toLocaleString()
+                  {dcfPresentValue !== null
+                    ? dcfPresentValue.toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>
