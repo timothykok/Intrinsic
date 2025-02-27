@@ -13,54 +13,40 @@ export default function DCFValue({
   dcfValuePresentValue,
   setDCFPresentValue,
   selectedMethod
-  
 }) {
   const [intrinsicValuePerShare, setIntrinsicValuePerShare] = useState(null);
   const [discountPremium, setDiscountPremium] = useState(null);
+
   const [underOverValue, setUnderOverValue] = useState("");
 
   // Calculate values when dependencies change
   useEffect(() => {
+    // Calculate intrinsic value per share
+    const intrinsicValue = dcfValuePresentValue / financialData.outstandingShares;
+    const formattedIntrinsicValue = intrinsicValue.toFixed(2);
+    setIntrinsicValuePerShare(formattedIntrinsicValue);
+    setPresentValue(formattedIntrinsicValue);
+
+    // Compare intrinsic value with the last closing price:
+    // If intrinsic value is above the price, render as "Discount"
+    // Otherwise, render as "Premium"
 
 
-      console.log("DCFValue present value " + dcfValuePresentValue)
-      console.log("Outstanding " +  financialData.outstandingShares)
-   
-      const intrinsicValue = dcfValuePresentValue / financialData.outstandingShares;
+    const discountPremiumValue = (intrinsicValue/price) * 100
+
+      
+
+    const formattedDiscountPremium = discountPremiumValue.toFixed(2);
+
+    setDiscountPremium(formattedDiscountPremium);
 
 
-
-
-
-      console.log("intrinsic value " + intrinsicValue)
-      const formattedIntrinsicValue = intrinsicValue.toFixed(2);
-  
-     
-
-
-      setIntrinsicValuePerShare(formattedIntrinsicValue);
-
-      setPresentValue(formattedIntrinsicValue)
-
-      console.log("formatted Intrinsic value " + formattedIntrinsicValue)
-
-   
-
-
-    
-      const discountPremiumValue = (price / intrinsicValue - 1) * 100; // Calculate as percentage
-
-      const formattedDiscountPremium = discountPremiumValue.toFixed(2);
-
-      setDiscountPremium(formattedDiscountPremium);
-
-      // Determine under/overvaluation
-      setUnderOverValue(
-        formattedDiscountPremium > 0 ? "overvalued" : "undervalued"
-      );
-
-
-  }, [presentValue, financialData, price, selectedMethod]);
+    if (intrinsicValue > price) {
+      setUnderOverValue("Discount");
+    } else {
+      setUnderOverValue("Premium");
+    }
+  }, [presentValue, financialData, price, dcfValuePresentValue, selectedMethod]);
 
   return (
     <>
@@ -70,16 +56,14 @@ export default function DCFValue({
 
         <div className="space-y-5 text-sm font-medium text-[#909090] ">
           {/* Intrinsic Value Per Share */}
-          <div className="flex justify-between items-center ">
-            <span className=" ml-6 w-80">
-              Intrinsic Value Per Share
-            </span>
+          <div className="flex justify-between items-center">
+            <span className="ml-6 w-80">Intrinsic Value Per Share</span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className=" mr-2">{currency}</span>
-                <span className="w-48 ">
+                <span className="mr-2">{currency}</span>
+                <span className="w-48">
                   {intrinsicValuePerShare !== null
-                    ? intrinsicValuePerShare.toLocaleString()
+                    ? Number(intrinsicValuePerShare).toLocaleString()
                     : "Calculating..."}
                 </span>
               </div>
@@ -87,33 +71,33 @@ export default function DCFValue({
           </div>
 
           {/* Last Closing Price */}
-          <div className="flex justify-between items-center ">
-            <span className=" ml-6 w-80">
-              Last Closing Price
-            </span>
+          <div className="flex justify-between items-center">
+            <span className="ml-6 w-80">Last Closing Price</span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className=" mr-2">{currency}</span>
-                <span className="w-48 ">
-                  {price !== null ? price.toLocaleString() : "Calculating..."}
+                <span className="mr-2">{currency}</span>
+                <span className="w-48">
+                  {price !== null
+                    ? Number(price).toLocaleString()
+                    : "Calculating..."}
                 </span>
               </div>
             </span>
           </div>
 
-          {/* Discount/Premium */}
-          <div className="flex justify-between items-center ">
-            <span className=" ml-6 w-80">
-              Discount/Premium
-            </span>
+          {/* Premium/Discount Indicator */}
+          <div className="flex justify-between items-center">
+            <span className="ml-6 w-80"> {underOverValue ? underOverValue : "Calculating..."}</span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className=" mr-[10px]">PCT</span>
-                <span className="w-48 ">
-                  {discountPremium !== null
-                    ? discountPremium.toLocaleString()
-                    : "Calculating..."}
-                </span>
+              <span className="mr-2">PCT</span>
+              <span className="w-48">
+                            {discountPremium !== null
+                              ? `${parseFloat(
+                                  discountPremium
+                                ).toFixed(2)} %`
+                              : "Calculating..."}
+                          </span>
               </div>
             </span>
           </div>
