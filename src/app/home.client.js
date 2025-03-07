@@ -952,7 +952,7 @@ export default function Home() {
                       <option value="C">CONSOLIDATED</option>
                       <option value="DCF">DISCOUNTED CASH FLOW</option>
                       <option value="RI">RESIDUAL INCOME</option>
-                      <option value="M">MULTIPLES</option>
+                      <option value="RV">RELATIVE VALUATION</option>
                     </select>
                     <img
                       src="/down-arrow.svg"
@@ -965,7 +965,7 @@ export default function Home() {
             </div>
           </div>
         </main>
-        <Footer />
+        {/* <Footer /> */}
       </>
     </Suspense>
   );

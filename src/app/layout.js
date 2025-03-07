@@ -2,6 +2,7 @@ import "./globals.css";
 import SearchNav from "./ui/NavBars/SearchNav";
 
 import { MethodProvider } from "../context/MethodContext.js";
+import Footer from "./ui/Footer";
 
 export const metadata = {
   title: "Intrinsic",
@@ -22,7 +23,9 @@ export default function RootLayout({ children }) {
           {/* <SearchNav /> */}
           {children}
         </MethodProvider>
+        <Footer/>
       </body>
+
     </html>
   );
 }

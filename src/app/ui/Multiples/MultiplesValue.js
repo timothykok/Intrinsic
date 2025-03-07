@@ -58,7 +58,7 @@ export default function MultiplesValue({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 uppercase">
+      <div className="max-w-[800px] mx-auto pt-12 pb-32 mt-8 uppercase">
         <p className="text-sm text-[#626262] font-bold">Intrinsic Value</p>
         <hr className="my-4 border-zinc-200" />
 

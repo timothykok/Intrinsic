@@ -41,8 +41,6 @@ export default function StockPage() {
   const { ticker } = useParams();
   const { selectedMethod, setSelectedMethod } = useMethod("C");
 
-  
-
   const router = useRouter();
   const searchParams = useSearchParams();
   const homeSelectedMethod = searchParams.get("selectedMethod");
@@ -54,26 +52,22 @@ export default function StockPage() {
     }
   }, [homeSelectedMethod, selectedMethod]);
 
-
-
-
-
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
-
-
-
-
 
   // States for fetched financial data
   const [stockInfo, setStockInfo] = useState(null);
   const [freeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
+
+  const [freeCashFlowFirmData, setFreeCashFlowFirmData] = useState(null);
+
 
   // States for all present values to average out in consoli value
   const [dcfValuePresentValue, setDCFPresentValue] = useState(null);
   const [residualIncomePresentValue, setResidualIncomePresentValue] =
     useState(null);
   const [multiplesPresentValue, setMultiplesPresentValue] = useState(null);
-  const [consolidatedPresentValue, setConsolidatedPresentValue] = useState(null);
+  const [consolidatedPresentValue, setConsolidatedPresentValue] =
+    useState(null);
   // const [outstandingShares, setOutstandingShares] = useState([]);
   const [presentValue, setPresentValue] = useState(null);
   const [costOfEquity, setCostOfEquity] = useState(null);
@@ -91,14 +85,15 @@ export default function StockPage() {
     netBorrowing: 0,
     beta: null,
 
-    currentRatio:0,
-    debtToEbitda:0,
-    debtServicingRatio:0,
-
+    currentRatio: 0,
+    totalDebt: 0,
+    debtToEbitda: 0,
+    debtServicingRatio: 0,
 
     fiveYearGrowthRate: null,
     tenYearGrowthRate: null,
     longTermGrowthRate: null,
+    discountedCashFlow:0,
 
     outstandingShares: null,
     riskFreeRate: null,
@@ -178,8 +173,6 @@ export default function StockPage() {
     setSelectedCurrency(e.target.value);
   };
 
-
-
   // Function to show error message with animation
   const triggerErrorMessage = () => {
     if (errorRef.current) {
@@ -209,19 +202,18 @@ export default function StockPage() {
   };
 
   //on mount render to DCF and then to C
-  useEffect(()=> {
-    if (selectedMethod === "C"){
+  useEffect(() => {
+    if (selectedMethod === "C") {
       // Temporarily set the method to DCF first.
       setSelectedMethod("DCF");
-      console.log("DCF Switch: " + selectedMethod)
+      console.log("DCF Switch: " + selectedMethod);
       // After a short delay, switch to Consolidated.
       setTimeout(() => {
         setSelectedMethod("C");
-        console.log("Consolidated switch back: " + selectedMethod)
+        console.log("Consolidated switch back: " + selectedMethod);
       }, 50);
     }
-
-   }, [])
+  }, []);
 
   const fetchData = async (url) => {
     try {
@@ -242,12 +234,12 @@ export default function StockPage() {
     async function fetchStockInfo() {
       try {
         const profileResponse = await fetch(
-          `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/profile?symbol=${ticker}&apikey=${fmpApiKey}`
         );
         const profileData = await profileResponse.json();
 
         const quoteResponse = await fetch(
-          `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/quote?symbol=${ticker}&apikey=${fmpApiKey}`
         );
         const quoteData = await quoteResponse.json();
 
@@ -288,7 +280,7 @@ export default function StockPage() {
           });
           setErrorMessage(null);
         } else {
-          setErrorMessage(`No matching results for "${ticker}"`);
+          setErrorMessage(`No matching results for "symbol=${ticker}"`);
           triggerShake();
           triggerErrorMessage();
           setStockInfo(null);
@@ -320,6 +312,8 @@ export default function StockPage() {
         balanceSheetData,
         incomeData,
         cashFlowData,
+        cashFlowGrowthData,
+        discountedCashFlowData,
         ratioData,
         treasuryData,
         marketRiskData,
@@ -327,35 +321,41 @@ export default function StockPage() {
         peersData,
       ] = await Promise.all([
         fetchData(
-          `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/profile?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/quote?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/balance-sheet-statement?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/income-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/income-statement?symbol=${ticker}&period=annual&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/cash-flow-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/cash-flow-statement?symbol=${ticker}&period=annual&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/ratios/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/cash-flow-statement-growth?symbol=${ticker}&period=annual&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v4/treasury?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/discounted-cash-flow?symbol=${ticker}&&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v4/market_risk_premium?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/ratios?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v4/shares_float?symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/treasury?apikey=${fmpApiKey}`
+        ),
+        fetchData(
+          `https://financialmodelingprep.com/stable/market_risk_premium?apikey=${fmpApiKey}`
+        ),
+        fetchData(
+          `https://financialmodelingprep.com/stable/shares_float?symbol=symbol=${ticker}&apikey=${fmpApiKey}`
         ),
 
         fetchData(
-          `https://financialmodelingprep.com/api/v4/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/stock_peers?symbol=symbol=${ticker}&apikey=${fmpApiKey}`
         ),
       ]);
 
@@ -401,34 +401,24 @@ export default function StockPage() {
         value: item.returnOnInvestedCapital, // property name may vary
       }));
 
-
+      //------------------------------------------------------------------------------------
 
       //Current Ratio
       const currentRatio = ratioData[0]?.currentRatio || 0;
 
-
-
       //Debt to Ebitda Ratio
-      const shortTermDebt = balanceSheetData[0]?.shortTermDebt;
-      const longTermDebt = balanceSheetData[0]?.longTermDebt;
 
-      const totalDebt = shortTermDebt + longTermDebt;
+      const totalDebt = balanceSheetData[0]?.totalDebt || 0;
 
       const ebitda = incomeData[0]?.ebitda;
 
-      const debtToEbitda = totalDebt/ebitda;
+      const debtToEbitda = totalDebt / ebitda;
 
-      const debtServicingRatio = "working on it"
+      const debtServicingRatio = "working on it";
 
-
-
-      // Debt Servicing Ratio 
+      // Debt Servicing Ratio
 
       const operatingIncome = incomeData[0]?.operatingIncome;
-      
-
-
-
 
       //------------------------------------------------------------------------------------
 
@@ -455,7 +445,7 @@ export default function StockPage() {
       if (peers && peers.length > 0) {
         const peerSymbols = peers.join(",");
         const quotesResponse = await axios.get(
-          `https://financialmodelingprep.com/api/v3/quote/${peerSymbols}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/quote/symbol=${peerSymbols}&apikey=${fmpApiKey}`
         );
         const peerQuotes = quotesResponse.data;
         const validPeerQuotes = peerQuotes.filter(
@@ -509,21 +499,20 @@ export default function StockPage() {
 
       //------------------------------------------------------------------------------------
 
-      // Calculate five-year growth rate using ratios data
-      const fiveYearGrowthRate = (() => {
-        if (!ratioData || ratioData.length < 5) return "Insufficient data";
-        const roeValues = ratioData
-          .slice(0, 5)
-          .map((year) => parseFloat(year.returnOnEquity || 0))
-          .filter((roe) => !isNaN(roe) && roe > 0);
-        if (roeValues.length === 0) return "Invalid data";
-        const avgROE =
-          roeValues.reduce((sum, roe) => sum + roe, 0) / roeValues.length;
-        const payoutRatio = parseFloat(ratioData[0].payoutRatio || 0);
-        if (isNaN(payoutRatio) || payoutRatio < 0 || payoutRatio > 1)
-          return "Invalid data";
-        return ((1 - payoutRatio) * avgROE * 100).toFixed(2);
-      })();
+      // Retrieving five year cash growth rate from API
+      const fiveYearGrowthRateUnformatted =
+        cashFlowGrowthData?.[0]?.growthFreeCashFlow || 0;
+      console.log(
+        "fiveYearGrowthRateUnformatted" + fiveYearGrowthRateUnformatted
+      );
+
+      const fiveYearGrowthRate = parseFloat(
+        fiveYearGrowthRateUnformatted * 100
+      ).toFixed(2);
+
+      //------------------------------------------------------------------------------------
+
+      //Total Debt
 
       //------------------------------------------------------------------------------------
 
@@ -542,6 +531,12 @@ export default function StockPage() {
 
       //------------------------------------------------------------------------------------
 
+
+        //------------------------------------------------------------------------------------
+        // Retrieve Free Cash Flow to Firm
+      const discountedCashFlow = discountedCashFlowData?.[0]?.dcf || 0 ;
+  
+
       // Update the financialData state object with all fetched metrics
       setFinancialData({
         netIncome,
@@ -557,15 +552,15 @@ export default function StockPage() {
         netBorrowing,
         beta: profileData?.[0]?.beta || null,
 
-
-currentRatio,
-    debtToEbitda,
-    debtServicingRatio,
-
+        currentRatio,
+        totalDebt,
+        debtToEbitda,
+        debtServicingRatio,
 
         fiveYearGrowthRate,
         tenYearGrowthRate,
         longTermGrowthRate,
+        discountedCashFlow,
         outstandingShares,
         riskFreeRate,
         marketRiskPremium,
@@ -614,149 +609,8 @@ currentRatio,
     financialData.marketRiskPremium,
   ]);
 
-  //------------------------------------------------------------------------------------
-  // 4️⃣ Compute Free Cash Flow to Equity
-  const calculatedFreeCashFlowEquity = useMemo(() => {
-    const {
-      netIncome,
-      depreciationAmortization,
-      capitalExpenditure,
-      netBorrowing,
-      changeInWorkingCapital,
-    } = financialData;
-    return (
-      netIncome +
-      depreciationAmortization +
-      capitalExpenditure +
-      netBorrowing -
-      changeInWorkingCapital
-    );
-  }, [financialData]);
 
-  useEffect(() => {
-    setFreeCashFlowEquityData(calculatedFreeCashFlowEquity);
-  }, [calculatedFreeCashFlowEquity]);
-  //--------------------------
-  // DCF PRESENT VALUE
-  //--------------------------
-  function calculateDCFPresentValue() {
-    console.log("----- DCF Calculation Start -----");
-    console.log("freeCashFlowEquityData:", freeCashFlowEquityData);
-    console.log(
-      "financialData.fiveYearGrowthRate:",
-      financialData.fiveYearGrowthRate
-    );
-    console.log(
-      "financialData.tenYearGrowthRate:",
-      financialData.tenYearGrowthRate
-    );
-    console.log(
-      "financialData.longTermGrowthRate:",
-      financialData.longTermGrowthRate
-    );
-    console.log("costOfEquity:", costOfEquity);
 
-    try {
-      if (
-        freeCashFlowEquityData !== null &&
-        financialData.fiveYearGrowthRate !== null &&
-        financialData.tenYearGrowthRate !== null &&
-        financialData.longTermGrowthRate !== null &&
-        costOfEquity !== null
-      ) {
-        let pv = 0;
-        // Convert growth rates to decimal form
-        const fiveYearG = financialData.fiveYearGrowthRate / 100;
-        const tenYearG = financialData.tenYearGrowthRate / 100;
-        const longTermG = financialData.longTermGrowthRate / 100;
-        const coe = costOfEquity / 100;
-
-        console.log(
-          "Converted Values - fiveYearG:",
-          fiveYearG,
-          "tenYearG:",
-          tenYearG,
-          "longTermG:",
-          longTermG,
-          "coe:",
-          coe
-        );
-
-        // Calculate PV of FCFE from Year 1 to Year 5
-        for (let t = 1; t <= 5; t++) {
-          const projectedFCFE =
-            freeCashFlowEquityData * Math.pow(1 + fiveYearG, t);
-          const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
-          console.log(
-            `Year ${t} - projectedFCFE: ${projectedFCFE}, discountedFCFE: ${discountedFCFE}`
-          );
-          pv += discountedFCFE;
-        }
-
-        // Calculate PV of FCFE from Year 6 to Year 10
-        let fcfeYearN = freeCashFlowEquityData * Math.pow(1 + fiveYearG, 5); // start from Year 5 FCFE
-        console.log("Initial fcfeYearN (end of Year 5):", fcfeYearN);
-        for (let t = 6; t <= 10; t++) {
-          fcfeYearN *= 1 + tenYearG; // grow each year
-          const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
-          console.log(
-            `Year ${t} - fcfeYearN: ${fcfeYearN}, discountedFCFE: ${discountedFCFE}`
-          );
-          pv += discountedFCFE;
-        }
-
-        // Calculate Perpetuity Value at Year 11
-        const fcfeYear10 = fcfeYearN; // already grown to Year 10
-        const perpetuityValue =
-          (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
-        const discountedPerpetuityValue =
-          perpetuityValue / Math.pow(1 + coe, 10);
-        console.log(
-          "Perpetuity Value:",
-          perpetuityValue,
-          "Discounted Perpetuity Value:",
-          discountedPerpetuityValue
-        );
-
-        // Add discounted perpetuity to PV
-        pv += discountedPerpetuityValue;
-        console.log("Final DCF Present Value:", parseFloat(pv.toFixed(2)));
-        setDCFPresentValue(parseFloat(pv.toFixed(2)));
-
-      } else {
-        console.log("Missing required data for DCF calculation.");
-      }
-    } catch (error) {
-      console.log("Error in calculateDCFPresentValue:", error);
-    }
-  }
-
-  // Also log in the DCF useEffect
-  useEffect(() => {
-    try {
-      if (
-        freeCashFlowEquityData !== null &&
-        financialData.fiveYearGrowthRate !== null &&
-        financialData.tenYearGrowthRate !== null &&
-        financialData.longTermGrowthRate !== null &&
-        costOfEquity !== null
-      ) {
-        calculateDCFPresentValue();
-      } else {
-        console.log("DCF useEffect: Some values are missing.");
-      }
-    } catch (error) {
-      console.log("Error in DCF useEffect:", error);
-    }
-  }, [
-    freeCashFlowEquityData,
-    financialData.fiveYearGrowthRate,
-    financialData.tenYearGrowthRate,
-    financialData.longTermGrowthRate,
-    costOfEquity,
-    selectedMethod,
-    ticker,
-  ]);
 
   //--------------------------
   // MULTIPLES PRESENT VALUE
@@ -881,12 +735,12 @@ currentRatio,
   useEffect(() => {
     console.log("----- Consolidated Calculation Start -----");
     console.log("Multiples Present Value:", multiplesPresentValue);
-    console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
+    // console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
     console.log("Residual Income Present Value:", residualIncomePresentValue);
 
     // Call all the individual calculation functions
     calculateResidualPresentValue();
-    calculateDCFPresentValue();
+    // calculateDCFPresentValue();
     calculateMultiplesPresentValue();
 
     if (
@@ -931,8 +785,9 @@ currentRatio,
 
   return (
     <>
+      <div className="flex flex-col min-h-screen">
       <SearchNav />
-      <main>
+      <main className="flex-grow">
         <Suspense fallback={<div>Loading stock data...</div>}>
           <div className="flex flex-row">
             <div className="left">
@@ -966,11 +821,9 @@ currentRatio,
                             freeCashFlowEquityData={freeCashFlowEquityData}
                             financialData={financialData}
                             selectedMethod={selectedMethod}
-                           
                             selectedCurrency={selectedCurrency}
-
                           />
-                          <DCFCalculation
+                          {/* <DCFCalculation
                             ticker={ticker}
                             costOfEquity={costOfEquity}
                             freeCashFlowEquityData={freeCashFlowEquityData}
@@ -980,14 +833,14 @@ currentRatio,
                             dcfPresentValue={dcfValuePresentValue}
                             setDCFPresentValue={setDCFPresentValue}
                             selectedMethod={selectedMethod}
-                          />
+                          /> */}
                           <DCFValue
                             ticker={ticker}
                             price={stockInfo.price}
                             financialData={financialData}
                             presentValue={presentValue}
                             setPresentValue={setPresentValue}
-                            dcfValuePresentValue ={dcfValuePresentValue}
+                            dcfValuePresentValue={dcfValuePresentValue}
                             setDCFPresentValue={setDCFPresentValue}
                             selectedMethod={selectedMethod}
                           />
@@ -1034,7 +887,7 @@ currentRatio,
                             selectedMethod={selectedMethod}
                           />
                         </>
-                      ) : selectedMethod === "M" ? (
+                      ) : selectedMethod === "RV" ? (
                         <>
                           <Multiples
                             netIncome={financialData.netIncome}
@@ -1076,26 +929,27 @@ currentRatio,
                         </>
                       ) : null}
 
-                      <Projection
+                      {/* <Projection
                         freeCashFlowEquityData={freeCashFlowEquityData}
                         fiveYearGrowthRate={financialData.fiveYearGrowthRate}
                         tenYearGrowthRate={financialData.tenYearGrowthRate}
                         longTermGrowthRate={financialData.longTermGrowthRate}
                         selectedMethod={selectedMethod}
-                      />
+                      /> */}
                     </div>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="right  mt-80 pt-16 ml-16 ">
+            <div className="right mt-4 ml-16">
               <Financials financialData={financialData} />
             </div>
           </div>
         </Suspense>
       </main>
-      {/* <Footer /> */}
+      <Footer />
+      </div>
     </>
   );
 }
