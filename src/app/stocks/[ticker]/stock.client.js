@@ -45,6 +45,10 @@ export default function StockPage() {
   const searchParams = useSearchParams();
   const homeSelectedMethod = searchParams.get("selectedMethod");
 
+
+  const currentYear = new Date().getFullYear()
+  console.log("current Year" + currentYear)
+
   // When the query param is present, update the context:
   useEffect(() => {
     if (homeSelectedMethod && !selectedMethod) {
@@ -59,7 +63,6 @@ export default function StockPage() {
   const [freeCashFlowEquityData, setFreeCashFlowEquityData] = useState(null);
 
   const [freeCashFlowFirmData, setFreeCashFlowFirmData] = useState(null);
-
 
   // States for all present values to average out in consoli value
   const [dcfValuePresentValue, setDCFPresentValue] = useState(null);
@@ -82,24 +85,30 @@ export default function StockPage() {
     depreciationAmortization: 0,
     capitalExpenditure: 0,
     changeInWorkingCapital: 0,
-    netBorrowing: 0,
+    netDebtIssuance: 0,
     beta: null,
 
     currentRatio: 0,
     totalDebt: 0,
     debtToEbitda: 0,
     debtServicingRatio: 0,
+    afterTaxCostOfDebt:0,
+    equityWeighting:0,
+    debtWeighting:0,
 
     fiveYearGrowthRate: null,
     tenYearGrowthRate: null,
     longTermGrowthRate: null,
-    discountedCashFlow:0,
+    discountedCashFlow: 0,
 
     outstandingShares: null,
     riskFreeRate: null,
     marketRiskPremium: null,
     sector: null,
     peers: null,
+
+    freeCashFlowFirm: null,
+
 
     last5Income: [],
     last5CashFlow: [],
@@ -314,6 +323,7 @@ export default function StockPage() {
         cashFlowData,
         cashFlowGrowthData,
         discountedCashFlowData,
+        customDiscountedCashFlowData,
         ratioData,
         treasuryData,
         marketRiskData,
@@ -332,15 +342,20 @@ export default function StockPage() {
         fetchData(
           `https://financialmodelingprep.com/stable/income-statement?symbol=${ticker}&period=annual&apikey=${fmpApiKey}`
         ),
+
         fetchData(
-          `https://financialmodelingprep.com/stable/cash-flow-statement?symbol=${ticker}&period=annual&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/cash-flow-statement?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
         fetchData(
           `https://financialmodelingprep.com/stable/cash-flow-statement-growth?symbol=${ticker}&period=annual&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/stable/discounted-cash-flow?symbol=${ticker}&&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/discounted-cash-flow?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
+        fetchData(
+          `https://financialmodelingprep.com/stable/custom-discounted-cash-flow?symbol=${ticker}&apikey=${fmpApiKey}`
+        ),
+
         fetchData(
           `https://financialmodelingprep.com/stable/ratios?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
@@ -492,10 +507,13 @@ export default function StockPage() {
 
       // Retrieve net income and cash flow components
       const netIncome = incomeData?.[0]?.netIncome || 0;
-      const mostRecentCashFlow = cashFlowData?.[0] || {};
-      const netBorrowing =
-        parseFloat(mostRecentCashFlow.commonStockIssued || 0) -
-        parseFloat(mostRecentCashFlow.debtRepayment || 0);
+      const mostRecentCashFlow = cashFlowData?.[0] || 0;
+
+      const netDebtIssuance = parseFloat(
+        mostRecentCashFlow?.netDebtIssuance || 0
+      );
+
+      console.log("netDebtIssuance  (not showing)" + netDebtIssuance);
 
       //------------------------------------------------------------------------------------
 
@@ -516,26 +534,49 @@ export default function StockPage() {
 
       //------------------------------------------------------------------------------------
 
-      // Retrieve risk-free rate and market risk premium from treasury and market data
-      const riskFreeRate = parseFloat(treasuryData?.[0]?.year10) || null;
 
-      const marketRiskPremium =
-        marketRiskData?.find(
-          (item) => item.country.toLowerCase() === "united states"
-        )?.totalEquityRiskPremium || null;
+      // OLD MARKET RISK PREMIUM
 
-      console.log("market risk premium HOME: " + marketRiskPremium);
+      // const marketRiskPremium =
+      //   marketRiskData?.find(
+      //     (item) => item.country.toLowerCase() === "united states"
+      //   )?.totalEquityRiskPremium || null;
+
+      
 
       const outstandingShares =
         outstandingSharesData?.[0]?.outstandingShares || null;
 
       //------------------------------------------------------------------------------------
+      // Retrieve Free Cash Flow to Firm
+      const discountedCashFlow = discountedCashFlowData?.[0]?.dcf || 0;
+
+      //------------------------------------------------------------------------------------
+
+      //Compute FCFF
+
+      // const depreciationAmortization =
+
+      const freeCashFlowFirm = "EBIT x (1- ";
+
+      //------------------------------------------------------------------------------------
 
 
-        //------------------------------------------------------------------------------------
-        // Retrieve Free Cash Flow to Firm
-      const discountedCashFlow = discountedCashFlowData?.[0]?.dcf || 0 ;
-  
+
+      // Risk Free Rate + Market Risk Premium + after Tax Cost Of Debt
+      const currentYearData = customDiscountedCashFlowData?.find(
+        (item) => item.year === currentYear.toString()
+      );
+      const riskFreeRate = currentYearData ? currentYearData.riskFreeRate : 0;
+      const marketRiskPremium = currentYearData ? currentYearData.marketRiskPremium : 0;
+      const afterTaxCostOfDebt = currentYearData ? currentYearData.afterTaxCostOfDebt : 0;
+      const equityWeighting = currentYearData ? currentYearData.equityWeighting : 0;
+      const debtWeighting = currentYearData ? currentYearData.debtWeighting : 0;
+
+      console.log("afterTaxCostOfDebt :" + afterTaxCostOfDebt)
+
+
+
 
       // Update the financialData state object with all fetched metrics
       setFinancialData({
@@ -549,13 +590,16 @@ export default function StockPage() {
           mostRecentCashFlow.depreciationAndAmortization || 0,
         capitalExpenditure: mostRecentCashFlow.capitalExpenditure || 0,
         changeInWorkingCapital: mostRecentCashFlow.changeInWorkingCapital || 0,
-        netBorrowing,
+        netDebtIssuance,
         beta: profileData?.[0]?.beta || null,
 
         currentRatio,
         totalDebt,
         debtToEbitda,
         debtServicingRatio,
+        afterTaxCostOfDebt,
+        equityWeighting,
+        debtWeighting,
 
         fiveYearGrowthRate,
         tenYearGrowthRate,
@@ -566,6 +610,8 @@ export default function StockPage() {
         marketRiskPremium,
         sector,
         salesGrowthToPerpetuity,
+
+        freeCashFlowFirm,
 
         salesHistory,
         netIncomeHistory,
@@ -582,35 +628,7 @@ export default function StockPage() {
   //------------------------------------------------------------------------------------
 
   const eps = financialData.eps || 0;
-  // 2️⃣ Compute Cost of Equity (CAPM)
-  useEffect(() => {
-    if (
-      financialData.beta == null ||
-      financialData.riskFreeRate == null ||
-      financialData.marketRiskPremium == null
-    )
-      return;
-
-    const calculatedCostOfEquity = (
-      financialData.riskFreeRate +
-      financialData.beta * financialData.marketRiskPremium
-    ).toFixed(2);
-
-    setCostOfEquity(calculatedCostOfEquity);
-
-    // 🔹 Update financialData with Cost of Equity
-    setFinancialData((prevData) => ({
-      ...prevData,
-      costOfEquity: calculatedCostOfEquity,
-    }));
-  }, [
-    financialData.beta,
-    financialData.riskFreeRate,
-    financialData.marketRiskPremium,
-  ]);
-
-
-
+  
 
   //--------------------------
   // MULTIPLES PRESENT VALUE
@@ -786,44 +804,44 @@ export default function StockPage() {
   return (
     <>
       <div className="flex flex-col min-h-screen">
-      <SearchNav />
-      <main className="flex-grow">
-        <Suspense fallback={<div>Loading stock data...</div>}>
-          <div className="flex flex-row">
-            <div className="left">
-              <div className="mb-32 flex flex-col items-start">
-                <div className="spacer h-12 ml-[120px] mt-4">
-                  <div className="w-full max-w-[1500px] text-xs"></div>
+        <SearchNav />
+        <main className="flex-grow">
+          <Suspense fallback={<div>Loading stock data...</div>}>
+            <div className="flex flex-row">
+              <div className="left">
+                <div className="mb-32 flex flex-col items-start">
+                  <div className="spacer h-12 ml-[120px] mt-4">
+                    <div className="w-full max-w-[1500px] text-xs"></div>
 
-                  {/* Stock Data */}
-                  {stockInfo && (
-                    <div className="mt-8 w-full max-w-[900px]">
-                      <StockInfo
-                        ref={stockInfoRef}
-                        logoSrc={stockInfo.logoSrc}
-                        companyName={stockInfo.companyName}
-                        ticker={ticker}
-                        price={stockInfo.price}
-                        currency={stockInfo.currency}
-                        change={stockInfo.change}
-                        percentage={stockInfo.percentage}
-                        timestamp={stockInfo.timestamp}
-                        presentValue={presentValue}
-                      />
+                    {/* Stock Data */}
+                    {stockInfo && (
+                      <div className="mt-8 w-full max-w-[900px]">
+                        <StockInfo
+                          ref={stockInfoRef}
+                          logoSrc={stockInfo.logoSrc}
+                          companyName={stockInfo.companyName}
+                          ticker={ticker}
+                          price={stockInfo.price}
+                          currency={stockInfo.currency}
+                          change={stockInfo.change}
+                          percentage={stockInfo.percentage}
+                          timestamp={stockInfo.timestamp}
+                          presentValue={presentValue}
+                        />
 
-                      {/* Valuation Components */}
-                      {selectedMethod === "DCF" ? (
-                        <>
-                          <DiscountedCashFlow
-                            ticker={ticker}
-                            setCostOfEquity={setCostOfEquity}
-                            costOfEquity={costOfEquity}
-                            freeCashFlowEquityData={freeCashFlowEquityData}
-                            financialData={financialData}
-                            selectedMethod={selectedMethod}
-                            selectedCurrency={selectedCurrency}
-                          />
-                          {/* <DCFCalculation
+                        {/* Valuation Components */}
+                        {selectedMethod === "DCF" ? (
+                          <>
+                            <DiscountedCashFlow
+                              ticker={ticker}
+                              setCostOfEquity={setCostOfEquity}
+                              costOfEquity={costOfEquity}
+                              freeCashFlowEquityData={freeCashFlowEquityData}
+                              financialData={financialData}
+                              selectedMethod={selectedMethod}
+                              selectedCurrency={selectedCurrency}
+                            />
+                            {/* <DCFCalculation
                             ticker={ticker}
                             costOfEquity={costOfEquity}
                             freeCashFlowEquityData={freeCashFlowEquityData}
@@ -834,121 +852,133 @@ export default function StockPage() {
                             setDCFPresentValue={setDCFPresentValue}
                             selectedMethod={selectedMethod}
                           /> */}
-                          <DCFValue
-                            ticker={ticker}
-                            price={stockInfo.price}
-                            financialData={financialData}
-                            presentValue={presentValue}
-                            setPresentValue={setPresentValue}
-                            dcfValuePresentValue={dcfValuePresentValue}
-                            setDCFPresentValue={setDCFPresentValue}
-                            selectedMethod={selectedMethod}
-                          />
-                        </>
-                      ) : selectedMethod === "RI" ? (
-                        <>
-                          <ResidualIncome
-                            ticker={ticker}
-                            netIncome={stockInfo.price}
-                            costOfEquity={costOfEquity}
-                            financialData={financialData}
-                            selectedMethod={selectedMethod}
-                          />
-                          <ResidualCalculation
-                            ticker={ticker}
-                            costOfEquity={costOfEquity}
-                            freeCashFlowEquityData={freeCashFlowEquityData}
-                            longTermGrowthRate={
-                              financialData.longTermGrowthRate
-                            }
-                            outstandingShares={financialData.outstandingShares}
-                            setPresentValue={setPresentValue}
-                            presentValue={presentValue}
-                            residualIncomePresentValue={
-                              residualIncomePresentValue
-                            }
-                            setResidualIncomePresentValue={
-                              setResidualIncomePresentValue
-                            }
-                            financialData={financialData}
-                            selectedMethod={selectedMethod}
-                          />
-                          <ResidualValue
-                            ticker={ticker}
-                            price={stockInfo.price}
-                            outstandingShares={financialData.outstandingShares}
-                            presentValue={presentValue}
-                            residualIncomePresentValue={
-                              residualIncomePresentValue
-                            }
-                            setResidualIncomePresentValue={
-                              setResidualIncomePresentValue
-                            }
-                            selectedMethod={selectedMethod}
-                          />
-                        </>
-                      ) : selectedMethod === "RV" ? (
-                        <>
-                          <Multiples
-                            netIncome={financialData.netIncome}
-                            outstandingShares={financialData.outstandingShares}
-                            financialData={financialData}
-                            eps={eps}
-                            averagePeerPE={financialData.averagePeerPE}
-                            selectedMethod={selectedMethod}
-                          />
-                          <MultiplesValue
-                            netIncome={financialData.netIncome}
-                            outstandingShares={financialData.outstandingShares}
-                            eps={eps}
-                            price={stockInfo.price}
-                            averagePeerPE={financialData.averagePeerPE}
-                            multiplesPresentValue={multiplesPresentValue}
-                            setMultiplesPresentValue={setMultiplesPresentValue}
-                            setPresentValue={setPresentValue}
-                            presentValue={presentValue}
-                            selectedMethod={selectedMethod}
-                          />
-                        </>
-                      ) : selectedMethod === "C" ? (
-                        <>
-                          <Consolidated
-                            financialData={financialData}
-                            multiplesPresentValue={multiplesPresentValue}
-                            dcfPresentValue={dcfValuePresentValue}
-                            residualIncomePresentValue={
-                              residualIncomePresentValue
-                            }
-                            consolidatedPresentValue={consolidatedPresentValue}
-                            freeCashFlowEquityData={freeCashFlowEquityData}
-                            costOfEquity={costOfEquity}
-                            eps={eps}
-                            presentValue={presentValue}
-                            setPresentValue={setPresentValue}
-                          />
-                        </>
-                      ) : null}
+                            <DCFValue
+                              ticker={ticker}
+                              price={stockInfo.price}
+                              financialData={financialData}
+                              presentValue={presentValue}
+                              setPresentValue={setPresentValue}
+                              dcfValuePresentValue={dcfValuePresentValue}
+                              setDCFPresentValue={setDCFPresentValue}
+                              selectedMethod={selectedMethod}
+                            />
+                          </>
+                        ) : selectedMethod === "RI" ? (
+                          <>
+                            <ResidualIncome
+                              ticker={ticker}
+                              netIncome={stockInfo.price}
+                              costOfEquity={costOfEquity}
+                              financialData={financialData}
+                              selectedMethod={selectedMethod}
+                            />
+                            <ResidualCalculation
+                              ticker={ticker}
+                              costOfEquity={costOfEquity}
+                              freeCashFlowEquityData={freeCashFlowEquityData}
+                              longTermGrowthRate={
+                                financialData.longTermGrowthRate
+                              }
+                              outstandingShares={
+                                financialData.outstandingShares
+                              }
+                              setPresentValue={setPresentValue}
+                              presentValue={presentValue}
+                              residualIncomePresentValue={
+                                residualIncomePresentValue
+                              }
+                              setResidualIncomePresentValue={
+                                setResidualIncomePresentValue
+                              }
+                              financialData={financialData}
+                              selectedMethod={selectedMethod}
+                            />
+                            <ResidualValue
+                              ticker={ticker}
+                              price={stockInfo.price}
+                              outstandingShares={
+                                financialData.outstandingShares
+                              }
+                              presentValue={presentValue}
+                              residualIncomePresentValue={
+                                residualIncomePresentValue
+                              }
+                              setResidualIncomePresentValue={
+                                setResidualIncomePresentValue
+                              }
+                              selectedMethod={selectedMethod}
+                            />
+                          </>
+                        ) : selectedMethod === "RV" ? (
+                          <>
+                            <Multiples
+                              netIncome={financialData.netIncome}
+                              outstandingShares={
+                                financialData.outstandingShares
+                              }
+                              financialData={financialData}
+                              eps={eps}
+                              averagePeerPE={financialData.averagePeerPE}
+                              selectedMethod={selectedMethod}
+                            />
+                            <MultiplesValue
+                              netIncome={financialData.netIncome}
+                              outstandingShares={
+                                financialData.outstandingShares
+                              }
+                              eps={eps}
+                              price={stockInfo.price}
+                              averagePeerPE={financialData.averagePeerPE}
+                              multiplesPresentValue={multiplesPresentValue}
+                              setMultiplesPresentValue={
+                                setMultiplesPresentValue
+                              }
+                              setPresentValue={setPresentValue}
+                              presentValue={presentValue}
+                              selectedMethod={selectedMethod}
+                            />
+                          </>
+                        ) : selectedMethod === "C" ? (
+                          <>
+                            <Consolidated
+                              financialData={financialData}
+                              multiplesPresentValue={multiplesPresentValue}
+                              dcfPresentValue={dcfValuePresentValue}
+                              residualIncomePresentValue={
+                                residualIncomePresentValue
+                              }
+                              consolidatedPresentValue={
+                                consolidatedPresentValue
+                              }
+                              freeCashFlowEquityData={freeCashFlowEquityData}
+                              costOfEquity={costOfEquity}
+                              eps={eps}
+                              presentValue={presentValue}
+                              setPresentValue={setPresentValue}
+                            />
+                          </>
+                        ) : null}
 
-                      {/* <Projection
+                        {/* <Projection
                         freeCashFlowEquityData={freeCashFlowEquityData}
                         fiveYearGrowthRate={financialData.fiveYearGrowthRate}
                         tenYearGrowthRate={financialData.tenYearGrowthRate}
                         longTermGrowthRate={financialData.longTermGrowthRate}
                         selectedMethod={selectedMethod}
                       /> */}
-                    </div>
-                  )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="right mt-4 ml-16">
-              <Financials financialData={financialData} />
+              <div className="right mt-4 ml-16">
+                <Financials financialData={financialData} />
+              </div>
             </div>
-          </div>
-        </Suspense>
-      </main>
-      <Footer />
+          </Suspense>
+        </main>
+        {/* <Footer /> */}
       </div>
     </>
   );

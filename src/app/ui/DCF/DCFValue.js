@@ -50,7 +50,7 @@ export default function DCFValue({
 
   return (
     <>
-      <div className="max-w-[800px] mx-auto pt-12 pb-12 uppercase">
+      <div className="max-w-[800px] mx-auto pt-24 pb-12 uppercase">
         <p className="text-sm text-[#626262] font-bold">FCFF Valuation</p>
         <hr className="my-4 border-zinc-200" />
 
@@ -170,7 +170,7 @@ export default function DCFValue({
           </div>
         </div>
       </div>
-      <div className="max-w-[800px] mx-auto  pb-12  uppercase">
+      <div className="max-w-[800px] mx-auto  pb-12 pt-12  uppercase">
         <p className="text-sm text-[#626262] font-bold">FCFE Valuation</p>
         <hr className="my-4 border-zinc-200" />
 
@@ -255,7 +255,7 @@ export default function DCFValue({
           </div>
 
              {/* Last Closing Price */}
-             <div className="flex justify-between items-center pt-12">
+             <div className="flex justify-between items-center pt-24">
             <span className=" w-80">Last Closing Price</span>
             <span className="text-right">
               <div className="flex items-center">

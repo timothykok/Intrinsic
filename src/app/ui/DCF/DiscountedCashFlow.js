@@ -6,15 +6,15 @@ export default function DiscountedCashFlow({
   freeCashFlowEquityData,
   financialData,
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(true);
-  const [isCostOfEquityCollapsed, setIsCostOfEquityCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCostOfEquityCollapsed, setIsCostOfEquityCollapsed] = useState(false);
   const [
     isWeightedAverageCostOfCapitalCollapsed,
     setIsWeightedAverageCostOfCapitalCollapsed,
-  ] = useState(true);
+  ] = useState(false);
 
   const [isFreeCashFlowGrowthCollapsed, setIsFreeCashFlowGrowthCollapsed] =
-    useState(true);
+    useState(false);
 
   const toggleCollapse = () => {
     setIsCollapsed((prevState) => !prevState);
@@ -33,8 +33,6 @@ export default function DiscountedCashFlow({
   const toggleFreeCashFlowGrowthCollapse = () => {
     setIsFreeCashFlowGrowthCollapsed((prevState) => !prevState);
   };
-
-
 
   return (
     <>
@@ -65,7 +63,6 @@ export default function DiscountedCashFlow({
             </div>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="mr-2">{currency}</span>
                 <span className="w-48">
                   {financialData.DiscountedCashFlow !== null
                     ? financialData.DiscountedCashFlow
@@ -123,7 +120,7 @@ export default function DiscountedCashFlow({
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="ml-4 w-80">Change In Working Capital</span>
+                <span className="ml-4 w-80">Net Working Capital</span>
                 <span className="text-right">
                   <div className="flex items-center">
                     <span className="mr-2">{currency}</span>
@@ -158,8 +155,8 @@ export default function DiscountedCashFlow({
                   <div className="flex items-center">
                     <span className="mr-2">{currency}</span>
                     <span className="w-48">
-                      {financialData.capitalExpenditure !== null
-                        ? financialData.capitalExpenditure.toLocaleString()
+                      {financialData.netDebtIssuance !== null
+                        ? financialData.netDebtIssuance.toLocaleString()
                         : "Calculating..."}
                     </span>
                   </div>
@@ -167,7 +164,7 @@ export default function DiscountedCashFlow({
               </div>
               <hr className="my-4 border-zinc-200 mt-4 mb-8" />
 
-              <div className="flex justify-between items-center mt-4">
+              <div className="flex justify-between items-center mt-4 pb-12">
                 <span className="ml-4 w-80">Free Cash Flow To Equity</span>
                 <span className="text-right">
                   <div className="flex items-center">
@@ -183,8 +180,8 @@ export default function DiscountedCashFlow({
             </div>
           )}
 
-          {/* Weighted Average Cost of Capital */}
-          <div className="flex justify-between items-center">
+          {/*Free Cash Flow Growth */}
+          <div className="flex justify-between items-center ">
             <div className="flex items-center">
               <span
                 className="cursor-pointer"
@@ -208,12 +205,7 @@ export default function DiscountedCashFlow({
             </div>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="mr-2">PCT</span>
-                <span className="w-48">
-                  {costOfEquity !== null && costOfEquity !== undefined
-                    ? `${costOfEquity} %`
-                    : "Calculating..."}
-                </span>
+                <span className="w-48"></span>
               </div>
             </span>
           </div>
@@ -256,7 +248,7 @@ export default function DiscountedCashFlow({
                 </span>
               </div>
 
-              <div className="ml-2 flex justify-between items-center">
+              <div className="ml-2 flex justify-between items-center pb-12">
                 <span className="ml-4 w-96">
                   Cash Flow Growth Rate (Long Term)
                 </span>
@@ -269,11 +261,25 @@ export default function DiscountedCashFlow({
                   </div>
                 </span>
               </div>
+
+              {/* <div className="ml-2 flex justify-between items-center pb-12">
+                <span className="ml-4 w-96">
+                 Net Borrowing Growth
+                </span>
+                <span className="text-right">
+                  <div className="flex items-center">
+                    <span className="mr-2">PCT</span>
+                    <span className="w-48">
+                      {financialData.longTermGrowthRate} %
+                    </span>
+                  </div>
+                </span>
+              </div> */}
             </div>
           )}
 
           {/* Weighted Average Cost of Capital */}
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center ">
             <div className="flex items-center">
               <span
                 className="cursor-pointer"
@@ -299,12 +305,8 @@ export default function DiscountedCashFlow({
             </div>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="mr-2">PCT</span>
-                <span className="w-48">
-                  {costOfEquity !== null && costOfEquity !== undefined
-                    ? `${costOfEquity} %`
-                    : "Calculating..."}
-                </span>
+                <span className="mr-2"></span>
+                <span className="w-48"></span>
               </div>
             </span>
           </div>
@@ -312,129 +314,144 @@ export default function DiscountedCashFlow({
           {/* Weighted Average Cost of Capital Sub-labels */}
           {!isWeightedAverageCostOfCapitalCollapsed && (
             <div className="space-y-6 pl-8">
-             {/* Cost of Equity Section */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <span
-                className="cursor-pointer"
-                onClick={toggleCostOfEquityCollapse}
-              >
-                {isCostOfEquityCollapsed ? (
-                  <img
-                    src="/Toggle-Arrow-Collapsed.svg"
-                    alt="View More"
-                    className="w-2 h-2"
-                  />
-                ) : (
-                  <img
-                    src="/Toggle-Arrow-notCollapsed.svg"
-                    alt="View Less"
-                    className="w-2 h-2"
-                  />
-                )}
-              </span>
-              <span className="ml-4 w-80">Cost Of Equity</span>
-            </div>
-            <span className="text-right">
-              <div className="flex items-center">
-                <span className="mr-2">PCT</span>
-                <span className="w-48">
-                  {costOfEquity !== null && costOfEquity !== undefined
-                    ? `${costOfEquity} %`
-                    : "Calculating..."}
-                </span>
-              </div>
-            </span>
-          </div>
-
-          {/* Cost Of Equity Sub-labels */}
-          {!isCostOfEquityCollapsed && (
-            <div className="space-y-6 pl-8">
+              {/* Cost of Equity Section */}
               <div className="flex justify-between items-center">
-                <span className="ml-4 w-80">Beta</span>
+                <div className="flex items-center">
+                  <span
+                    className="cursor-pointer"
+                    onClick={toggleCostOfEquityCollapse}
+                  >
+                    {isCostOfEquityCollapsed ? (
+                      <img
+                        src="/Toggle-Arrow-Collapsed.svg"
+                        alt="View More"
+                        className="w-2 h-2"
+                      />
+                    ) : (
+                      <img
+                        src="/Toggle-Arrow-notCollapsed.svg"
+                        alt="View Less"
+                        className="w-2 h-2"
+                      />
+                    )}
+                  </span>
+                  <span className="ml-4 w-80">Cost Of Equity</span>
+                </div>
                 <span className="text-right">
                   <div className="flex items-center">
-                    <span className="mr-2">VAL</span>
+                    <span className="mr-2">PCT</span>
                     <span className="w-48">
-                      {financialData.beta !== null && !isNaN(financialData.beta)
-                        ? financialData.beta
-                        : "Loading..."}
+                      {costOfEquity !== null && costOfEquity !== undefined
+                        ? `${costOfEquity} %`
+                        : "Calculating..."}
                     </span>
                   </div>
                 </span>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className="ml-4 w-80">Risk Free Rate</span>
+              {/* Cost Of Equity Sub-labels */}
+              {!isCostOfEquityCollapsed && (
+                <div className="space-y-6 pl-8">
+                  <div className="flex justify-between items-center">
+                    <span className="ml-4 w-80">Beta</span>
+                    <span className="text-right">
+                      <div className="flex items-center">
+                        <span className="mr-2">VAL</span>
+                        <span className="w-48">
+                          {financialData.beta !== null &&
+                          !isNaN(financialData.beta)
+                            ? financialData.beta
+                            : "Loading..."}
+                        </span>
+                      </div>
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="ml-4 w-80">Risk Free Rate</span>
+                    <span className="text-right">
+                      <div className="flex items-center">
+                        <span className="mr-2">PCT</span>
+                        <span className="w-48">
+                          {financialData.riskFreeRate !== null &&
+                          !isNaN(financialData.riskFreeRate)
+                            ? `${financialData.riskFreeRate.toFixed(2)} %`
+                            : "Loading..."}
+                        </span>
+                      </div>
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="ml-4 w-80">Market Risk Premium</span>
+                    <span className="text-right">
+                      <div className="flex items-center">
+                        <span className="mr-2">PCT</span>
+                        <span className="w-48">
+                          {financialData.marketRiskPremium !== null &&
+                          !isNaN(financialData.marketRiskPremium)
+                            ? `${financialData.marketRiskPremium} %`
+                            : "Loading..."}
+                        </span>
+                      </div>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="ml-2 flex justify-between items-center">
+                <span className="ml-4 w-96">After Tax Cost Of Debt</span>
                 <span className="text-right">
                   <div className="flex items-center">
                     <span className="mr-2">PCT</span>
                     <span className="w-48">
-                      {financialData.riskFreeRate !== null &&
-                      !isNaN(financialData.riskFreeRate)
-                        ? `${financialData.riskFreeRate.toFixed(2)} %`
-                        : "Loading..."}
+                      {financialData.afterTaxCostOfDebt} %
                     </span>
                   </div>
                 </span>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className="ml-4 w-80">Market Risk Premium</span>
+              <div className="ml-2 flex justify-between items-center">
+                <span className="ml-4 w-96">Equity Weighting</span>
                 <span className="text-right">
                   <div className="flex items-center">
                     <span className="mr-2">PCT</span>
                     <span className="w-48">
-                      {financialData.marketRiskPremium !== null &&
-                      !isNaN(financialData.marketRiskPremium)
-                        ? `${financialData.marketRiskPremium} %`
-                        : "Loading..."}
+                      {financialData.equityWeighting} %
+                    </span>
+                  </div>
+                </span>
+              </div>
+
+              <div className="ml-2 flex justify-between items-center">
+                <span className="ml-4 w-96">Debt Weighting</span>
+                <span className="text-right">
+                  <div className="flex items-center">
+                    <span className="mr-2">PCT</span>
+                    <span className="w-48">
+                      {financialData.debtWeighting} %
+                    </span>
+                  </div>
+                </span>
+              </div>
+
+              <hr className="my-4 border-zinc-200 mt-4 mb-4 " />
+
+              <div className="ml-2 flex justify-between items-center ">
+                <span className="ml-4 w-96">
+                  Weighted Average Cost Of Capital
+                </span>
+                <span className="text-right">
+                  <div className="flex items-center">
+                    <span className="mr-2">PCT</span>
+                    <span className="w-48">
+                      {financialData.longTermGrowthRate} %
                     </span>
                   </div>
                 </span>
               </div>
             </div>
           )}
-
-          <div className="ml-2 flex justify-between items-center">
-            <span className="ml-4 w-96">After Tax Cost Of Debt</span>
-            <span className="text-right">
-              <div className="flex items-center">
-                <span className="mr-2">PCT</span>
-                <span className="w-48">
-                  {financialData.longTermGrowthRate} %
-                </span>
-              </div>
-            </span>
-          </div>
-
-          <div className="ml-2 flex justify-between items-center">
-            <span className="ml-4 w-96">Equity Weighting</span>
-            <span className="text-right">
-              <div className="flex items-center">
-                <span className="mr-2">PCT</span>
-                <span className="w-48">
-                  {financialData.longTermGrowthRate} %
-                </span>
-              </div>
-            </span>
-          </div>
-
-          <div className="ml-2 flex justify-between items-center">
-            <span className="ml-4 w-96">Debt Weighting</span>
-            <span className="text-right">
-              <div className="flex items-center">
-                <span className="mr-2">PCT</span>
-                <span className="w-48">
-                  {financialData.longTermGrowthRate} %
-                </span>
-              </div>
-            </span>
-          </div>
-            </div>
-          )}
-
-          
         </div>
       </div>
     </>

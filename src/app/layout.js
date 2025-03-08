@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
           {/* <SearchNav /> */}
           {children}
         </MethodProvider>
-        <Footer/>
+        {/* <Footer/> */}
       </body>
 
     </html>
