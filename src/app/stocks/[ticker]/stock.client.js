@@ -20,11 +20,12 @@ import axios from "axios";
 import Ticker from "../../ui/Ticker.js";
 import DiscountedCashFlow from "../../ui/DCF/DiscountedCashFlow.js";
 import DCFCalculation from "../../ui/DCF/DCFCalculation.js";
-import DCFValue from "../../ui/DCF/DCFValue";
+import FCFE from "../../ui/DCF/FCFE";
+
 import ResidualCalculation from "../../ui/Residual/ResidualCalculation.js";
 import ResidualIncome from "../../ui/Residual/ResidualIncome.js";
 import ResidualValue from "@/app/ui/Residual/ResidualValue";
-import ShareValue from "../../ui/DCF/DCFValue";
+import ShareValue from "../../ui/DCF/FCFE";
 import StockInfo from "../../ui/StockInfo.js";
 import Projection from "../../ui/Projection.js";
 import Multiples from "@/app/ui/Multiples/Multiples";
@@ -45,9 +46,8 @@ export default function StockPage() {
   const searchParams = useSearchParams();
   const homeSelectedMethod = searchParams.get("selectedMethod");
 
-
-  const currentYear = new Date().getFullYear()
-  console.log("current Year" + currentYear)
+  const currentYear = new Date().getFullYear();
+  console.log("current Year" + currentYear);
 
   // When the query param is present, update the context:
   useEffect(() => {
@@ -73,7 +73,6 @@ export default function StockPage() {
     useState(null);
   // const [outstandingShares, setOutstandingShares] = useState([]);
   const [presentValue, setPresentValue] = useState(null);
-  const [costOfEquity, setCostOfEquity] = useState(null);
 
   const [financialData, setFinancialData] = useState({
     netIncome: null,
@@ -88,13 +87,22 @@ export default function StockPage() {
     netDebtIssuance: 0,
     beta: null,
 
+    netOperatingProfitAfterTax: 0,
+    ebit: 0,
+    incomeTaxExpense: 0,
+    incomeBeforeTax: 0,
+    wacc: 0,
+    equityWeighting: 0,
+    debtWeighting: 0,
+    costOfEquity: 0,
+
     currentRatio: 0,
     totalDebt: 0,
     debtToEbitda: 0,
     debtServicingRatio: 0,
-    afterTaxCostOfDebt:0,
-    equityWeighting:0,
-    debtWeighting:0,
+    afterTaxCostOfDebt: 0,
+    equityWeighting: 0,
+    debtWeighting: 0,
 
     fiveYearGrowthRate: null,
     tenYearGrowthRate: null,
@@ -108,7 +116,6 @@ export default function StockPage() {
     peers: null,
 
     freeCashFlowFirm: null,
-
 
     last5Income: [],
     last5CashFlow: [],
@@ -366,11 +373,11 @@ export default function StockPage() {
           `https://financialmodelingprep.com/stable/market_risk_premium?apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/stable/shares_float?symbol=symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/shares_float?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
 
         fetchData(
-          `https://financialmodelingprep.com/stable/stock_peers?symbol=symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
       ]);
 
@@ -534,16 +541,6 @@ export default function StockPage() {
 
       //------------------------------------------------------------------------------------
 
-
-      // OLD MARKET RISK PREMIUM
-
-      // const marketRiskPremium =
-      //   marketRiskData?.find(
-      //     (item) => item.country.toLowerCase() === "united states"
-      //   )?.totalEquityRiskPremium || null;
-
-      
-
       const outstandingShares =
         outstandingSharesData?.[0]?.outstandingShares || null;
 
@@ -553,30 +550,71 @@ export default function StockPage() {
 
       //------------------------------------------------------------------------------------
 
-      //Compute FCFF
-
-      // const depreciationAmortization =
-
-      const freeCashFlowFirm = "EBIT x (1- ";
+      
 
       //------------------------------------------------------------------------------------
 
+     
+
+        //------------------------------------------------------------------------------------
+  // FCFF VALUATION
+  //------------------------------------------------------------------------------------
+
+  const ebit = incomeData?.[0]?.ebit || 0;
+
+  const currentYearData = customDiscountedCashFlowData?.find(
+    (item) => item.year === currentYear.toString()
+  );
 
 
-      // Risk Free Rate + Market Risk Premium + after Tax Cost Of Debt
-      const currentYearData = customDiscountedCashFlowData?.find(
-        (item) => item.year === currentYear.toString()
-      );
-      const riskFreeRate = currentYearData ? currentYearData.riskFreeRate : 0;
-      const marketRiskPremium = currentYearData ? currentYearData.marketRiskPremium : 0;
-      const afterTaxCostOfDebt = currentYearData ? currentYearData.afterTaxCostOfDebt : 0;
-      const equityWeighting = currentYearData ? currentYearData.equityWeighting : 0;
-      const debtWeighting = currentYearData ? currentYearData.debtWeighting : 0;
-
-      console.log("afterTaxCostOfDebt :" + afterTaxCostOfDebt)
+  const riskFreeRate = currentYearData ? currentYearData.riskFreeRate : 0;
 
 
+  const marketRiskPremium = currentYearData
+    ? currentYearData.marketRiskPremium
+    : 0;
 
+
+  const afterTaxCostOfDebt = currentYearData
+    ? currentYearData.afterTaxCostOfDebt
+    : 0;
+    console.log("afterTaxCostOfDebt :" + afterTaxCostOfDebt);
+
+
+  const equityWeighting = currentYearData ? currentYearData.equityWeighting : 0;
+
+
+  const debtWeighting = currentYearData ? currentYearData.debtWeighting : 0;
+
+
+  const incomeTaxExpense = incomeData?.[0]?.incomeTaxExpense || 0;
+
+
+  const incomeBeforeTax = incomeData?.[0]?.incomeBeforeTax || 0;
+
+  const netOperatingProfitAfterTax =
+    ebit * (1 - incomeTaxExpense / incomeBeforeTax);
+
+  const beta = profileData?.[0]?.beta || 0;
+
+  const costOfEquity = beta * marketRiskPremium + riskFreeRate;
+
+  const wacc =
+    debtWeighting * afterTaxCostOfDebt + equityWeighting * costOfEquity;
+
+
+  const freeCashFlowFirm = "not calculated"
+    
+
+  //------------------------------------------------------------------------------------
+  // FCFE GROWTH
+
+  //------------------------------------------------------------------------------------
+
+  //------------------------------------------------------------------------------------
+  // FCFF GROWTH
+
+  //------------------------------------------------------------------------------------
 
       // Update the financialData state object with all fetched metrics
       setFinancialData({
@@ -628,7 +666,8 @@ export default function StockPage() {
   //------------------------------------------------------------------------------------
 
   const eps = financialData.eps || 0;
-  
+
+
 
   //--------------------------
   // MULTIPLES PRESENT VALUE
@@ -668,7 +707,7 @@ export default function StockPage() {
     console.log("ticker:", ticker);
     console.log("financialData.netIncome:", financialData.netIncome);
     console.log("financialData.currentEquity:", financialData.currentEquity);
-    console.log("costOfEquity:", costOfEquity);
+    console.log("costOfEquity:", financialData.costOfEquity);
     console.log(
       "financialData.longTermGrowthRate:",
       financialData.longTermGrowthRate
@@ -679,12 +718,12 @@ export default function StockPage() {
         !ticker ||
         financialData.netIncome === null ||
         financialData.currentEquity === null ||
-        costOfEquity === null ||
+        financialData.costOfEquity === null ||
         financialData.longTermGrowthRate === null
       )
         return console.log("Residual Income: Missing required values.");
 
-      const coeDecimal = costOfEquity / 100;
+      const coeDecimal =  financialData.costOfEquity / 100;
       const g = financialData.longTermGrowthRate / 100;
       const startingRI =
         financialData.netIncome - financialData.currentEquity * coeDecimal;
@@ -728,7 +767,7 @@ export default function StockPage() {
         !ticker ||
         financialData.netIncome === null ||
         financialData.currentEquity === null ||
-        costOfEquity === null ||
+        financialData.costOfEquity === null ||
         financialData.longTermGrowthRate === null
       ) {
         console.log("Residual Income useEffect: Missing required values.");
@@ -742,7 +781,7 @@ export default function StockPage() {
     ticker,
     financialData.netIncome,
     financialData.currentEquity,
-    costOfEquity,
+    financialData.costOfEquity,
     financialData.longTermGrowthRate,
     selectedMethod,
   ]);
@@ -834,8 +873,7 @@ export default function StockPage() {
                           <>
                             <DiscountedCashFlow
                               ticker={ticker}
-                              setCostOfEquity={setCostOfEquity}
-                              costOfEquity={costOfEquity}
+                              costOfEquity={ financialData.costOfEquity}
                               freeCashFlowEquityData={freeCashFlowEquityData}
                               financialData={financialData}
                               selectedMethod={selectedMethod}
@@ -852,7 +890,7 @@ export default function StockPage() {
                             setDCFPresentValue={setDCFPresentValue}
                             selectedMethod={selectedMethod}
                           /> */}
-                            <DCFValue
+                            <FCFE
                               ticker={ticker}
                               price={stockInfo.price}
                               financialData={financialData}
@@ -868,13 +906,13 @@ export default function StockPage() {
                             <ResidualIncome
                               ticker={ticker}
                               netIncome={stockInfo.price}
-                              costOfEquity={costOfEquity}
+                              costOfEquity={ financialData.costOfEquity}
                               financialData={financialData}
                               selectedMethod={selectedMethod}
                             />
                             <ResidualCalculation
                               ticker={ticker}
-                              costOfEquity={costOfEquity}
+                              costOfEquity={ financialData.costOfEquity}
                               freeCashFlowEquityData={freeCashFlowEquityData}
                               longTermGrowthRate={
                                 financialData.longTermGrowthRate
@@ -951,7 +989,7 @@ export default function StockPage() {
                                 consolidatedPresentValue
                               }
                               freeCashFlowEquityData={freeCashFlowEquityData}
-                              costOfEquity={costOfEquity}
+                              costOfEquity={ financialData.costOfEquity}
                               eps={eps}
                               presentValue={presentValue}
                               setPresentValue={setPresentValue}
