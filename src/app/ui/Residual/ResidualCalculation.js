@@ -27,7 +27,7 @@ export default function ResidualCalculation({
         !ticker ||
         financialData.netIncome === null ||
         financialData.currentEquity === null ||
-        costOfEquity === null ||
+        financialData.costOfEquity === null ||
         longTermGrowthRate === null
       )
         return;

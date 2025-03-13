@@ -41,6 +41,9 @@ export default function FCFE({
   const toggleFreeCashFlowGrowthCollapse = () => {
     setIsFreeCashFlowGrowthCollapsed((prevState) => !prevState);
   };
+
+  //--------------------------------------------------------------------------------------------------------------------------------------------------
+
   const [intrinsicValuePerShare, setIntrinsicValuePerShare] = useState(null);
   const [discountPremium, setDiscountPremium] = useState(null);
 
@@ -50,9 +53,9 @@ export default function FCFE({
   useEffect(() => {
     // Calculate intrinsic value per share
     const intrinsicValue =
-      dcfValuePresentValue / financialData.outstandingShares;
+      financialData.freeCashFlowEquity / financialData.outstandingShares;
     const formattedIntrinsicValue = intrinsicValue.toFixed(2);
-    setIntrinsicValuePerShare(formattedIntrinsicValue);
+
     setPresentValue(formattedIntrinsicValue);
 
     // Compare intrinsic value with the last closing price:
@@ -77,6 +80,16 @@ export default function FCFE({
     dcfValuePresentValue,
     selectedMethod,
   ]);
+
+
+
+  console.log("FCFE - DeprecreationAmortization" + financialData.depreciationAmortization);
+  console.log("FCFE - Capex" + financialData.capitalExpenditure)
+
+
+  console.log("FCFE - Change In Working Capital" + financialData.changeInWorkingCapital)
+
+
 
   return (
     <>
@@ -183,8 +196,8 @@ export default function FCFE({
                   <div className="flex items-center">
                     <span className="mr-2">{currency}</span>
                     <span className="w-48">
-                      {financialData.changeInWorkingCapital !== null
-                        ? financialData.changeInWorkingCapital.toLocaleString()
+                      {financialData.netDebtIssuance !== null
+                        ? financialData.netDebtIssuance.toLocaleString()
                         : "Calculating..."}
                     </span>
                   </div>
@@ -343,10 +356,10 @@ export default function FCFE({
                   <div className="flex items-center">
                     <span className="mr-2">PCT</span>
                     <span className="w-48">
-                      {financialData.tenYearGrowthRate !== "Invalid data" &&
-                      financialData.tenYearGrowthRate !== "Insufficient data"
-                        ? `${financialData.tenYearGrowthRate}%`
-                        : financialData.tenYearGrowthRate}
+                      {financialData.beta !== "Invalid data" &&
+                      financialData.beta !== "Insufficient data"
+                        ? `${financialData.beta}%`
+                        : financialData.beta}
                     </span>
                   </div>
                 </span>
@@ -357,10 +370,10 @@ export default function FCFE({
                   <div className="flex items-center">
                     <span className="mr-2">PCT</span>
                     <span className="w-48">
-                      {financialData.tenYearGrowthRate !== "Invalid data" &&
-                      financialData.tenYearGrowthRate !== "Insufficient data"
-                        ? `${financialData.tenYearGrowthRate}%`
-                        : financialData.tenYearGrowthRate}
+                      {financialData.riskFreeRate !== "Invalid data" &&
+                      financialData.riskFreeRate !== "Insufficient data"
+                        ? `${financialData.riskFreeRate}%`
+                        : financialData.riskFreeRate}
                     </span>
                   </div>
                 </span>
@@ -371,10 +384,10 @@ export default function FCFE({
                   <div className="flex items-center">
                     <span className="mr-2">PCT</span>
                     <span className="w-48">
-                      {financialData.tenYearGrowthRate !== "Invalid data" &&
-                      financialData.tenYearGrowthRate !== "Insufficient data"
-                        ? `${financialData.tenYearGrowthRate}%`
-                        : financialData.tenYearGrowthRate}
+                      {financialData.marketRiskPremium !== "Invalid data" &&
+                      financialData.marketRiskPremium !== "Insufficient data"
+                        ? `${financialData.marketRiskPremium}%`
+                        : financialData.marketRiskPremium}
                     </span>
                   </div>
                 </span>
@@ -386,8 +399,8 @@ export default function FCFE({
                   <div className="flex items-center">
                     <span className="mr-2">PCT</span>
                     <span className="w-48">
-                      {financialData.tenYearGrowthRate !== "Invalid data" &&
-                      financialData.tenYearGrowthRate !== "Insufficient data"
+                      {financialData.costOfEquity !== "Invalid data" &&
+                      financialData.costOfEquity !== "Insufficient data"
                         ? `${financialData.tenYearGrowthRate}%`
                         : financialData.tenYearGrowthRate}
                     </span>
@@ -397,15 +410,12 @@ export default function FCFE({
             </div>
           )}
 
-
           <div className="ml-2 flex justify-between items-center">
             <span className="ml-4 w-96">Intrinsic Value Of Equity</span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="mr-2">PCT</span>
-                <span className="w-48">
-                  {financialData.afterTaxCostOfDebt} %
-                </span>
+                <span className="mr-2">{currency}</span>
+                <span className="w-48">{financialData.freeCashFlowEquity}</span>
               </div>
             </span>
           </div>
@@ -413,12 +423,10 @@ export default function FCFE({
           <div className="ml-2 flex justify-between items-center">
             <span className="ml-4 w-96">Number of Shares outstanding</span>
             <span className="text-right">
-            <div className="flex items-center">
-                  <span className="mr-2">QTY</span>
-                  <span className="w-48">
-                    {financialData.afterTaxCostOfDebt}
-                  </span>
-                </div>
+              <div className="flex items-center">
+                <span className="mr-2">QTY</span>
+                <span className="w-48">{financialData.outstandingShares}</span>
+              </div>
             </span>
           </div>
 
@@ -430,7 +438,7 @@ export default function FCFE({
               <div className="flex items-center">
                 <span className="mr-2">{currency}</span>
                 <span className="w-48">
-                  {financialData.afterTaxCostOfDebt}
+                  {financialData.intrinsicValuePerShareFCFE}
                 </span>
               </div>
             </span>
@@ -442,10 +450,8 @@ export default function FCFE({
             <span className="w-96">Last Closing Price</span>
             <span className="text-right">
               <div className="flex items-center">
-                <span className="mr-2">PCT</span>
-                <span className="w-48">
-                  {financialData.afterTaxCostOfDebt} %
-                </span>
+                <span className="mr-2">{currency}</span>
+                <span className="w-48">{price} %</span>
               </div>
             </span>
           </div>
@@ -455,9 +461,7 @@ export default function FCFE({
             <span className="text-right">
               <div className="flex items-center">
                 <span className="mr-2">PCT</span>
-                <span className="w-48">
-                  {financialData.afterTaxCostOfDebt} %
-                </span>
+                <span className="w-48">{discountPremium} %</span>
               </div>
             </span>
           </div>

@@ -95,6 +95,8 @@ export default function StockPage() {
     equityWeighting: 0,
     debtWeighting: 0,
     costOfEquity: 0,
+    netDebtIssuance: 0,
+    wacc: 0,
 
     currentRatio: 0,
     totalDebt: 0,
@@ -116,6 +118,9 @@ export default function StockPage() {
     peers: null,
 
     freeCashFlowFirm: null,
+    intrinsicValuePerShareFCFF:null,
+    freeCashFlowEquity: null,
+    intrinsicValuePerShareFCFE: null,
 
     last5Income: [],
     last5CashFlow: [],
@@ -373,7 +378,7 @@ export default function StockPage() {
           `https://financialmodelingprep.com/stable/market_risk_premium?apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/stable/shares_float?symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/shares-float-all?&apikey=${fmpApiKey}`
         ),
 
         fetchData(
@@ -382,87 +387,87 @@ export default function StockPage() {
       ]);
 
       //------------------------------------------------------------------------------------
+      // EPS (Earnings Per Share)
+      //------------------------------------------------------------------------------------
 
-      //EPS
       const eps = quoteData[0].eps;
 
       //------------------------------------------------------------------------------------
-      // 5 YEAR HISTORICAL DATA EXTRACTION
+      // 5-Year Historical Data Extraction
+      //------------------------------------------------------------------------------------
 
       const last5Income = (incomeData?.slice(0, 6) || []).reverse();
       const last5CashFlow = (cashFlowData?.slice(0, 6) || []).reverse();
       const last5Ratios = (ratioData?.slice(0, 6) || []).reverse();
 
       const salesHistory = last5Income.map((item) => ({
-        year: item.date?.slice(0, 5), // e.g. "2022"
+        year: item.date?.slice(0, 6),
         value: item.revenue,
       }));
 
       const netIncomeHistory = last5Income.map((item) => ({
-        year: item.date?.slice(0, 5),
+        year: item.date?.slice(0, 6),
         value: item.netIncome,
       }));
 
       const epsHistory = last5Income.map((item) => ({
-        year: item.date?.slice(0, 5),
-        value: item.eps, // or item.epsDiluted
+        year: item.date?.slice(0, 6),
+        value: item.eps,
       }));
 
       const cfoHistory = last5CashFlow.map((item) => ({
-        year: item.date?.slice(0, 5),
+        year: item.date?.slice(0, 6),
         value: item.netCashProvidedByOperatingActivities,
       }));
 
       const roeHistory = last5Ratios.map((item) => ({
-        year: item.date?.slice(0, 5),
-        value: item.returnOnEquity, // FMP typically uses decimal form, e.g. 0.15 => 15%
+        year: item.date?.slice(0, 6),
+        value: item.returnOnEquity,
       }));
 
       const roicHistory = last5Ratios.map((item) => ({
-        year: item.date?.slice(0, 5),
-        value: item.returnOnInvestedCapital, // property name may vary
+        year: item.date?.slice(0, 6),
+        value: item.returnOnInvestedCapital,
       }));
 
       //------------------------------------------------------------------------------------
+      // Current Ratio, Debt Metrics & Operating Income
+      //------------------------------------------------------------------------------------
 
-      //Current Ratio
       const currentRatio = ratioData[0]?.currentRatio || 0;
 
-      //Debt to Ebitda Ratio
-
-      const totalDebt = balanceSheetData[0]?.totalDebt || 0;
+      const totalDebtUnformatted = balanceSheetData[0]?.totalDebt || 0;
+      const totalDebt = totalDebtUnformatted.toLocaleString();
 
       const ebitda = incomeData[0]?.ebitda;
-
       const debtToEbitda = totalDebt / ebitda;
 
-      const debtServicingRatio = "working on it";
-
-      // Debt Servicing Ratio
-
+      const debtServicingRatio = "working on it"; // Placeholder
       const operatingIncome = incomeData[0]?.operatingIncome;
 
       //------------------------------------------------------------------------------------
+      // Sector Identification & Equity Growth
+      //------------------------------------------------------------------------------------
 
-      // Determine sector and set ten-year growth rate using the sectorPerformance mapping
       const sector = profileData?.[0]?.sector || null;
-
       const startEquity = balanceSheetData[1]?.totalStockholdersEquity || 0;
       const currentEquity = balanceSheetData[0]?.totalStockholdersEquity || 0;
 
       //------------------------------------------------------------------------------------
+      // PE Ratio Calculation
+      //------------------------------------------------------------------------------------
 
-      // PE ratio
       const currentPrice = stockInfo?.price || 0;
       const peRatioUnformatted = eps ? currentPrice / eps : 0;
       const peRatio = peRatioUnformatted.toFixed(2);
 
       //------------------------------------------------------------------------------------
+      // Peer Companies and PE Ratio Comparison
+      //------------------------------------------------------------------------------------
 
-      // Extract and use peers data:
       const peers = peersData[0]?.peersList;
-
       console.log("PEERS: " + peers);
+
       let averagePeerPE = null;
       if (peers && peers.length > 0) {
         const peerSymbols = peers.join(",");
@@ -481,12 +486,12 @@ export default function StockPage() {
       }
 
       //------------------------------------------------------------------------------------
+      // Historical Revenue Growth Rate Calculation
+      //------------------------------------------------------------------------------------
 
-      // Compute the historical revenue growth rates if we have at least 2 years of data
       let salesGrowthToPerpetuity = null;
       if (incomeData && incomeData.length >= 2) {
         const growthRates = [];
-        // Assuming incomeData is sorted with the most recent year first:
         for (let i = 0; i < Math.min(incomeData.length - 1, 5 - 1); i++) {
           const currentRevenue = parseFloat(incomeData[i].revenue);
           const previousRevenue = parseFloat(incomeData[i + 1].revenue);
@@ -496,37 +501,43 @@ export default function StockPage() {
           }
         }
         if (growthRates.length > 0) {
-          // Average the growth rates
           salesGrowthToPerpetuity =
             growthRates.reduce((sum, rate) => sum + rate, 0) /
             growthRates.length;
-          // Optional: Cap or adjust the growth rate if needed (e.g., not more than 3-4%)
           salesGrowthToPerpetuity = Math.min(salesGrowthToPerpetuity, 4);
         }
       }
 
       //------------------------------------------------------------------------------------
+      // Sector-Based Growth Rate
+      //------------------------------------------------------------------------------------
 
-      // Get ten year growthr rate from sector array
       const tenYearGrowthRate = sectorPerformance[sector] || "N/A";
-
       const longTermGrowthRate = 3;
 
-      // Retrieve net income and cash flow components
+      //------------------------------------------------------------------------------------
+      // Net Income, Cash Flow, and Net Debt Issuance
+      //------------------------------------------------------------------------------------
+
       const netIncome = incomeData?.[0]?.netIncome || 0;
+
+
       const mostRecentCashFlow = cashFlowData?.[0] || 0;
 
+
+      
       const netDebtIssuance = parseFloat(
         mostRecentCashFlow?.netDebtIssuance || 0
       );
-
       console.log("netDebtIssuance  (not showing)" + netDebtIssuance);
 
       //------------------------------------------------------------------------------------
+      // Five-Year Free Cash Flow Growth Rate (from API)
+      //------------------------------------------------------------------------------------
 
-      // Retrieving five year cash growth rate from API
       const fiveYearGrowthRateUnformatted =
         cashFlowGrowthData?.[0]?.growthFreeCashFlow || 0;
+
       console.log(
         "fiveYearGrowthRateUnformatted" + fiveYearGrowthRateUnformatted
       );
@@ -536,85 +547,127 @@ export default function StockPage() {
       ).toFixed(2);
 
       //------------------------------------------------------------------------------------
-
-      //Total Debt
-
+      // Outstanding Shares
       //------------------------------------------------------------------------------------
 
-      const outstandingShares =
-        outstandingSharesData?.[0]?.outstandingShares || null;
+      const companySharesObj = outstandingSharesData?.find(
+        (item) => item.symbol === ticker
+      );
+
+      const outstandingSharesUnformatted =
+        companySharesObj?.outstandingShares || null;
+      const outstandingShares = outstandingSharesUnformatted.toLocaleString();
 
       //------------------------------------------------------------------------------------
-      // Retrieve Free Cash Flow to Firm
+      // Discounted Cash Flow (FCFF Valuation)
+      //------------------------------------------------------------------------------------
+      const depreciationAmortization =
+        mostRecentCashFlow?.depreciationAndAmortization || 0;
+        console.log("Main - DeprecreationAmortization" + financialData.depreciationAmortization);
+
+
+      const capitalExpenditure =
+        mostRecentCashFlow?.capitalExpenditure || 0;
+        console.log("Main - Capex" + financialData.capitalExpenditure)
+
+
+      const changeInWorkingCapital =
+        mostRecentCashFlow?.changeInWorkingCapital || 0;
+
+        console.log("Main - Change In Working Capital" + financialData.changeInWorkingCapital)
+
+
       const discountedCashFlow = discountedCashFlowData?.[0]?.dcf || 0;
 
       //------------------------------------------------------------------------------------
+      // FCFF Valuation Inputs
+      //------------------------------------------------------------------------------------
 
-      
+      const ebit = incomeData?.[0]?.ebit || 0;
+
+      const currentYearData = customDiscountedCashFlowData?.find(
+        (item) => item.year === currentYear.toString()
+      );
+
+      const riskFreeRate = currentYearData ? currentYearData.riskFreeRate : 0;
+      const marketRiskPremium = currentYearData
+        ? currentYearData.marketRiskPremium
+        : 0;
+      const afterTaxCostOfDebt = currentYearData
+        ? currentYearData.afterTaxCostOfDebt
+        : 0;
+
+      console.log("afterTaxCostOfDebt :" + afterTaxCostOfDebt);
+
+      const equityWeighting = currentYearData
+        ? currentYearData.equityWeighting
+        : 0;
+      const debtWeighting = currentYearData ? currentYearData.debtWeighting : 0;
+
+      const incomeTaxExpense = incomeData?.[0]?.incomeTaxExpense || 0;
+      const incomeBeforeTax = incomeData?.[0]?.incomeBeforeTax || 0;
+
+      const netOperatingProfitAfterTax =
+        ebit * (1 - incomeTaxExpense / incomeBeforeTax);
+
+      const beta = profileData?.[0]?.beta || 0;
+      const costOfEquityUnformatted = beta * marketRiskPremium + riskFreeRate;
+      const costOfEquity = parseFloat(costOfEquityUnformatted.toFixed(2));
+
+      //------------------------------------------------------------------------------------
+      // FCFF Valuation (Free Cash Flow to the Firm)
+      //------------------------------------------------------------------------------------
+
+      // FCFF Formula: NOPAT + Depreciation - CapEx - Change in Working Capital
+     
+      const freeCashFlowFirm =
+        netOperatingProfitAfterTax +
+        depreciationAmortization -
+        capitalExpenditure -
+        changeInWorkingCapital;
+
+      // Intrinsic Value Per Share (FCFF-based DCF Estimate)
+      // Note: discountedCashFlow is already given, but here's how you'd estimate intrinsic value per share:
+      const intrinsicValuePerShareFCFF = outstandingSharesUnformatted
+        ? (discountedCashFlow / outstandingSharesUnformatted).toFixed(2)
+        : null;
+
+      //------------------------------------------------------------------------------------
+      // FCFE Valuation (Free Cash Flow to Equity)
+      //------------------------------------------------------------------------------------
+
+      // FCFE Formula: Net Income + depreciationAmortization - CapEx - Change in Working Capital - Net Debt Repayment
+      // Note: Net Debt Repayment = Debt Repayment - New Debt Issuance. Assuming netDebtIssuance is net of both.
+      // If netDebtIssuance is a negative number, it means debt repayment; positive = new debt raised.
+
+      const UnformattedFreeCashFlowEquity =
+        netIncome +
+        depreciationAmortization -
+        capitalExpenditure -
+        changeInWorkingCapital -
+        netDebtIssuance;
+
+        const freeCashFlowEquity = UnformattedFreeCashFlowEquity.toLocaleString();
+
+      // Intrinsic Value Per Share (FCFE-based DCF Estimate)
+      const intrinsicValuePerShareFCFE = outstandingSharesUnformatted
+        ? (freeCashFlowEquity / outstandingSharesUnformatted).toFixed(2)
+        : null;
+
+      const waccUnformatted =
+        debtWeighting * afterTaxCostOfDebt + equityWeighting * costOfEquity;
+
+      const wacc = waccUnformatted.toLocaleString();
+    
+      //------------------------------------------------------------------------------------
+      // FCFE GROWTH
 
       //------------------------------------------------------------------------------------
 
-     
+      //------------------------------------------------------------------------------------
+      // FCFF GROWTH
 
-        //------------------------------------------------------------------------------------
-  // FCFF VALUATION
-  //------------------------------------------------------------------------------------
-
-  const ebit = incomeData?.[0]?.ebit || 0;
-
-  const currentYearData = customDiscountedCashFlowData?.find(
-    (item) => item.year === currentYear.toString()
-  );
-
-
-  const riskFreeRate = currentYearData ? currentYearData.riskFreeRate : 0;
-
-
-  const marketRiskPremium = currentYearData
-    ? currentYearData.marketRiskPremium
-    : 0;
-
-
-  const afterTaxCostOfDebt = currentYearData
-    ? currentYearData.afterTaxCostOfDebt
-    : 0;
-    console.log("afterTaxCostOfDebt :" + afterTaxCostOfDebt);
-
-
-  const equityWeighting = currentYearData ? currentYearData.equityWeighting : 0;
-
-
-  const debtWeighting = currentYearData ? currentYearData.debtWeighting : 0;
-
-
-  const incomeTaxExpense = incomeData?.[0]?.incomeTaxExpense || 0;
-
-
-  const incomeBeforeTax = incomeData?.[0]?.incomeBeforeTax || 0;
-
-  const netOperatingProfitAfterTax =
-    ebit * (1 - incomeTaxExpense / incomeBeforeTax);
-
-  const beta = profileData?.[0]?.beta || 0;
-
-  const costOfEquity = beta * marketRiskPremium + riskFreeRate;
-
-  const wacc =
-    debtWeighting * afterTaxCostOfDebt + equityWeighting * costOfEquity;
-
-
-  const freeCashFlowFirm = "not calculated"
-    
-
-  //------------------------------------------------------------------------------------
-  // FCFE GROWTH
-
-  //------------------------------------------------------------------------------------
-
-  //------------------------------------------------------------------------------------
-  // FCFF GROWTH
-
-  //------------------------------------------------------------------------------------
+      //------------------------------------------------------------------------------------
 
       // Update the financialData state object with all fetched metrics
       setFinancialData({
@@ -624,12 +677,13 @@ export default function StockPage() {
         peRatio,
         eps,
         averagePeerPE,
-        depreciationAmortization:
-          mostRecentCashFlow.depreciationAndAmortization || 0,
-        capitalExpenditure: mostRecentCashFlow.capitalExpenditure || 0,
-        changeInWorkingCapital: mostRecentCashFlow.changeInWorkingCapital || 0,
+        depreciationAmortization,
+        capitalExpenditure,
+        changeInWorkingCapital,
         netDebtIssuance,
         beta: profileData?.[0]?.beta || null,
+
+        netOperatingProfitAfterTax,
 
         currentRatio,
         totalDebt,
@@ -638,6 +692,8 @@ export default function StockPage() {
         afterTaxCostOfDebt,
         equityWeighting,
         debtWeighting,
+        costOfEquity,
+        wacc,
 
         fiveYearGrowthRate,
         tenYearGrowthRate,
@@ -650,6 +706,9 @@ export default function StockPage() {
         salesGrowthToPerpetuity,
 
         freeCashFlowFirm,
+        intrinsicValuePerShareFCFF,
+        freeCashFlowEquity,
+        intrinsicValuePerShareFCFE,
 
         salesHistory,
         netIncomeHistory,
@@ -665,11 +724,9 @@ export default function StockPage() {
 
   //------------------------------------------------------------------------------------
 
-  const eps = financialData.eps || 0;
+  const eps = financialData.eps;
 
-
-
-  //--------------------------
+  //--------------------------f
   // MULTIPLES PRESENT VALUE
   //--------------------------
   let multiplesPresentValueCalculated = null;
@@ -723,7 +780,7 @@ export default function StockPage() {
       )
         return console.log("Residual Income: Missing required values.");
 
-      const coeDecimal =  financialData.costOfEquity / 100;
+      const coeDecimal = financialData.costOfEquity / 100;
       const g = financialData.longTermGrowthRate / 100;
       const startingRI =
         financialData.netIncome - financialData.currentEquity * coeDecimal;
@@ -873,7 +930,7 @@ export default function StockPage() {
                           <>
                             <DiscountedCashFlow
                               ticker={ticker}
-                              costOfEquity={ financialData.costOfEquity}
+                              costOfEquity={financialData.costOfEquity}
                               freeCashFlowEquityData={freeCashFlowEquityData}
                               financialData={financialData}
                               selectedMethod={selectedMethod}
@@ -906,13 +963,13 @@ export default function StockPage() {
                             <ResidualIncome
                               ticker={ticker}
                               netIncome={stockInfo.price}
-                              costOfEquity={ financialData.costOfEquity}
+                              costOfEquity={financialData.costOfEquity}
                               financialData={financialData}
                               selectedMethod={selectedMethod}
                             />
                             <ResidualCalculation
                               ticker={ticker}
-                              costOfEquity={ financialData.costOfEquity}
+                              costOfEquity={financialData.costOfEquity}
                               freeCashFlowEquityData={freeCashFlowEquityData}
                               longTermGrowthRate={
                                 financialData.longTermGrowthRate
@@ -989,7 +1046,7 @@ export default function StockPage() {
                                 consolidatedPresentValue
                               }
                               freeCashFlowEquityData={freeCashFlowEquityData}
-                              costOfEquity={ financialData.costOfEquity}
+                              costOfEquity={financialData.costOfEquity}
                               eps={eps}
                               presentValue={presentValue}
                               setPresentValue={setPresentValue}

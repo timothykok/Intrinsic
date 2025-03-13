@@ -107,9 +107,9 @@ export default function ResidualIncome({ ticker, financialData,  costOfEquity,se
                         <div className="flex items-center">
                           <span className="mr-2">PCT</span>
                           <span className="w-48">
-                            {costOfEquity !== null
+                            {financialData.costOfEquity !== null
                               ? `${parseFloat(
-                                  costOfEquity
+                                  financialData.costOfEquity
                                 ).toFixed(2)} %`
                               : "Calculating..."}
                           </span>

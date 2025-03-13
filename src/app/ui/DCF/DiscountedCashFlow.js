@@ -141,16 +141,16 @@ export default function DiscountedCashFlow({
                   </span>
                 </div>
 
-                <hr className="my-4 border-zinc-200 mt-4 mb-8" />
+                <hr className="my-4 border-zinc-200 mt-4 mb-8 " />
 
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center pb-12">
                   <span className="ml-4 w-80">Free Cash Flow To Firm</span>
                   <span className="text-right">
                     <div className="flex items-center">
                       <span className="mr-2">{currency}</span>
                       <span className="w-48">
-                        {financialData.changeInWorkingCapital !== null
-                          ? financialData.changeInWorkingCapital.toLocaleString()
+                        {financialData.freeCashFlowFirm !== null
+                          ? financialData.freeCashFlowFirm.toLocaleString()
                           : "Calculating..."}
                       </span>
                     </div>
@@ -292,7 +292,7 @@ export default function DiscountedCashFlow({
 
             {/* Weighted Average Cost of Capital Sub-labels */}
             {!isWeightedAverageCostOfCapitalCollapsed && (
-              <div className="space-y-6 pl-8">
+              <div className="space-y-6 pl-8 pb-12">
                 {/* Cost of Equity Section */}
                 <div className="ml-2 flex justify-between items-center">
                   <span className="ml-4 w-96">Cost Of Equity</span>
@@ -300,7 +300,7 @@ export default function DiscountedCashFlow({
                     <div className="flex items-center">
                       <span className="mr-2">PCT</span>
                       <span className="w-48">
-                        {financialData.afterTaxCostOfDebt} %
+                        {financialData.costOfEquity} %
                       </span>
                     </div>
                   </span>
@@ -352,7 +352,7 @@ export default function DiscountedCashFlow({
                     <div className="flex items-center">
                       <span className="mr-2">PCT</span>
                       <span className="w-48">
-                        {financialData.longTermGrowthRate} %
+                        {financialData.wacc} %
                       </span>
                     </div>
                   </span>
@@ -377,9 +377,7 @@ export default function DiscountedCashFlow({
               <span className="text-right">
                 <div className="flex items-center">
                   <span className="mr-2">{currency}</span>
-                  <span className="w-48">
-                    {financialData.afterTaxCostOfDebt}
-                  </span>
+                  <span className="w-48">{financialData.totalDebt}</span>
                 </div>
               </span>
             </div>
@@ -390,7 +388,7 @@ export default function DiscountedCashFlow({
                 <div className="flex items-center">
                   <span className="mr-2">{currency}</span>
                   <span className="w-48">
-                    {financialData.afterTaxCostOfDebt} 
+                    {financialData.afterTaxCostOfDebt}
                   </span>
                 </div>
               </span>
@@ -402,7 +400,7 @@ export default function DiscountedCashFlow({
                 <div className="flex items-center">
                   <span className="mr-2">QTY</span>
                   <span className="w-48">
-                    {financialData.afterTaxCostOfDebt}
+                    {financialData.outstandingShares}
                   </span>
                 </div>
               </span>
@@ -416,7 +414,7 @@ export default function DiscountedCashFlow({
                 <div className="flex items-center">
                   <span className="mr-2">{currency}</span>
                   <span className="w-48">
-                    {financialData.afterTaxCostOfDebt}
+                    {financialData.intrinsicValuePerShareFCFF}
                   </span>
                 </div>
               </span>
