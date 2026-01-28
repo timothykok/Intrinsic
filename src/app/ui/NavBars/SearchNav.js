@@ -244,32 +244,32 @@ export default function SearchNav() {
         peersData,
       ] = await Promise.all([
         fetchData(
-          `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/profile?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/balance-sheet-statement?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/income-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/income-statement?symbol=${ticker}&period=annual&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/cash-flow-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/cash-flow-statement?symbol=${ticker}&period=annual&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v3/ratios/${ticker}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/ratios?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v4/treasury?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/treasury-rates?apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v4/market_risk_premium?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/market-risk-premium?apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/api/v4/shares_float?symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/shares-float?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
 
         fetchData(
-          `https://financialmodelingprep.com/api/v4/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/stock-peers?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
       ]);
 
@@ -278,8 +278,8 @@ export default function SearchNav() {
       // Determine sector and set ten-year growth rate using the sectorPerformance mapping
       const sector = profileData?.[0]?.sector || null;
 
-      const startEquity = balanceSheetData[1]?.totalStockholdersEquity || 0;
-      const currentEquity = balanceSheetData[0]?.totalStockholdersEquity || 0;
+      const startEquity = balanceSheetData?.[1]?.totalStockholdersEquity || 0;
+      const currentEquity = balanceSheetData?.[0]?.totalStockholdersEquity || 0;
 
       //------------------------------------------------------------------------------------
 
@@ -290,12 +290,12 @@ export default function SearchNav() {
       //------------------------------------------------------------------------------------
 
       // Extract and use peers data:
-      const peers = peersData[0]?.peersList;
+      const peers = peersData?.[0]?.peersList;
       let averagePeerPE = null;
       if (peers && peers.length > 0) {
         const peerSymbols = peers.join(",");
         const quotesResponse = await axios.get(
-          `https://financialmodelingprep.com/api/v3/quote/${peerSymbols}?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/batch-quote?symbols=${peerSymbols}&apikey=${fmpApiKey}`
         );
         const peerQuotes = quotesResponse.data;
         const validPeerQuotes = peerQuotes.filter(

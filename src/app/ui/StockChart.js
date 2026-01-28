@@ -39,8 +39,7 @@ export default function StockChart({ ticker }) {
         "calendar": false,
         "studies": [
           "STD;SMA",
-          "STD;EMA",
-           
+          "STD;EMA"
         ],
         "support_host": "https://www.tradingview.com"
       }`;

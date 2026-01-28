@@ -356,7 +356,7 @@ export default function StockPage() {
         ),
 
         fetchData(
-          `https://financialmodelingprep.com/stable/cash-flow-statement?symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/cash-flow-statement?symbol=${ticker}&period=annual&apikey=${fmpApiKey}`
         ),
         fetchData(
           `https://financialmodelingprep.com/stable/cash-flow-statement-growth?symbol=${ticker}&period=annual&apikey=${fmpApiKey}`
@@ -372,17 +372,17 @@ export default function StockPage() {
           `https://financialmodelingprep.com/stable/ratios?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/stable/treasury?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/treasury-rates?apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/stable/market_risk_premium?apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/market-risk-premium?apikey=${fmpApiKey}`
         ),
         fetchData(
-          `https://financialmodelingprep.com/stable/shares-float-all?&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/shares-float?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
 
         fetchData(
-          `https://financialmodelingprep.com/stable/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/stock-peers?symbol=${ticker}&apikey=${fmpApiKey}`
         ),
       ]);
 
@@ -390,7 +390,7 @@ export default function StockPage() {
       // EPS (Earnings Per Share)
       //------------------------------------------------------------------------------------
 
-      const eps = quoteData[0].eps;
+      const eps = quoteData?.[0]?.eps || 0;
 
       //------------------------------------------------------------------------------------
       // 5-Year Historical Data Extraction
@@ -450,8 +450,8 @@ export default function StockPage() {
       //------------------------------------------------------------------------------------
 
       const sector = profileData?.[0]?.sector || null;
-      const startEquity = balanceSheetData[1]?.totalStockholdersEquity || 0;
-      const currentEquity = balanceSheetData[0]?.totalStockholdersEquity || 0;
+      const startEquity = balanceSheetData?.[1]?.totalStockholdersEquity || 0;
+      const currentEquity = balanceSheetData?.[0]?.totalStockholdersEquity || 0;
 
       //------------------------------------------------------------------------------------
       // PE Ratio Calculation
@@ -465,14 +465,14 @@ export default function StockPage() {
       // Peer Companies and PE Ratio Comparison
       //------------------------------------------------------------------------------------
 
-      const peers = peersData[0]?.peersList;
+      const peers = peersData?.[0]?.peersList;
       console.log("PEERS: " + peers);
 
       let averagePeerPE = null;
       if (peers && peers.length > 0) {
         const peerSymbols = peers.join(",");
         const quotesResponse = await axios.get(
-          `https://financialmodelingprep.com/stable/quote/symbol=${peerSymbols}&apikey=${fmpApiKey}`
+          `https://financialmodelingprep.com/stable/batch-quote?symbols=${peerSymbols}&apikey=${fmpApiKey}`
         );
         const peerQuotes = quotesResponse.data;
         const validPeerQuotes = peerQuotes.filter(
