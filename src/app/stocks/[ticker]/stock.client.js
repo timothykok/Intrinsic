@@ -751,6 +751,78 @@ export default function StockPage() {
   ]);
 
   //--------------------------
+  // DCF PRESENT VALUE (calculated upfront for Consolidated)
+  //--------------------------
+  function calculateDCFPresentValue() {
+    console.log("----- DCF Calculation Start -----");
+    try {
+      // Get the raw FCFE value
+      const fcfeRaw = typeof financialData.freeCashFlowEquity === 'string'
+        ? parseFloat(financialData.freeCashFlowEquity.replace(/,/g, ''))
+        : financialData.freeCashFlowEquity;
+      
+      const costOfEquity = financialData.costOfEquity;
+
+      if (
+        !fcfeRaw ||
+        financialData.fiveYearGrowthRate === null ||
+        financialData.tenYearGrowthRate === null ||
+        financialData.longTermGrowthRate === null ||
+        costOfEquity === null
+      ) {
+        console.log("DCF: Missing required values.");
+        return;
+      }
+
+      let pv = 0;
+
+      // Convert growth rates to decimal form
+      const fiveYearG = financialData.fiveYearGrowthRate / 100;
+      const tenYearG = financialData.tenYearGrowthRate / 100;
+      const longTermG = financialData.longTermGrowthRate / 100;
+      const coe = costOfEquity / 100;
+
+      // Calculate PV of FCFE from Year 1 to Year 5
+      for (let t = 1; t <= 5; t++) {
+        const projectedFCFE = fcfeRaw * Math.pow(1 + fiveYearG, t);
+        const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
+        pv += discountedFCFE;
+      }
+
+      // Calculate PV of FCFE from Year 6 to Year 10
+      let fcfeYearN = fcfeRaw * Math.pow(1 + fiveYearG, 5);
+      for (let t = 6; t <= 10; t++) {
+        fcfeYearN *= (1 + tenYearG);
+        const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
+        pv += discountedFCFE;
+      }
+
+      // Calculate Perpetuity Value at Year 11
+      const fcfeYear10 = fcfeYearN;
+      const perpetuityValue = (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
+      const discountedPerpetuityValue = perpetuityValue / Math.pow(1 + coe, 10);
+
+      pv += discountedPerpetuityValue;
+
+      console.log("Final DCF Present Value:", parseFloat(pv.toFixed(2)));
+      setDCFPresentValue(parseFloat(pv.toFixed(2)));
+    } catch (error) {
+      console.log("Error in calculateDCFPresentValue:", error);
+    }
+  }
+
+  useEffect(() => {
+    console.log("DCF useEffect running...");
+    calculateDCFPresentValue();
+  }, [
+    financialData.freeCashFlowEquity,
+    financialData.fiveYearGrowthRate,
+    financialData.tenYearGrowthRate,
+    financialData.longTermGrowthRate,
+    financialData.costOfEquity,
+  ]);
+
+  //--------------------------
   // RESIDUAL INCOME PRESENT VALUE
   //--------------------------
   function calculateResidualPresentValue() {
@@ -842,13 +914,13 @@ export default function StockPage() {
   //--------------------------
   useEffect(() => {
     console.log("----- Consolidated Calculation Start -----");
+    console.log("DCF Present Value:", dcfValuePresentValue);
     console.log("Multiples Present Value:", multiplesPresentValue);
-    // console.log("DCF Present Value (presentValue):", dcfValuePresentValue);
     console.log("Residual Income Present Value:", residualIncomePresentValue);
 
-    // Call all the individual calculation functions
+    // Call all the individual calculation functions to ensure values are calculated
+    calculateDCFPresentValue();
     calculateResidualPresentValue();
-    // calculateDCFPresentValue();
     calculateMultiplesPresentValue();
 
     if (
@@ -918,6 +990,9 @@ export default function StockPage() {
                           timestamp={stockInfo.timestamp}
                           presentValue={presentValue}
                           outStandingShares={financialData.outstandingSharesRaw}
+                          financialData={financialData}
+                          dcfValuePresentValue={dcfValuePresentValue}
+                          selectedMethod={selectedMethod}
                         />
 
                         {/* Valuation Components */}

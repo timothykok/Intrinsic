@@ -45,7 +45,7 @@ export default function Financials({ financialData }) {
   } = financialData;
 
   return (
-    <div className="uppercase text-xs text-[#626262] font-bold w-96">
+    <div className="uppercase text-xs text-[#626262] font-bold w-96 pt-36">
       <div>
         <p> PROFITABLITY </p>
         <hr className="my-4 border-zinc-200" />

@@ -49,32 +49,81 @@ export default function FCFE({
 
   const [underOverValue, setUnderOverValue] = useState("");
 
-  // Calculate values when dependencies change
+  // Calculate DCF Present Value (same logic as DCFCalculation.js)
   useEffect(() => {
-    // Use raw outstanding shares for calculation
+    try {
+      // Get the raw FCFE value (parse if formatted string)
+      const fcfeRaw = typeof financialData.freeCashFlowEquity === 'string'
+        ? parseFloat(financialData.freeCashFlowEquity.replace(/,/g, ''))
+        : financialData.freeCashFlowEquity;
+      
+      const costOfEquity = financialData.costOfEquity;
+
+      if (
+        fcfeRaw &&
+        financialData.fiveYearGrowthRate !== null &&
+        financialData.tenYearGrowthRate !== null &&
+        financialData.longTermGrowthRate !== null &&
+        costOfEquity !== null
+      ) {
+        let pv = 0;
+
+        // Convert growth rates to decimal form
+        const fiveYearG = financialData.fiveYearGrowthRate / 100;
+        const tenYearG = financialData.tenYearGrowthRate / 100;
+        const longTermG = financialData.longTermGrowthRate / 100;
+        const coe = costOfEquity / 100;
+
+        // Calculate PV of FCFE from Year 1 to Year 5
+        for (let t = 1; t <= 5; t++) {
+          const projectedFCFE = fcfeRaw * Math.pow(1 + fiveYearG, t);
+          const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
+          pv += discountedFCFE;
+        }
+
+        // Calculate PV of FCFE from Year 6 to Year 10
+        let fcfeYearN = fcfeRaw * Math.pow(1 + fiveYearG, 5);
+        for (let t = 6; t <= 10; t++) {
+          fcfeYearN *= (1 + tenYearG);
+          const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
+          pv += discountedFCFE;
+        }
+
+        // Calculate Perpetuity Value at Year 11
+        const fcfeYear10 = fcfeYearN;
+        const perpetuityValue = (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
+        const discountedPerpetuityValue = perpetuityValue / Math.pow(1 + coe, 10);
+
+        pv += discountedPerpetuityValue;
+
+        // Set the DCF present value
+        setDCFPresentValue(parseFloat(pv.toFixed(2)));
+      }
+    } catch (error) {
+      console.log("DCF Calculation error:", error);
+    }
+  }, [
+    financialData.freeCashFlowEquity,
+    financialData.fiveYearGrowthRate,
+    financialData.tenYearGrowthRate,
+    financialData.longTermGrowthRate,
+    financialData.costOfEquity,
+    setDCFPresentValue,
+  ]);
+
+  // Calculate intrinsic value per share and premium
+  useEffect(() => {
     const outstandingSharesRaw = financialData.outstandingSharesRaw;
-    // freeCashFlowEquity may be a formatted string, parse it if needed
-    const fcfe = typeof financialData.freeCashFlowEquity === 'string' 
-      ? parseFloat(financialData.freeCashFlowEquity.replace(/,/g, '')) 
-      : financialData.freeCashFlowEquity;
     
-    if (!outstandingSharesRaw || !fcfe) return;
+    if (!outstandingSharesRaw || !dcfValuePresentValue) return;
     
-    // Calculate intrinsic value per share
-    const intrinsicValue = fcfe / outstandingSharesRaw;
-    const formattedIntrinsicValue = intrinsicValue.toFixed(2);
+    // Calculate intrinsic value per share from DCF present value
+    const intrinsicValue = dcfValuePresentValue / outstandingSharesRaw;
+    setIntrinsicValuePerShare(intrinsicValue);
 
-    setPresentValue(formattedIntrinsicValue);
-
-    // Compare intrinsic value with the last closing price:
-    // If intrinsic value is above the price, render as "Discount"
-    // Otherwise, render as "Premium"
-
-    const discountPremiumValue = (intrinsicValue / price) * 100;
-
-    const formattedDiscountPremium = discountPremiumValue.toFixed(2);
-
-    setDiscountPremium(formattedDiscountPremium);
+    // Calculate discount/premium percentage
+    const discountPremiumValue = ((price / intrinsicValue) - 1) * 100;
+    setDiscountPremium(discountPremiumValue);
 
     if (intrinsicValue > price) {
       setUnderOverValue("Discount");
@@ -82,8 +131,7 @@ export default function FCFE({
       setUnderOverValue("Premium");
     }
   }, [
-    presentValue,
-    financialData,
+    financialData.outstandingSharesRaw,
     price,
     dcfValuePresentValue,
     selectedMethod,
@@ -446,7 +494,9 @@ export default function FCFE({
               <div className="flex items-center">
                 <span className="mr-2">{currency}</span>
                 <span className="w-48">
-                  {financialData.intrinsicValuePerShareFCFE}
+                  {intrinsicValuePerShare !== null
+                    ? intrinsicValuePerShare.toFixed(2)
+                    : "Calculating..."}
                 </span>
               </div>
             </span>
@@ -469,7 +519,11 @@ export default function FCFE({
             <span className="text-right">
               <div className="flex items-center">
                 <span className="mr-2">PCT</span>
-                <span className="w-48">{discountPremium} %</span>
+                <span className="w-48">
+                  {discountPremium !== null
+                    ? `${discountPremium.toFixed(2)} %`
+                    : "Calculating..."}
+                </span>
               </div>
             </span>
           </div>

@@ -200,25 +200,29 @@ export default function Home() {
    useEffect(() => {
      // If no ticker is present, do nothing.
      if (!ticker) return;
- 
+
      async function fetchStockInfo() {
        try {
          const profileResponse = await fetch(
            `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
          );
          const profileData = await profileResponse.json();
- 
+
          const quoteResponse = await fetch(
            `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${fmpApiKey}`
          );
          const quoteData = await quoteResponse.json();
- 
-         if (
-           profileData &&
-           profileData.length > 0 &&
-           quoteData &&
-           quoteData.length > 0
-         ) {
+
+         // Debug logging
+         console.log("Home - ticker:", ticker);
+         console.log("Home - profileData:", profileData);
+         console.log("Home - quoteData:", quoteData);
+
+         // Check if response is an array with data
+         const hasProfileData = Array.isArray(profileData) && profileData.length > 0;
+         const hasQuoteData = Array.isArray(quoteData) && quoteData.length > 0;
+
+         if (hasProfileData && hasQuoteData) {
            const stockProfileData = profileData[0];
            const stockQuoteData = quoteData[0];
  

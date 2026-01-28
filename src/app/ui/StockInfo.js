@@ -1,5 +1,7 @@
 import { forwardRef, useState, useEffect } from "react";
 import StockChart from "./StockChart";
+
+
 const StockInfo = forwardRef(
   (
     {
@@ -13,6 +15,9 @@ const StockInfo = forwardRef(
       timestamp,
       presentValue,
       outStandingShares,
+      financialData,
+      dcfValuePresentValue,
+      selectedMethod,
     },
     ref
   ) => {
@@ -23,12 +28,16 @@ const StockInfo = forwardRef(
 
     // Calculate intrinsic value, discount/premium, and valuation status
     useEffect(() => {
-      if (presentValue && outStandingShares && price) {
+      // Use dcfValuePresentValue if available (calculated DCF), otherwise fall back to presentValue
+      const pvToUse = dcfValuePresentValue || presentValue;
+      const shares = outStandingShares || financialData?.outstandingSharesRaw;
+      
+      if (pvToUse && shares && price) {
         // Ensure presentValue is a number (parse if string)
-        const presentValueNum = typeof presentValue === 'string' 
-          ? parseFloat(presentValue.replace(/,/g, '')) 
-          : presentValue;
-        const intrinsicValue = presentValueNum / outStandingShares;
+        const presentValueNum = typeof pvToUse === 'string' 
+          ? parseFloat(pvToUse.replace(/,/g, '')) 
+          : pvToUse;
+        const intrinsicValue = presentValueNum / shares;
         setIntrinsicValuePerShare(intrinsicValue);
 
         const discountPremiumValue = (price / intrinsicValue - 1) * 100; // Calculate as percentage
@@ -39,7 +48,7 @@ const StockInfo = forwardRef(
           discountPremiumValue > 0 ? "overvalued" : "undervalued"
         );
       }
-    }, [presentValue, outStandingShares, price]);
+    }, [presentValue, outStandingShares, price, financialData, dcfValuePresentValue]);
 
     // Component JSX
     return (

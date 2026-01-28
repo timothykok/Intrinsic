@@ -169,12 +169,16 @@ export default function SearchNav() {
         );
         const quoteData = await quoteResponse.json();
 
-        if (
-          profileData &&
-          profileData.length > 0 &&
-          quoteData &&
-          quoteData.length > 0
-        ) {
+        // Debug logging
+        console.log("SearchNav - ticker:", ticker);
+        console.log("SearchNav - profileData:", profileData);
+        console.log("SearchNav - quoteData:", quoteData);
+
+        // Check if response is an array with data
+        const hasProfileData = Array.isArray(profileData) && profileData.length > 0;
+        const hasQuoteData = Array.isArray(quoteData) && quoteData.length > 0;
+
+        if (hasProfileData && hasQuoteData) {
           const stockProfileData = profileData[0];
           const stockQuoteData = quoteData[0];
 
