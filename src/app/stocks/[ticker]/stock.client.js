@@ -555,8 +555,8 @@ export default function StockPage() {
       );
 
       const outstandingSharesUnformatted =
-        companySharesObj?.outstandingShares || null;
-      const outstandingShares = outstandingSharesUnformatted.toLocaleString();
+        companySharesObj?.outstandingShares || 0;
+      const outstandingShares = outstandingSharesUnformatted ? outstandingSharesUnformatted.toLocaleString() : "0";
 
       //------------------------------------------------------------------------------------
       // Discounted Cash Flow (FCFF Valuation)
@@ -585,24 +585,17 @@ export default function StockPage() {
 
       const ebit = incomeData?.[0]?.ebit || 0;
 
-      const currentYearData = customDiscountedCashFlowData?.find(
-        (item) => item.year === currentYear.toString()
-      );
+      // Use the first item from customDiscountedCashFlowData which contains the DCF model data
+      const currentYearData = customDiscountedCashFlowData?.[0] || null;
 
-      const riskFreeRate = currentYearData ? currentYearData.riskFreeRate : 0;
-      const marketRiskPremium = currentYearData
-        ? currentYearData.marketRiskPremium
-        : 0;
-      const afterTaxCostOfDebt = currentYearData
-        ? currentYearData.afterTaxCostOfDebt
-        : 0;
+      const riskFreeRate = currentYearData?.riskFreeRate || 0;
+      const marketRiskPremium = currentYearData?.marketRiskPremium || 0;
+      const afterTaxCostOfDebt = currentYearData?.afterTaxCostOfDebt || 0;
 
       console.log("afterTaxCostOfDebt :" + afterTaxCostOfDebt);
 
-      const equityWeighting = currentYearData
-        ? currentYearData.equityWeighting
-        : 0;
-      const debtWeighting = currentYearData ? currentYearData.debtWeighting : 0;
+      const equityWeighting = currentYearData?.equityWeighting || 0;
+      const debtWeighting = currentYearData?.debtWeighting || 0;
 
       const incomeTaxExpense = incomeData?.[0]?.incomeTaxExpense || 0;
       const incomeBeforeTax = incomeData?.[0]?.incomeBeforeTax || 0;
@@ -651,7 +644,7 @@ export default function StockPage() {
 
       // Intrinsic Value Per Share (FCFE-based DCF Estimate)
       const intrinsicValuePerShareFCFE = outstandingSharesUnformatted
-        ? (freeCashFlowEquity / outstandingSharesUnformatted).toFixed(2)
+        ? (UnformattedFreeCashFlowEquity / outstandingSharesUnformatted).toFixed(2)
         : null;
 
       const waccUnformatted =
@@ -700,6 +693,7 @@ export default function StockPage() {
         longTermGrowthRate,
         discountedCashFlow,
         outstandingShares,
+        outstandingSharesRaw: outstandingSharesUnformatted,
         riskFreeRate,
         marketRiskPremium,
         sector,
@@ -923,6 +917,7 @@ export default function StockPage() {
                           percentage={stockInfo.percentage}
                           timestamp={stockInfo.timestamp}
                           presentValue={presentValue}
+                          outStandingShares={financialData.outstandingSharesRaw}
                         />
 
                         {/* Valuation Components */}
@@ -975,7 +970,7 @@ export default function StockPage() {
                                 financialData.longTermGrowthRate
                               }
                               outstandingShares={
-                                financialData.outstandingShares
+                                financialData.outstandingSharesRaw
                               }
                               setPresentValue={setPresentValue}
                               presentValue={presentValue}
@@ -992,7 +987,7 @@ export default function StockPage() {
                               ticker={ticker}
                               price={stockInfo.price}
                               outstandingShares={
-                                financialData.outstandingShares
+                                financialData.outstandingSharesRaw
                               }
                               presentValue={presentValue}
                               residualIncomePresentValue={
@@ -1009,7 +1004,7 @@ export default function StockPage() {
                             <Multiples
                               netIncome={financialData.netIncome}
                               outstandingShares={
-                                financialData.outstandingShares
+                                financialData.outstandingSharesRaw
                               }
                               financialData={financialData}
                               eps={eps}
@@ -1019,7 +1014,7 @@ export default function StockPage() {
                             <MultiplesValue
                               netIncome={financialData.netIncome}
                               outstandingShares={
-                                financialData.outstandingShares
+                                financialData.outstandingSharesRaw
                               }
                               eps={eps}
                               price={stockInfo.price}

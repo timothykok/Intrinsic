@@ -21,7 +21,8 @@ export default function Consolidated({
   const formattedConsolidated =
     consolidatedPresentValue !== null ? parseFloat(consolidatedPresentValue.toFixed(2)) : null;
 
-  const outstandingShares = financialData.outstandingShares;
+  // Use raw outstanding shares for calculations (not the formatted string)
+  const outstandingShares = financialData.outstandingSharesRaw;
 
   // Calculate intrinsic value per share for each method
   const intrinsicValuePerShareDCF =

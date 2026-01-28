@@ -51,9 +51,17 @@ export default function FCFE({
 
   // Calculate values when dependencies change
   useEffect(() => {
+    // Use raw outstanding shares for calculation
+    const outstandingSharesRaw = financialData.outstandingSharesRaw;
+    // freeCashFlowEquity may be a formatted string, parse it if needed
+    const fcfe = typeof financialData.freeCashFlowEquity === 'string' 
+      ? parseFloat(financialData.freeCashFlowEquity.replace(/,/g, '')) 
+      : financialData.freeCashFlowEquity;
+    
+    if (!outstandingSharesRaw || !fcfe) return;
+    
     // Calculate intrinsic value per share
-    const intrinsicValue =
-      financialData.freeCashFlowEquity / financialData.outstandingShares;
+    const intrinsicValue = fcfe / outstandingSharesRaw;
     const formattedIntrinsicValue = intrinsicValue.toFixed(2);
 
     setPresentValue(formattedIntrinsicValue);
@@ -451,7 +459,7 @@ export default function FCFE({
             <span className="text-right">
               <div className="flex items-center">
                 <span className="mr-2">{currency}</span>
-                <span className="w-48">{price} %</span>
+                <span className="w-48">{price} </span>
               </div>
             </span>
           </div>

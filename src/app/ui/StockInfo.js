@@ -24,7 +24,11 @@ const StockInfo = forwardRef(
     // Calculate intrinsic value, discount/premium, and valuation status
     useEffect(() => {
       if (presentValue && outStandingShares && price) {
-        const intrinsicValue = presentValue ;
+        // Ensure presentValue is a number (parse if string)
+        const presentValueNum = typeof presentValue === 'string' 
+          ? parseFloat(presentValue.replace(/,/g, '')) 
+          : presentValue;
+        const intrinsicValue = presentValueNum / outStandingShares;
         setIntrinsicValuePerShare(intrinsicValue);
 
         const discountPremiumValue = (price / intrinsicValue - 1) * 100; // Calculate as percentage

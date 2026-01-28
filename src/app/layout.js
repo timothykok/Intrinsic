@@ -18,6 +18,7 @@ export default function RootLayout({ children }) {
       <body
         className="antialiased font-light"
         style={{ fontFamily: '"Montserrat", sans-serif' }}
+        suppressHydrationWarning={true}
       >
         <MethodProvider>
           {/* <SearchNav /> */}
