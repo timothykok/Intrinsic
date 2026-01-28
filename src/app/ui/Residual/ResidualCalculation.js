@@ -36,6 +36,12 @@ export default function ResidualCalculation({
       const coeDecimal = costOfEquity / 100; // e.g., 10% becomes 0.10
       const g = longTermGrowthRate / 100;      // e.g., 3% becomes 0.03
 
+      // SAFETY CHECK: Cost of equity must be greater than growth rate
+      if (coeDecimal <= g) {
+        console.log("Residual Income Warning: Cost of equity <= growth rate. Cannot calculate terminal value.");
+        return;
+      }
+
       // Calculate the starting residual income (for the most recent year)
       // Residual Income = Net Income - (Current Equity * Cost of Equity)
       const startingRI =
@@ -56,11 +62,13 @@ export default function ResidualCalculation({
       }
 
       // Calculate terminal value at the end of the forecast period.
-      // Using a perpetuity formula:
+      // Using a perpetuity formula with minimum spread safeguard:
       // Terminal Value = (Residual Income in Year (forecastYears) * (1 + g)) / (coeDecimal - g)
       const RI_final = startingRI * Math.pow(1 + g, forecastYears);
+      // Ensure minimum spread between coe and g (at least 2%)
+      const minSpread = Math.max(coeDecimal - g, 0.02);
       const terminalValue =
-        (RI_final * (1 + g)) / (coeDecimal - g);
+        (RI_final * (1 + g)) / minSpread;
       const discountedTerminalValue =
         terminalValue / Math.pow(1 + coeDecimal, forecastYears);
 

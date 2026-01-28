@@ -28,16 +28,8 @@ const StockInfo = forwardRef(
 
     // Calculate intrinsic value, discount/premium, and valuation status
     useEffect(() => {
-      // Use the appropriate present value based on selected method
-      // DCF uses dcfValuePresentValue, others use presentValue (which each method updates)
-      let pvToUse;
-      if (selectedMethod === "DCF") {
-        pvToUse = dcfValuePresentValue;
-      } else {
-        // For RI, RV, C - use presentValue which is set by each component
-        pvToUse = presentValue;
-      }
-      
+      // Use dcfValuePresentValue if available (calculated DCF), otherwise fall back to presentValue
+      const pvToUse = dcfValuePresentValue || presentValue;
       const shares = outStandingShares || financialData?.outstandingSharesRaw;
       
       if (pvToUse && shares && price) {
@@ -45,12 +37,7 @@ const StockInfo = forwardRef(
         const presentValueNum = typeof pvToUse === 'string' 
           ? parseFloat(pvToUse.replace(/,/g, '')) 
           : pvToUse;
-        
-        // For Consolidated, presentValue is already per-share, so don't divide again
-        const intrinsicValue = selectedMethod === "C" 
-          ? presentValueNum 
-          : presentValueNum / shares;
-        
+        const intrinsicValue = presentValueNum / shares;
         setIntrinsicValuePerShare(intrinsicValue);
 
         const discountPremiumValue = (price / intrinsicValue - 1) * 100; // Calculate as percentage
@@ -61,7 +48,7 @@ const StockInfo = forwardRef(
           discountPremiumValue > 0 ? "overvalued" : "undervalued"
         );
       }
-    }, [presentValue, outStandingShares, price, financialData, dcfValuePresentValue, selectedMethod]);
+    }, [presentValue, outStandingShares, price, financialData, dcfValuePresentValue]);
 
     // Component JSX
     return (

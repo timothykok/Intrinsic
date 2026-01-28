@@ -22,16 +22,16 @@ export default function Consolidated({
     consolidatedPresentValue !== null ? parseFloat(consolidatedPresentValue.toFixed(2)) : null;
 
   // Use raw outstanding shares for calculations (not the formatted string)
-  const outstandingShares = financialData?.outstandingSharesRaw;
+  const outstandingShares = financialData.outstandingSharesRaw;
 
   // Calculate intrinsic value per share for each method
   const intrinsicValuePerShareDCF =
-    formattedDCF != null && outstandingShares ? parseFloat((formattedDCF / outstandingShares).toFixed(2)) : null;
+    formattedDCF !== null && outstandingShares ? parseFloat((formattedDCF / outstandingShares).toFixed(2)) : null;
   const intrinsicValuePerShareResidual =
-    formattedResidual != null && outstandingShares ? parseFloat((formattedResidual / outstandingShares).toFixed(2)) : null;
+    formattedResidual !== null && outstandingShares ? parseFloat((formattedResidual / outstandingShares).toFixed(2)) : null;
   // Multiples already gives per-share value (EPS * P/E), but if it's total present value, divide by shares
   const intrinsicValuePerShareMultiples =
-    formattedMultiples != null && outstandingShares ? parseFloat((formattedMultiples / outstandingShares).toFixed(2)) : null;
+    formattedMultiples !== null && outstandingShares ? parseFloat((formattedMultiples / outstandingShares).toFixed(2)) : formattedMultiples;
 
   // Consolidated intrinsic value per share: average of the methods
 
@@ -115,7 +115,7 @@ console.log("Intrinsic Value Per Share Multiples: " + intrinsicValuePerShareMult
           <span className="text-right flex items-center">
             <span className="mr-2">QTY</span>
             <span className="w-48">
-              {outstandingShares != null ? outstandingShares.toLocaleString() : "Calculating..."}
+              {outstandingShares !== null ? outstandingShares.toLocaleString() : "Calculating..."}
             </span>
           </span>
         </div>

@@ -782,24 +782,36 @@ export default function StockPage() {
       const longTermG = financialData.longTermGrowthRate / 100;
       const coe = costOfEquity / 100;
 
+      // SAFETY CHECK: Cost of equity must be greater than long-term growth rate
+      if (coe <= longTermG) {
+        console.log("DCF Warning: Cost of equity <= long-term growth rate. Cannot calculate perpetuity.");
+        return;
+      }
+
+      // Cap growth rates to reasonable limits to prevent explosion
+      const cappedFiveYearG = Math.min(fiveYearG, 0.25); // Max 25% annual growth
+      const cappedTenYearG = Math.min(tenYearG, 0.15);   // Max 15% annual growth
+
       // Calculate PV of FCFE from Year 1 to Year 5
       for (let t = 1; t <= 5; t++) {
-        const projectedFCFE = fcfeRaw * Math.pow(1 + fiveYearG, t);
+        const projectedFCFE = fcfeRaw * Math.pow(1 + cappedFiveYearG, t);
         const discountedFCFE = projectedFCFE / Math.pow(1 + coe, t);
         pv += discountedFCFE;
       }
 
       // Calculate PV of FCFE from Year 6 to Year 10
-      let fcfeYearN = fcfeRaw * Math.pow(1 + fiveYearG, 5);
+      let fcfeYearN = fcfeRaw * Math.pow(1 + cappedFiveYearG, 5);
       for (let t = 6; t <= 10; t++) {
-        fcfeYearN *= (1 + tenYearG);
+        fcfeYearN *= (1 + cappedTenYearG);
         const discountedFCFE = fcfeYearN / Math.pow(1 + coe, t);
         pv += discountedFCFE;
       }
 
       // Calculate Perpetuity Value at Year 11
       const fcfeYear10 = fcfeYearN;
-      const perpetuityValue = (fcfeYear10 * (1 + longTermG)) / (coe - longTermG);
+      // Ensure minimum spread between coe and longTermG (at least 2%)
+      const minSpread = Math.max(coe - longTermG, 0.02);
+      const perpetuityValue = (fcfeYear10 * (1 + longTermG)) / minSpread;
       const discountedPerpetuityValue = perpetuityValue / Math.pow(1 + coe, 10);
 
       pv += discountedPerpetuityValue;
@@ -848,6 +860,13 @@ export default function StockPage() {
 
       const coeDecimal = financialData.costOfEquity / 100;
       const g = financialData.longTermGrowthRate / 100;
+
+      // SAFETY CHECK: Cost of equity must be greater than long-term growth rate
+      if (coeDecimal <= g) {
+        console.log("Residual Income Warning: Cost of equity <= growth rate. Cannot calculate terminal value.");
+        return;
+      }
+
       const startingRI =
         financialData.netIncome - financialData.currentEquity * coeDecimal;
       console.log("Starting Residual Income (startingRI):", startingRI);
@@ -862,7 +881,9 @@ export default function StockPage() {
       }
 
       const RI_final = startingRI * Math.pow(1 + g, forecastYears);
-      const terminalValue = (RI_final * (1 + g)) / (coeDecimal - g);
+      // Ensure minimum spread between coe and g (at least 2%)
+      const minSpread = Math.max(coeDecimal - g, 0.02);
+      const terminalValue = (RI_final * (1 + g)) / minSpread;
       const discountedTerminalValue =
         terminalValue / Math.pow(1 + coeDecimal, forecastYears);
       console.log(
