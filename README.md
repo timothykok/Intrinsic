@@ -192,3 +192,10 @@ If COE = 5% and g = 3%, denominator = **2%** → multiplies cash flow by **50x**
 > 3. **Multiples** - Compares to what similar companies trade at
 > 
 > Then it averages them for a balanced estimate. The discount rate (Cost of Equity) comes from CAPM - riskier stocks need higher returns, making their present value lower."
+
+| Method | Best For | Worst For |
+| --- | --- | --- |
+| **DCF** | Stable, cash-generating businesses | High-growth, negative cash flow companies |
+| **Residual Income** | Asset-heavy businesses (banks, industrials) | Tech companies with intangible value |
+| **Multiples** | Quick sanity check; similar companies | Unique businesses with no true peers |
+| **Consolidated** | General use, reduces single-method bias | When one method is clearly more appropriate |
