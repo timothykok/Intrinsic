@@ -11,37 +11,31 @@ export default function Consolidated({
   presentValue,
   selectedMethod
 }) {
-  // Format numerical values if available
+  // Format numerical values if available (check for both null and undefined)
   const formattedDCF =
-    dcfPresentValue !== null ? parseFloat(dcfPresentValue.toFixed(2)) : null;
+    dcfPresentValue != null ? parseFloat(dcfPresentValue.toFixed(2)) : null;
   const formattedMultiples =
-    multiplesPresentValue !== null ? parseFloat(multiplesPresentValue.toFixed(2)) : null;
+    multiplesPresentValue != null ? parseFloat(multiplesPresentValue.toFixed(2)) : null;
   const formattedResidual =
-    residualIncomePresentValue !== null ? parseFloat(residualIncomePresentValue.toFixed(2)) : null;
+    residualIncomePresentValue != null ? parseFloat(residualIncomePresentValue.toFixed(2)) : null;
   const formattedConsolidated =
-    consolidatedPresentValue !== null ? parseFloat(consolidatedPresentValue.toFixed(2)) : null;
+    consolidatedPresentValue != null ? parseFloat(consolidatedPresentValue.toFixed(2)) : null;
 
   // Use raw outstanding shares for calculations (not the formatted string)
-  const outstandingShares = financialData.outstandingSharesRaw;
+  const outstandingShares = financialData?.outstandingSharesRaw;
 
   // Calculate intrinsic value per share for each method
   const intrinsicValuePerShareDCF =
-    formattedDCF !== null && outstandingShares ? parseFloat((formattedDCF / outstandingShares).toFixed(2)) : null;
+    formattedDCF != null && outstandingShares ? parseFloat((formattedDCF / outstandingShares).toFixed(2)) : null;
   const intrinsicValuePerShareResidual =
-    formattedResidual !== null && outstandingShares ? parseFloat((formattedResidual / outstandingShares).toFixed(2)) : null;
+    formattedResidual != null && outstandingShares ? parseFloat((formattedResidual / outstandingShares).toFixed(2)) : null;
   // Multiples already gives per-share value (EPS * P/E), but if it's total present value, divide by shares
   const intrinsicValuePerShareMultiples =
-    formattedMultiples !== null && outstandingShares ? parseFloat((formattedMultiples / outstandingShares).toFixed(2)) : formattedMultiples;
+    formattedMultiples != null && outstandingShares ? parseFloat((formattedMultiples / outstandingShares).toFixed(2)) : formattedMultiples;
 
   // Consolidated intrinsic value per share: average of the methods
-
-console.log("Intrinsic Value Per Share DCF: " + intrinsicValuePerShareDCF)
-console.log("Intrinsic Value Per Share Residual:" + intrinsicValuePerShareResidual)
-console.log("Intrinsic Value Per Share Multiples: " + intrinsicValuePerShareMultiples)
-
-  // Use !== null checks instead of truthy checks (in case value is 0)
   const intrinsicValuePerShareConsolidated =
-    intrinsicValuePerShareDCF !== null && intrinsicValuePerShareResidual !== null && intrinsicValuePerShareMultiples !== null
+    intrinsicValuePerShareDCF != null && intrinsicValuePerShareResidual != null && intrinsicValuePerShareMultiples != null
       ? parseFloat(
           (
             (intrinsicValuePerShareDCF +
@@ -54,14 +48,12 @@ console.log("Intrinsic Value Per Share Multiples: " + intrinsicValuePerShareMult
 
 
    
-  // Update the presentValue state (you might want to wrap this in an effect to avoid state updates during render)
+  // Update the presentValue state
   useEffect(() => {
-    if (intrinsicValuePerShareConsolidated !== null) {
+    if (intrinsicValuePerShareConsolidated != null) {
       setPresentValue(intrinsicValuePerShareConsolidated);
     }
   }, [intrinsicValuePerShareConsolidated, setPresentValue]);
-
-  console.log("INTRINSIC VALUE PER SHARE CONSOLIDATED" + intrinsicValuePerShareConsolidated)
 
   return (
     <div className="max-w-[800px] mx-auto pt-12 pb-12 mt-8 uppercase">
@@ -75,7 +67,7 @@ console.log("Intrinsic Value Per Share Multiples: " + intrinsicValuePerShareMult
           <span className="text-right flex items-center">
             <span className="mr-2">USD</span>
             <span className="w-48">
-              {formattedDCF !== null ? formattedDCF.toLocaleString() : "Calculating..."}
+              {formattedDCF != null ? formattedDCF.toLocaleString() : "Calculating..."}
             </span>
           </span>
         </div>
@@ -85,7 +77,7 @@ console.log("Intrinsic Value Per Share Multiples: " + intrinsicValuePerShareMult
           <span className="text-right flex items-center">
             <span className="mr-2">USD</span>
             <span className="w-48">
-              {formattedResidual !== null ? formattedResidual.toLocaleString() : "Calculating..."}
+              {formattedResidual != null ? formattedResidual.toLocaleString() : "Calculating..."}
             </span>
           </span>
         </div>
@@ -95,7 +87,7 @@ console.log("Intrinsic Value Per Share Multiples: " + intrinsicValuePerShareMult
           <span className="text-right flex items-center">
             <span className="mr-2">USD</span>
             <span className="w-48">
-              {formattedMultiples !== null ? formattedMultiples.toLocaleString() : "Calculating..."}
+              {formattedMultiples != null ? formattedMultiples.toLocaleString() : "Calculating..."}
             </span>
           </span>
         </div>
@@ -105,7 +97,7 @@ console.log("Intrinsic Value Per Share Multiples: " + intrinsicValuePerShareMult
           <span className="text-right flex items-center">
             <span className="mr-2">USD</span>
             <span className="w-48">
-              {formattedConsolidated !== null ? formattedConsolidated.toLocaleString() : "Calculating..."}
+              {formattedConsolidated != null ? formattedConsolidated.toLocaleString() : "Calculating..."}
             </span>
           </span>
         </div>
@@ -115,7 +107,7 @@ console.log("Intrinsic Value Per Share Multiples: " + intrinsicValuePerShareMult
           <span className="text-right flex items-center">
             <span className="mr-2">QTY</span>
             <span className="w-48">
-              {outstandingShares !== null ? outstandingShares.toLocaleString() : "Calculating..."}
+              {outstandingShares != null ? outstandingShares.toLocaleString() : "Calculating..."}
             </span>
           </span>
         </div>
@@ -125,7 +117,7 @@ console.log("Intrinsic Value Per Share Multiples: " + intrinsicValuePerShareMult
           <span className="text-right flex items-center">
             <span className="mr-2">USD</span>
             <span className="w-48">
-              {intrinsicValuePerShareConsolidated !== null
+              {intrinsicValuePerShareConsolidated != null
                 ? intrinsicValuePerShareConsolidated.toLocaleString()
                 : "Calculating..."}
             </span>

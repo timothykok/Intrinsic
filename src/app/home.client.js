@@ -90,7 +90,7 @@ export default function Home() {
    // Create a ref for StockInfo
    const stockInfoRef = useRef(null);
  
-   const fmpApiKey = process.env.FINANCIAL_API_KEY;
+   const FMP_API = "/api/fmp";
  
    const sectorPerformance = {
      "Basic Materials": 8.98,
@@ -205,8 +205,8 @@ export default function Home() {
     async function fetchStockInfo() {
       try {
         const [profileResponse, quoteResponse] = await Promise.all([
-          axios.get(`https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`),
-          axios.get(`https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${fmpApiKey}`)
+          axios.get(`${FMP_API}/api/v3/profile/${ticker}`),
+          axios.get(`${FMP_API}/api/v3/quote/${ticker}`)
         ]);
 
         const profileData = profileResponse.data;
@@ -247,56 +247,35 @@ export default function Home() {
 
     setLoading(true);
     fetchStockInfo();
-  }, [ticker, fmpApiKey]);
- 
-   useEffect(() => {
-     if (!ticker) return;
- 
-     const fetchFinancialData = async () => {
-       const [
-         profileData,
-         quoteData,
-         balanceSheetData,
-         incomeData,
-         cashFlowData,
-         ratioData,
-         treasuryData,
-         marketRiskData,
-         outstandingSharesData,
-         peersData,
-       ] = await Promise.all([
-         fetchData(
-           `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
-         ),
-         fetchData(
-           `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${fmpApiKey}`
-         ),
-         fetchData(
-           `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${ticker}?apikey=${fmpApiKey}`
-         ),
-         fetchData(
-           `https://financialmodelingprep.com/api/v3/income-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
-         ),
-         fetchData(
-           `https://financialmodelingprep.com/api/v3/cash-flow-statement/${ticker}?period=annual&apikey=${fmpApiKey}`
-         ),
-         fetchData(
-           `https://financialmodelingprep.com/api/v3/ratios/${ticker}?apikey=${fmpApiKey}`
-         ),
-         fetchData(
-           `https://financialmodelingprep.com/api/v4/treasury?apikey=${fmpApiKey}`
-         ),
-         fetchData(
-           `https://financialmodelingprep.com/api/v4/market_risk_premium?apikey=${fmpApiKey}`
-         ),
-         fetchData(
-           `https://financialmodelingprep.com/api/v4/shares_float?symbol=${ticker}&apikey=${fmpApiKey}`
-         ),
- 
-         fetchData(
-           `https://financialmodelingprep.com/api/v4/stock_peers?symbol=${ticker}&apikey=${fmpApiKey}`
-         ),
-       ]);
+  }, [ticker]);
+
+  useEffect(() => {
+    if (!ticker) return;
+
+    const fetchFinancialData = async () => {
+      const [
+        profileData,
+        quoteData,
+        balanceSheetData,
+        incomeData,
+        cashFlowData,
+        ratioData,
+        treasuryData,
+        marketRiskData,
+        outstandingSharesData,
+        peersData,
+      ] = await Promise.all([
+        fetchData(`${FMP_API}/api/v3/profile/${ticker}`),
+        fetchData(`${FMP_API}/api/v3/quote/${ticker}`),
+        fetchData(`${FMP_API}/api/v3/balance-sheet-statement/${ticker}`),
+        fetchData(`${FMP_API}/api/v3/income-statement/${ticker}?period=annual`),
+        fetchData(`${FMP_API}/api/v3/cash-flow-statement/${ticker}?period=annual`),
+        fetchData(`${FMP_API}/api/v3/ratios/${ticker}`),
+        fetchData(`${FMP_API}/api/v4/treasury`),
+        fetchData(`${FMP_API}/api/v4/market_risk_premium`),
+        fetchData(`${FMP_API}/api/v4/shares_float?symbol=${ticker}`),
+        fetchData(`${FMP_API}/api/v4/stock_peers?symbol=${ticker}`),
+      ]);
  
        //------------------------------------------------------------------------------------
  
@@ -390,12 +369,12 @@ export default function Home() {
        const peers = peersData[0]?.peersList;
  
        console.log("PEERS: " + peers);
-       let averagePeerPE = null;
-       if (peers && peers.length > 0) {
-         const peerSymbols = peers.join(",");
-         const quotesResponse = await axios.get(
-           `https://financialmodelingprep.com/api/v3/quote/${peerSymbols}?apikey=${fmpApiKey}`
-         );
+      let averagePeerPE = null;
+      if (peers && peers.length > 0) {
+        const peerSymbols = peers.join(",");
+        const quotesResponse = await axios.get(
+          `${FMP_API}/api/v3/quote/${peerSymbols}`
+        );
          const peerQuotes = quotesResponse.data;
          const validPeerQuotes = peerQuotes.filter(
            (peer) => peer.pe && peer.pe > 0
@@ -521,7 +500,7 @@ export default function Home() {
      };
  
      fetchFinancialData();
-   }, [ticker, fmpApiKey]);
+   }, [ticker]);
  
    //------------------------------------------------------------------------------------
  

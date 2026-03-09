@@ -11,7 +11,7 @@ export default function Ticker() {
   const router = useRouter(); // Initialize router
 
 
-  const fmpApiKey = process.env.FINANCIAL_API_KEY;
+  const FMP_API = "/api/fmp";
 
   useEffect(() => {
     const fetchStocks = async () => {
@@ -20,7 +20,7 @@ export default function Ticker() {
         const symbolString = symbols.join(",");
 
         const response = await axios.get(
-          `https://financialmodelingprep.com/stable/quote?symbol=${symbolString}&apikey=${fmpApiKey}`
+          `${FMP_API}/stable/quote?symbol=${symbolString}`
         );
 
 
