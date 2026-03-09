@@ -13,7 +13,7 @@ export default function DCFCalculation({
   financialData
 }) {
   const currency = "USD"; // Hardcoded currency symbol
-  const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
+  const fmpApiKey = process.env.FINANCIAL_API_KEY;
 
   
   // Calculate PV of FCFE

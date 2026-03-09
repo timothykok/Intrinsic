@@ -140,7 +140,7 @@ export default function StockPage() {
   // Create a ref for StockInfo
   const stockInfoRef = useRef(null);
 
-  const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
+  const fmpApiKey = process.env.FINANCIAL_API_KEY;
 
   const sectorPerformance = {
     "Basic Materials": 8.98,

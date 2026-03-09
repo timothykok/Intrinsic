@@ -16,3 +16,4 @@ export function MethodProvider({ children }) {
 export function useMethod() {
   return useContext(MethodContext);
 }
+

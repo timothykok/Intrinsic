@@ -19,7 +19,7 @@ export default function Home() {
 
    // The ticker is obtained from the URL (the slug). No need to set it manually.
    const { ticker } = useParams();
-   const { selectedMethod, setSelectedMethod } = useMethod("C");
+   const { selectedMethod, setSelectedMethod } = useMethod("DCF");
  
    const router = useRouter();
  
@@ -38,6 +38,8 @@ export default function Home() {
      useState(null);
    const [multiplesPresentValue, setMultiplesPresentValue] = useState(0);
    const [consolidatedPresentValue, setConsolidatedPresentValue] = useState(0);
+
+
    // const [outstandingShares, setOutstandingShares] = useState([]);
    const [presentValue, setPresentValue] = useState(null);
    const [costOfEquity, setCostOfEquity] = useState(null);
@@ -88,20 +90,20 @@ export default function Home() {
    // Create a ref for StockInfo
    const stockInfoRef = useRef(null);
  
-   const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
+   const fmpApiKey = process.env.FINANCIAL_API_KEY;
  
    const sectorPerformance = {
      "Basic Materials": 8.98,
      "Communication Services": 11.27,
      "Consumer Cyclical": 12.07,
      "Consumer Defensive": 10.92,
-     Energy: 6.18,
+     "Energy": 6.18,
      "Financial Services": 12.07,
-     Healthcare: 12.45,
-     Industrials: 12.97,
+     "Healthcare": 12.45,
+     "Industrials": 12.97,
      "Real Estate": 10.4,
-     Technology: 19.8,
-     Utilities: 10.05,
+     "Technology": 19.8,
+     "Utilities": 10.05,
    };
  
    // --- Functions for UI effects ---

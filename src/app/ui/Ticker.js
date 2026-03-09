@@ -11,7 +11,7 @@ export default function Ticker() {
   const router = useRouter(); // Initialize router
 
 
-  const fmpApiKey = process.env.NEXT_PUBLIC_FINANCIAL_API_KEY;
+  const fmpApiKey = process.env.FINANCIAL_API_KEY;
 
   useEffect(() => {
     const fetchStocks = async () => {
