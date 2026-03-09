@@ -95,16 +95,12 @@ export default function StockPage() {
     equityWeighting: 0,
     debtWeighting: 0,
     costOfEquity: 0,
-    netDebtIssuance: 0,
-    wacc: 0,
 
     currentRatio: 0,
     totalDebt: 0,
     debtToEbitda: 0,
     debtServicingRatio: 0,
     afterTaxCostOfDebt: 0,
-    equityWeighting: 0,
-    debtWeighting: 0,
 
     fiveYearGrowthRate: null,
     tenYearGrowthRate: null,
@@ -118,7 +114,7 @@ export default function StockPage() {
     peers: null,
 
     freeCashFlowFirm: null,
-    intrinsicValuePerShareFCFF:null,
+    intrinsicValuePerShareFCFF: null,
     freeCashFlowEquity: null,
     intrinsicValuePerShareFCFE: null,
 
@@ -249,46 +245,21 @@ export default function StockPage() {
 
   // This effect fetches the basic stock info when the URL ticker changes.
   useEffect(() => {
-    // If no ticker is present, do nothing.
     if (!ticker) return;
 
     async function fetchStockInfo() {
       try {
-        const profileResponse = await fetch(
-          `https://financialmodelingprep.com/stable/profile?symbol=${ticker}&apikey=${fmpApiKey}`
-        );
-        const profileData = await profileResponse.json();
+        const [profileResponse, quoteResponse] = await Promise.all([
+          axios.get(`https://financialmodelingprep.com/stable/profile?symbol=${ticker}&apikey=${fmpApiKey}`),
+          axios.get(`https://financialmodelingprep.com/stable/quote?symbol=${ticker}&apikey=${fmpApiKey}`)
+        ]);
 
-        const quoteResponse = await fetch(
-          `https://financialmodelingprep.com/stable/quote?symbol=${ticker}&apikey=${fmpApiKey}`
-        );
-        const quoteData = await quoteResponse.json();
+        const profileData = profileResponse.data;
+        const quoteData = quoteResponse.data;
 
-        if (
-          profileData &&
-          profileData.length > 0 &&
-          quoteData &&
-          quoteData.length > 0
-        ) {
+        if (profileData?.length > 0 && quoteData?.length > 0) {
           const stockProfileData = profileData[0];
           const stockQuoteData = quoteData[0];
-
-          const formatMarketCloseTimeNY = (timestamp) => {
-            const date = new Date(timestamp * 1000);
-            const options = {
-              hour: "2-digit",
-              minute: "2-digit",
-              timeZone: "America/New_York",
-              hour12: false,
-            };
-            const formattedTime = new Intl.DateTimeFormat(
-              "en-US",
-              options
-            ).format(date);
-            return `At close at ${formattedTime} ET`;
-          };
-
-          const marketCloseMessageNY = formatMarketCloseTimeNY(1738098001);
 
           setStockInfo({
             companyName: stockProfileData.companyName,
@@ -296,12 +267,12 @@ export default function StockPage() {
             currency: stockProfileData.currency,
             change: stockQuoteData.change,
             percentage: stockQuoteData.changesPercentage,
-            timestamp: marketCloseMessageNY,
+            timestamp: stockQuoteData.timestamp,
             logoSrc: stockProfileData.image,
           });
           setErrorMessage(null);
         } else {
-          setErrorMessage(`No matching results for "symbol=${ticker}"`);
+          setErrorMessage(`No matching results for "${ticker}"`);
           triggerShake();
           triggerErrorMessage();
           setStockInfo(null);

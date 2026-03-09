@@ -198,85 +198,56 @@ export default function Home() {
      }
    };
  
-   // This effect fetches the basic stock info when the URL ticker changes.
-   useEffect(() => {
-     // If no ticker is present, do nothing.
-     if (!ticker) return;
+  // This effect fetches the basic stock info when the URL ticker changes.
+  useEffect(() => {
+    if (!ticker) return;
 
-     async function fetchStockInfo() {
-       try {
-         const profileResponse = await fetch(
-           `https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`
-         );
-         const profileData = await profileResponse.json();
+    async function fetchStockInfo() {
+      try {
+        const [profileResponse, quoteResponse] = await Promise.all([
+          axios.get(`https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${fmpApiKey}`),
+          axios.get(`https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${fmpApiKey}`)
+        ]);
 
-         const quoteResponse = await fetch(
-           `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${fmpApiKey}`
-         );
-         const quoteData = await quoteResponse.json();
+        const profileData = profileResponse.data;
+        const quoteData = quoteResponse.data;
 
-         // Debug logging
-         console.log("Home - ticker:", ticker);
-         console.log("Home - profileData:", profileData);
-         console.log("Home - quoteData:", quoteData);
+        if (profileData?.length > 0 && quoteData?.length > 0) {
+          const stockProfileData = profileData[0];
+          const stockQuoteData = quoteData[0];
 
-         // Check if response is an array with data
-         const hasProfileData = Array.isArray(profileData) && profileData.length > 0;
-         const hasQuoteData = Array.isArray(quoteData) && quoteData.length > 0;
+          setStockInfo({
+            companyName: stockProfileData.companyName,
+            price: stockProfileData.price,
+            currency: stockProfileData.currency,
+            change: stockQuoteData.change,
+            percentage: stockQuoteData.changesPercentage,
+            timestamp: stockQuoteData.timestamp,
+            logoSrc: stockProfileData.image,
+          });
+          setErrorMessage(null);
+        } else {
+          setErrorMessage(`No matching results for "${ticker}"`);
+          triggerShake();
+          triggerErrorMessage();
+          setStockInfo(null);
+        }
+      } catch (error) {
+        console.error("Error fetching stock info:", error);
+        setErrorMessage(
+          "An error occurred while fetching data. Please try again."
+        );
+        triggerShake();
+        triggerErrorMessage();
+        setStockInfo(null);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-         if (hasProfileData && hasQuoteData) {
-           const stockProfileData = profileData[0];
-           const stockQuoteData = quoteData[0];
- 
-           const formatMarketCloseTimeNY = (timestamp) => {
-             const date = new Date(timestamp * 1000);
-             const options = {
-               hour: "2-digit",
-               minute: "2-digit",
-               timeZone: "America/New_York",
-               hour12: false,
-             };
-             const formattedTime = new Intl.DateTimeFormat(
-               "en-US",
-               options
-             ).format(date);
-             return `At close at ${formattedTime} ET`;
-           };
- 
-           const marketCloseMessageNY = formatMarketCloseTimeNY(1738098001);
- 
-           setStockInfo({
-             companyName: stockProfileData.companyName,
-             price: stockProfileData.price,
-             currency: stockProfileData.currency,
-             change: stockQuoteData.change,
-             percentage: stockQuoteData.changesPercentage,
-             timestamp: marketCloseMessageNY,
-             logoSrc: stockProfileData.image,
-           });
-           setErrorMessage(null);
-         } else {
-           setErrorMessage(`No matching results for "${ticker}"`);
-           triggerShake();
-           triggerErrorMessage();
-           setStockInfo(null);
-         }
-       } catch (error) {
-         console.error("Error fetching stock info:", error);
-         setErrorMessage(
-           "An error occurred while fetching data. Please try again."
-         );
-         triggerShake();
-         triggerErrorMessage();
-         setStockInfo(null);
-       } finally {
-         setLoading(false);
-       }
-     }
- 
-     setLoading(true);
-     fetchStockInfo();
-   }, [ticker, fmpApiKey]);
+    setLoading(true);
+    fetchStockInfo();
+  }, [ticker, fmpApiKey]);
  
    useEffect(() => {
      if (!ticker) return;
